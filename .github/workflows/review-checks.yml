@@ -1,0 +1,90 @@
+name: Update Review Checks
+
+on:
+  push:
+    paths:
+      - 'docs/**'
+      - '!docs/review/checks/**'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '!docs/review/checks/**'
+
+permissions:
+  contents: write
+
+jobs:
+  update-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine base SHA
+        id: base
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "base=${{ github.event.before }}" >> $GITHUB_OUTPUT
+          else
+            echo "base=${{ github.event.pull_request.base.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Find changed docs
+        id: changes
+        shell: bash
+        run: |
+          BASE_SHA="${{ steps.base.outputs.base }}"
+          if [[ -z "$BASE_SHA" ]]; then
+            # Fallback to previous commit
+            BASE_SHA=$(git rev-parse HEAD^ || true)
+          fi
+          echo "Base: $BASE_SHA"
+          CHANGED=$(git diff --name-only "$BASE_SHA" HEAD | grep '^docs/' | grep -v '^docs/review/checks/' || true)
+          echo "$CHANGED" | sed '/^$/d' > changed.txt
+          echo "Changed files:" && cat changed.txt || true
+          COUNT=$(wc -l < changed.txt || echo 0)
+          echo "count=$COUNT" >> $GITHUB_OUTPUT
+
+      - name: Update review check files
+        if: steps.changes.outputs.count != '0'
+        shell: bash
+        run: |
+          mkdir -p docs/review/checks
+          while IFS= read -r f; do
+            [[ -z "$f" ]] && continue
+            name=$(echo "$f" | sed -E 's|^docs/||; s|/|-|g')
+            check="docs/review/checks/${name}"
+            if [[ ! -f "$check" ]]; then
+              {
+                echo "# 검수 체크 — $(basename \"$f\")"
+                echo "문서: ../../$f"
+                echo "검토 필요: yes"
+                echo "확인 완료: no"
+                echo "확인자:"
+                echo "확인 일시:"
+                echo "비고:"
+              } > "$check"
+              echo "Created $check"
+            else
+              # Replace fields to require review again
+              perl -0777 -pe 's/^검토 필요: .*/검토 필요: yes/m; s/^확인 완료: .*/확인 완료: no/m; s/^확인자:.*/확인자:/m; s/^확인 일시:.*/확인 일시:/m' -i "$check"
+              echo "Updated $check"
+            fi
+          done < changed.txt
+
+      - name: Commit and push changes
+        if: steps.changes.outputs.count != '0'
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "olulo-docs-bot"
+            git config user.email "docs-bot@users.noreply.github.com"
+            git add docs/review/checks/*
+            git commit -m "chore(docs): mark review checks as Needs Review [skip ci]"
+            git push
+          else
+            echo "No changes to commit"
+          fi
