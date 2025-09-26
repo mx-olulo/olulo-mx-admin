@@ -3,21 +3,29 @@
     "name": "olulo/mx-admin",
     "type": "project",
     "description": "Olulo MX - Multi-tenant food delivery platform admin system for Mexico market",
-    "keywords": ["laravel", "multi-tenant", "food-delivery", "restaurant", "mexico", "admin"],
+    "keywords": [
+        "laravel",
+        "multi-tenant",
+        "food-delivery",
+        "restaurant",
+        "mexico",
+        "admin"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "filament/filament": "^4.0",
+        "kreait/firebase-php": "^7.15",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
-        "kreait/firebase-php": "^7.15",
-        "spatie/laravel-permission": "^6.10",
         "spatie/laravel-medialibrary": "^11.10",
-        "filament/filament": "^3.2"
+        "spatie/laravel-permission": "^6.10"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.13",
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.7",
         "laravel/boost": "*",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
@@ -25,12 +33,15 @@
         "laravel/telescope": "^5.2",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "nunomaduro/larastan": "^3.0",
         "phpunit/phpunit": "^11.5.3"
     },
     "autoload": {
         "psr-4": {
             "App\\": "app/",
+            "Olulo\\": "src/",
+            "Olulo\\Domain\\": "src/Domain/",
+            "Olulo\\Application\\": "src/Application/",
+            "Olulo\\Infrastructure\\": "src/Infrastructure/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }
@@ -43,7 +54,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
