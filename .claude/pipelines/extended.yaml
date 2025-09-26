@@ -1,0 +1,79 @@
+# Extended multi-agent pipelines for specialized reviews
+version: 1
+name: extended-code-pipeline
+stages:
+  - id: architecture
+    agent: architect
+    inputs:
+      required: [goal, scope, related_docs]
+    outputs: [arch_notes, risks, references]
+  - id: authoring
+    agent: code-author
+    inputs:
+      required: [goal, scope, related_docs]
+      optional: [constraints, files_changed]
+      from_stage: architecture
+      map:
+        arch_notes: arch_notes
+    outputs: [patch, summary, checklist]
+  - id: laravel_review
+    agent: laravel-expert
+    inputs:
+      from_stage: authoring
+      map:
+        patch: patch
+    outputs: [laravel_review]
+  - id: filament_review
+    agent: filament-expert
+    inputs:
+      from_stage: authoring
+      map:
+        patch: patch
+    outputs: [filament_review]
+  - id: nova_review
+    agent: nova-expert
+    inputs:
+      from_stage: authoring
+      map:
+        patch: patch
+    outputs: [nova_review]
+  - id: react_review
+    agent: react-expert
+    inputs:
+      from_stage: authoring
+      map:
+        patch: patch
+    outputs: [react_review]
+  - id: db_review
+    agent: database-expert
+    inputs:
+      from_stage: authoring
+      map:
+        patch: patch
+    outputs: [db_review]
+  - id: docs_review
+    agent: docs-reviewer
+    inputs:
+      from_stage: [architecture, authoring]
+      map:
+        arch_notes: arch_notes
+        summary: summary
+    outputs: [docs_report]
+  - id: final_review
+    agent: code-reviewer
+    inputs:
+      from_stage: [authoring, laravel_review, filament_review, nova_review, react_review, db_review, docs_review]
+      map:
+        patch: patch
+        checklist: checklist
+    outputs: [review_report, decision, actions]
+policy:
+  merge_strategy: pr
+  branch_naming: feature/{short}
+  mandatory_rules:
+    - require_docs_first: true
+    - require_pint: true
+    - require_larastan: true
+    - enforce_naming_consistency: true
+notes:
+  - Use this pipeline for complex cross-stack changes requiring multiple experts.
