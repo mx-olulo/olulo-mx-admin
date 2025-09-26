@@ -1,0 +1,133 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Providers/TenancyServiceProvider.php
+
+		-
+			message: '#^Class App\\Tenancy\\Middleware\\TenantMiddleware not found\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Providers/TenancyServiceProvider.php
+
+		-
+			message: '#^Class App\\Tenancy\\Middleware\\TenantScopeMiddleware not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Providers/TenancyServiceProvider.php
+
+		-
+			message: '#^Class App\\Tenancy\\TenantManager not found\.$#'
+			identifier: class.notFound
+			count: 3
+			path: app/Providers/TenancyServiceProvider.php
+
+		-
+			message: '#^Class App\\Tenancy\\TenantResolver not found\.$#'
+			identifier: class.notFound
+			count: 3
+			path: app/Providers/TenancyServiceProvider.php
+
+		-
+			message: '#^Instantiated class App\\Tenancy\\TenantManager not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Providers/TenancyServiceProvider.php
+
+		-
+			message: '#^Instantiated class App\\Tenancy\\TenantResolver not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Providers/TenancyServiceProvider.php
+
+		-
+			message: '#^Class App\\Jobs\\Tenancy\\CleanupTenantFiles not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Jobs\\Tenancy\\CreateTenantDatabase not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Jobs\\Tenancy\\DeleteTenantDatabase not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Jobs\\Tenancy\\SeedTenantData not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Jobs\\Tenancy\\SendWelcomeEmail not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\Country not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\Currency not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\Customer not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\DeliveryPerson not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\Menu not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\Order not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\Payment not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\Restaurant not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\SystemSetting not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php
+
+		-
+			message: '#^Class App\\Models\\Tenant not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/tenancy.php

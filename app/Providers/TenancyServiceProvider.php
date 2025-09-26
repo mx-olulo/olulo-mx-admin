@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Route;
-use App\Tenancy\TenantManager;
-use App\Tenancy\TenantResolver;
 use App\Tenancy\Middleware\TenantMiddleware;
 use App\Tenancy\Middleware\TenantScopeMiddleware;
+use App\Tenancy\TenantManager;
+use App\Tenancy\TenantResolver;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
 
 /**
  * 테넌시 서비스 프로바이더
@@ -120,7 +120,7 @@ class TenancyServiceProvider extends ServiceProvider
 
         $tenant = $this->app['tenant'] ?? null;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return;
         }
 
@@ -130,7 +130,7 @@ class TenancyServiceProvider extends ServiceProvider
                 'database.connections.tenant' => array_merge(
                     config('database.connections.mysql'),
                     ['database' => 'tenant_' . $tenant->id]
-                )
+                ),
             ]);
 
             $this->app['db']->setDefaultConnection('tenant');
