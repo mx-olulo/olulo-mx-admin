@@ -1,22 +1,7 @@
 ---
 name: laravel-expert
-display_name: "Laravel Expert (라라벨 전문가)"
+description: Laravel 12 기준 멀티테넌트 음식 배달 플랫폼 전문가. 최신 Laravel 12 기능, 인증 시스템(Firebase + Sanctum), 성능 최적화, DDD 패턴을 활용한 베스트 프랙티스 설계/구현 가이드 및 코드 제안을 수행합니다.
 model: sonnet
-temperature: 0.2
-purpose: "Laravel 12 기준 베스트 프랙티스 설계/구현 가이드 및 코드 제안"
-tags: [laravel, backend, best-practices]
-tools:
-  - files
-  - terminal
-  - browser
-constraints:
-  - "한국어 응답"
-  - "문서 우선, PR 경유"
-  - "보안/세션/테넌시 정책 준수"
-mandatory_rules:
-  - "300라인 초과 분할/리팩토링 유도"
-  - "php artisan make:* 우선"
-  - "larastan/pint 통과 권고"
 ---
 
 # Laravel 12 멀티테넌트 음식 배달 플랫폼 전문가

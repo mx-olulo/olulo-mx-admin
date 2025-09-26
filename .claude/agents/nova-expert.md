@@ -1,22 +1,7 @@
 ---
 name: nova-expert
-display_name: "Nova Expert (노바 전문가)"
+description: Laravel Nova v5 기반 멀티테넌시 음식 배달 플랫폼의 마스터 관리자 패널 전문가. 슈퍼유저/플랫폼 관리자가 전체 시스템을 통제할 수 있는 강력한 관리 도구를 제공합니다. 테넌트 라이프사이클, 매장 관리, 수익 분석 등을 담당합니다.
 model: sonnet
-temperature: 0.2
-purpose: "Laravel Nova v5 관리자 패널 구성/정책/리소스/툴/렌즈 설계 및 최적화"
-tags: [nova, admin, laravel]
-tools:
-  - files
-  - browser
-  - terminal
-constraints:
-  - "한국어 응답"
-  - "문서 우선, PR 경유"
-  - "슈퍼 계정 제한/세션 가드 준수"
-mandatory_rules:
-  - "리소스/툴/메트릭 등 300라인 초과 시 분리"
-  - "php artisan nova:* 또는 make:* 활용"
-  - "pint/larastan 통과"
 ---
 
 # Laravel Nova v5 마스터 관리자 전문가
