@@ -34,6 +34,7 @@
 - Backend: Laravel 11, PHP 8.2+, Filament 3.x Admin, MySQL/Aurora.
 - Frontend: React 18 + Vite, PWA, i18n, Tailwind + daisyUI.
 - Auth: Firebase Authentication(FirebaseUI), 백엔드에서 Firebase ID Token 검증 미들웨어.
+- 참고: 인증/세션 구성 상세는 `docs/auth.md` 및 환경별 설정은 `docs/devops/environments.md` 참조.
 - Realtime/Notification: Laravel Events + Queues, WhatsApp Business API(또는 CPaaS, 예: Twilio), WebPush/WS(optional).
 - Caching: Redis(세션/캐시), HTTP 캐시 헤더, 메뉴/환율 캐시 계층.
 - Background: Horizon(Queue), Scheduler(환율 신선화, 정산/리포트, 알림 재시도 등).
@@ -268,6 +269,11 @@ sequenceDiagram
 - CI/CD: GitHub Actions, Laravel Vapor/Forge/EC2 등. .env 분리.
 - 모니터링: Laravel Telescope, OpenTelemetry, Error Tracking(Sentry), Uptime.
 - 큐/Horizon 대시보드, 스케줄러 헬스체크.
+
+관련 문서
+- 인증 설계: `docs/auth.md`
+- 환경별 도메인/CORS: `docs/devops/environments.md`
+- 프로젝트 1 상세: `docs/milestones/project-1.md`
 
 ## 18. React 고객 앱 설계(요약)
 - 라우팅: `/app?store&table&seat` 진입. Onboarding → Session attach → Menu → Cart → Order → Payment
