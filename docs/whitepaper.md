@@ -31,7 +31,7 @@
 - 멀티테넌시: 그룹관리 매장(프랜차이즈)과 일반 매장 분리 운영.
 
 ## 4. 전체 아키텍처
-- Backend: Laravel 11, PHP 8.2+, Filament 3.x Admin, MySQL/Aurora.
+- Backend: Laravel 11, PHP 8.4+, Filament 3.x Admin, PostgreSQL.
 - Frontend: React 18 + Vite, PWA, i18n, Tailwind + daisyUI.
 - Auth: Firebase Authentication(FirebaseUI), 백엔드에서 Firebase ID Token 검증 미들웨어.
 - 참고: 인증/세션 구성 상세는 `docs/auth.md` 및 환경별 설정은 `docs/devops/environments.md` 참조.
@@ -66,97 +66,14 @@ flowchart LR
   - `analyst`: 리포트 열람
 
 ## 6. 데이터 모델(핵심 스키마)
-RDBMS: MySQL 8.x. 표준 칼럼: `id(BIGINT PK)`, `created_at`, `updated_at`, `deleted_at(SoftDelete)`, `uuid`, `indexes` 설계.
+본 화이트페이퍼의 데이터 모델 상세는 유지보수 편의를 위해 별도 문서로 분리되었습니다. 최신 스키마는 아래 문서를 참조하세요.
 
-- store_group
-  - id, name, country_code, timezone, currency_default, settings(json)
-  - indices: (name), (country_code)
-- stores
-  - id, store_group_id FK nullable, name, code, country_code, timezone, default_locale, supported_locales(json), supported_currencies(json), settings(json)
-  - indices: (store_group_id), (code unique), (country_code)
-- users
-  - id, firebase_uid, email, phone, name, last_login_at
-  - indices: (firebase_uid unique), (email), (phone)
-- roles, permissions, role_user, permission_role (표준 RBAC)
-- store_user (매장-사용자 소속/권한)
-  - id, store_id FK, user_id FK, role_id FK
-  - indices: composite(store_id, user_id), (role_id)
-- store_tables
-  - id, store_id FK, code, name, capacity, area, status(enum: active/inactive)
-  - indices: (store_id, code unique)
-- store_table_seats
-  - id, table_id FK, seat_no, label
-  - indices: (table_id, seat_no)
-- qr_tokens
-  - id, store_id FK, table_id FK nullable, seat_id FK nullable, token(hash), expires_at, active(bool)
-  - indices: (token unique), (store_id, table_id, seat_id)
-- menu_categories
-  - id, store_id FK, parent_id FK nullable, position, status, is_virtual(bool)
-  - indices: (store_id), (parent_id), (is_virtual)
-- menus
-  - id, store_id FK, category_id FK nullable, code, status, is_set_menu(bool), image_url, attributes(json)
-  - indices: (store_id, code), (category_id)
-- menu_translations
-  - id, menu_id FK, locale, name, description, keywords
-  - indices: (menu_id, locale unique)
-- menu_prices
-  - id, menu_id FK, currency, strategy(enum: fx_api, fx_manual, custom), base_price(decimal[12,2]), fx_rate(decimal[12,6]) nullable, custom_price(decimal[12,2]) nullable, effective_at, expires_at
-  - indices: (menu_id, currency, effective_at), (strategy)
-- option_groups
-  - id, store_id FK, name_key, min_select, max_select, allow_quantity(bool), multi_select(bool), required(bool)
-  - indices: (store_id)
-- option_items
-  - id, option_group_id FK, code, position, status
-  - indices: (option_group_id), (code)
-- option_translations
-  - id, option_item_id FK, locale, name
-  - indices: (option_item_id, locale)
-- option_item_prices
-  - id, option_item_id FK, currency, delta_price(decimal[12,2])
-  - indices: (option_item_id, currency)
-- set_menu_items
-  - id, menu_id FK(set), child_menu_id FK, option_group_id FK nullable, quantity_default, required(bool)
-  - indices: (menu_id), (child_menu_id)
-- orders
-  - id, store_id FK, order_session_id FK nullable, order_type(enum: table, pickup, reservation, delivery), status(enum: pending, accepted, preparing, served, completed, canceled, refunded), customer_uid(Firebase UID nullable), customer_name, customer_phone, currency, subtotal, tax, discount, service_charge, total, notes
-  - indices: (store_id, status), (customer_uid), (order_session_id)
-- order_sessions
-  - id, store_id FK, table_id FK, seat_id FK nullable, opened_by_user_id FK nullable, opened_at, closed_at, status(enum: open, settling, closed)
-  - indices: (store_id, table_id, status)
-- order_items
-  - id, order_id FK, menu_id FK, name_snapshot, quantity, unit_price, line_total, attributes(json)
-  - indices: (order_id)
-- order_item_options
-  - id, order_item_id FK, option_item_id FK nullable, name_snapshot, quantity, delta_price, line_total
-  - indices: (order_item_id)
-- payments
-  - id, order_id FK, method(enum: card, cash, transfer, wallet), provider, provider_txn_id, amount, currency, status(enum: pending, paid, failed, refunded), paid_at, metadata(json)
-  - indices: (order_id), (provider, provider_txn_id)
-- currencies
-  - code(PK), symbol, name
-- exchange_rates
-  - id, base_currency, quote_currency, rate(decimal[18,8]), source(enum: api, manual), effective_at
-  - indices: (base_currency, quote_currency, effective_at desc)
-- locale_texts (optional 캐시 테이블)
-  - id, store_id FK nullable, entity_type, entity_id, locale, key, text
-  - indices: (store_id, entity_type, entity_id, locale)
-- notifications
-  - id, store_id FK, type(enum: order_update, service_call, review, settlement), channel(enum: web, whatsapp, pos), to_user_id FK nullable, to_phone nullable, payload(json), status(enum: pending, sent, failed), sent_at
-  - indices: (store_id, type, channel, status)
-- service_calls
-  - id, store_id FK, table_id FK, seat_id FK nullable, call_type(enum: waiter, tissue, water, custom), message, status(enum: open, ack, done), created_by_customer_uid nullable
-  - indices: (store_id, table_id, status)
-- reviews
-  - id, store_id FK, order_id FK nullable, customer_uid nullable, target_type(enum: menu, store), target_id, rating(int 1-5), comment, photos(json), videos(json), status(enum: pending, published, hidden)
-  - indices: (store_id, target_type, target_id), (rating)
-- points_accounts
-  - id, owner_type(enum: group, store, customer), owner_id, balance, currency
-  - indices: (owner_type, owner_id)
-- point_transactions
-  - id, account_id FK, type(enum: earn, redeem, expire, adjust), amount, reference_type, reference_id, metadata(json)
-  - indices: (account_id), (type)
-- imports (Excel 업로드 이력)
-  - id, store_id FK, type(enum: menu, price, option, table, user), status(enum: pending, processing, completed, failed), file_path, report(json)
+- 데이터 모델 인덱스: `docs/models/README.md`
+- 핵심 테이블 상세: `docs/models/core-tables.md`
+
+요약만 본 문서에 유지합니다. RDBMS는 PostgreSQL 15+이며 표준 칼럼은 `id(BIGINT PK)`, `created_at`, `updated_at`, `deleted_at(SoftDelete)`, 필요 시 `uuid`입니다. 인덱스 설계는 각 테이블 문서의 근거를 따릅니다.
+
+상세 테이블 정의와 인덱스/제약/파티셔닝 근거는 `docs/models/core-tables.md`를 참조하세요. 본 섹션의 상세 나열은 링크 문서로 이관되었습니다.
 
 참고: 모든 FK는 ON DELETE RESTRICT/SET NULL을 케이스별로 선택. 빈번 조회 컬럼에 인덱스 최적화. 주문/결제/알림 테이블은 파티셔닝 고려(대규모 트래픽 대비).
 

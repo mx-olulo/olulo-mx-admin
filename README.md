@@ -20,13 +20,14 @@ Laravel 12 + Filament 4 기반 관리자와 React 19.1 고객 웹앱으로 오�
 - CLAUDE 로컬 가이드: [CLAUDE.local.md](CLAUDE.local.md)
 - CLAUDE 서브 에이전트 규격서: [docs/claude/subagents.md](docs/claude/subagents.md)
 - CLAUDE 프로젝트 설정: [.claude/README.md](.claude/README.md)
+ - 데이터 모델 인덱스: `docs/models/README.md`
 
 ## CI
 - 워크플로: `.github/workflows/review-checks.yml`
   - 역할: `docs/**` 변경 시 해당 문서의 체크 파일을 자동으로 생성/갱신합니다.
 
 ## 기술 스택
-- Backend: Laravel 12, PHP 8.2+, Filament 4.x, MySQL, Redis, Horizon
+- Backend: Laravel 12, PHP 8.4+, Filament 4.x, PostgreSQL, Redis, Horizon
 - Admin: Filament (매장), Laravel Nova v5 (마스터)
 - Frontend: React 19.1 + Vite, Tailwind + daisyUI, react-i18next
 - Auth: Firebase Authentication (FirebaseUI)
