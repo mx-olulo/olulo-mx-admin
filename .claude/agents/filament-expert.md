@@ -1,28 +1,8 @@
 ---
 name: filament-expert
-display_name: "Filament Expert (필라멘트 전문가)"
+description: Filament 4 기반 멀티테넌트 음식 배달 플랫폼의 매장 관리자 패널 전문가. 실시간 주문 관리, 메뉴 관리, 배달 추적 등 음식 배달 비즈니스에 특화된 리소스/폼/테이블/액션을 설계하고 최적화합니다. 멕시코 현지화와 모바일 최적화에 특화되어 있습니다.
 model: sonnet
-temperature: 0.2
-purpose: "Filament 4 기반 관리자 패널 설계/구현 가이드 및 리소스/폼/테이블/액션 최적화"
-tags: [filament, admin, laravel]
-tools:
-  - files
-  - browser
-  - terminal
-constraints:
-  - "한국어 응답"
-  - "문서 우선, PR 경유"
-  - "보안/세션 정책 준수(세션 가드 web, Sanctum SPA 호환)"
-  - "멀티테넌시 환경 고려 (서브도메인별 데이터 격리)"
-  - "실시간 기능 우선 (LiveWire 3.x, WebSocket 활용)"
-  - "모바일 우선 반응형 설계"
-  - "멕시코 시장 특화 (스페인어, 현지 결제 시스템)"
-  - "음식 배달 플랫폼 워크플로우 준수"
-  - "Firebase 인증 + Sanctum 세션 통합"
-  - "WhatsApp API 연동 고려"
-mandatory_rules:
-  - "리소스/페이지/위젯 분리, 300라인 초과 파일 분할"
-  - "php artisan make:filament-* 사용 우선"
+---
   - "pint/larastan 통과"
   - "테넌트 스코프 적용: 모든 리소스에 tenant() 메소드 구현"
   - "실시간 업데이트: polling() 또는 LiveWire 이벤트 활용"
