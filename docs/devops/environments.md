@@ -20,6 +20,15 @@ SANCTUM_STATEFUL_DOMAINS=admin.dev.olulo.com.mx,menu.dev.olulo.com.mx
 
 SESSION_DRIVER=redis
 
+# PostgreSQL
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=olulo_dev
+DB_USERNAME=olulo
+DB_PASSWORD=secret
+DB_SSLMODE=prefer
+
 # Firebase (예시; 실제 값으로 교체)
 FIREBASE_PROJECT_ID=...
 FIREBASE_CLIENT_EMAIL=...
@@ -42,6 +51,15 @@ APP_URL=https://admin.demo.olulo.com.mx
 SESSION_DOMAIN=.demo.olulo.com.mx
 SANCTUM_STATEFUL_DOMAINS=admin.demo.olulo.com.mx,menu.demo.olulo.com.mx
 SESSION_DRIVER=redis
+
+# PostgreSQL
+DB_CONNECTION=pgsql
+DB_HOST=<staging-rds-host>
+DB_PORT=5432
+DB_DATABASE=olulo_demo
+DB_USERNAME=olulo
+DB_PASSWORD=<staging-secret>
+DB_SSLMODE=require
 ```
 
 CORS 예시(요지)
@@ -58,6 +76,15 @@ APP_URL=https://admin.olulo.com.mx
 SESSION_DOMAIN=.olulo.com.mx
 SANCTUM_STATEFUL_DOMAINS=admin.olulo.com.mx,menu.olulo.com.mx
 SESSION_DRIVER=redis
+
+# PostgreSQL
+DB_CONNECTION=pgsql
+DB_HOST=<prod-rds-host>
+DB_PORT=5432
+DB_DATABASE=olulo
+DB_USERNAME=olulo
+DB_PASSWORD=<prod-secret>
+DB_SSLMODE=require
 ```
 
 CORS 예시(요지)
@@ -74,6 +101,7 @@ CORS 예시(요지)
 - 쿠키 도메인: 환경별 상위 도메인 값 정확히 설정
 - CORS: 각 환경의 두 서브도메인 모두 허용 + credentials: true
 - React 빌드 origin이 CORS 허용 목록과 일치하는지 확인
+ - PostgreSQL 커넥션: 포트(5432), SSL 모드(`prefer`/`require`) 및 시크릿 값 검증
 
 ## 관련 문서
 - 화이트페이퍼: `../whitepaper.md`
