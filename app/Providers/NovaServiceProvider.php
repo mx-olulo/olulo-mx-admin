@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Fortify\Features;
 use Laravel\Nova\Nova;
@@ -17,7 +18,10 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     {
         parent::boot();
 
-        //
+        // Nova 로그인 경로를 /auth/login으로 리다이렉트
+        Nova::auth(function (Request $request) {
+            return redirect('/auth/login');
+        });
     }
 
     /**
@@ -40,7 +44,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     protected function routes(): void
     {
         Nova::routes()
-            ->withAuthenticationRoutes(default: true)
+            ->withAuthenticationRoutes(default: false) // 기본 인증 라우트 비활성화
             ->withPasswordResetRoutes()
             ->withoutEmailVerificationRoutes()
             ->register();
@@ -54,9 +58,9 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewNova', function (User $user) {
-            return in_array($user->email, [
-                //
-            ]);
+            // 현재 단계에서는 인증된 모든 사용자가 Nova에 접근 가능
+            // 추후 role-based 권한 체계로 확장 예정
+            return $user !== null;
         });
     }
 
