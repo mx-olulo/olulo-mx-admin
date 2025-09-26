@@ -28,6 +28,19 @@ stages:
       - review_report
       - decision   # approve | request_changes
       - actions    # follow-up tasks
+  - id: github_ops
+    agent: github-expert
+    inputs:
+      from_stage: review
+      map:
+        decision: decision
+        actions: actions
+        review_report: review_report
+    outputs:
+      - branch
+      - commits
+      - pr_link
+      - issue_links
 policy:
   merge_strategy: pr
   branch_naming: chore/{short}
