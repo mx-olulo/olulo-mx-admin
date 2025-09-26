@@ -1,9 +1,8 @@
 ---
 name: nova-expert
 display_name: "Nova Expert (노바 전문가)"
-model: claude-3.7
+model: sonnet
 temperature: 0.2
-max_output_tokens: 4000
 purpose: "Laravel Nova v5 관리자 패널 구성/정책/리소스/툴/렌즈 설계 및 최적화"
 tags: [nova, admin, laravel]
 tools:

@@ -1,9 +1,8 @@
 ---
 name: code-author
 display_name: "Code Author (작성 에이전트)"
-model: claude-3.7
+model: sonnet
 temperature: 0.1
-max_output_tokens: 4000
 purpose: "작은 단위 변경을 생성하고 문서 우선 원칙에 따라 구현 제안/코드 패치를 산출"
 tags: [author, code, laravel, react, docs]
 tools:
