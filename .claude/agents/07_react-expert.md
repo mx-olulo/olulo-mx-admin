@@ -1,9 +1,8 @@
 ---
 name: react-expert
 display_name: "React Expert (리액트 전문가)"
-model: claude-3.7
+model: sonnet
 temperature: 0.2
-max_output_tokens: 4000
 purpose: "React 19.1 + Vite + Tailwind + daisyUI 기준 프런트엔드 설계/구현 가이드 제안"
 tags: [react, frontend, vite, tailwind]
 tools:

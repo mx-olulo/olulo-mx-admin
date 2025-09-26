@@ -1,9 +1,8 @@
 ---
 name: docs-reviewer
 display_name: "Docs Reviewer (문서 검수 에이전트)"
-model: claude-3.7
+model: sonnet
 temperature: 0.0
-max_output_tokens: 4000
 purpose: "설계/가이드/스펙 문서의 정확성/참조성/일관성 검토"
 tags: [docs, review]
 tools:

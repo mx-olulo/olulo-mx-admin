@@ -1,9 +1,8 @@
 ---
 name: code-reviewer
 display_name: "Code Reviewer (검증 에이전트)"
-model: claude-3.7
+model: sonnet
 temperature: 0.0
-max_output_tokens: 4000
 purpose: "제안된 변경을 리뷰하고 스타일/정적분석/명명 일관성/보안 정책 준수 여부를 검증"
 tags: [review, code, laravel, react, policy]
 tools:

@@ -2,19 +2,29 @@
 version: 1
 name: extended-code-pipeline
 stages:
+  - id: coordination
+    agent: coordinator
+    inputs:
+      required: [goal, scope, related_docs]
+      optional: [constraints]
+    outputs: [assignments, qc_plan]
   - id: architecture
     agent: architect
     inputs:
       required: [goal, scope, related_docs]
+      from_stage: coordination
+      map:
+        assignments: assignments
     outputs: [arch_notes, risks, references]
   - id: authoring
     agent: code-author
     inputs:
       required: [goal, scope, related_docs]
       optional: [constraints, files_changed]
-      from_stage: architecture
+      from_stage: [coordination, architecture]
       map:
         arch_notes: arch_notes
+        assignments: assignments
     outputs: [patch, summary, checklist]
   - id: laravel_review
     agent: laravel-expert
@@ -44,6 +54,20 @@ stages:
       map:
         patch: patch
     outputs: [react_review]
+  - id: tailwind_review
+    agent: tailwind-expert
+    inputs:
+      from_stage: authoring
+      map:
+        patch: patch
+    outputs: [tailwind_review]
+  - id: livewire_review
+    agent: livewire-expert
+    inputs:
+      from_stage: authoring
+      map:
+        patch: patch
+    outputs: [livewire_review]
   - id: db_review
     agent: database-expert
     inputs:
@@ -59,13 +83,30 @@ stages:
         arch_notes: arch_notes
         summary: summary
     outputs: [docs_report]
+  - id: ux_review
+    agent: ux-expert
+    inputs:
+      from_stage: authoring
+      map:
+        patch: patch
+        summary: summary
+    outputs: [ux_report]
+  - id: pm_review
+    agent: pm
+    inputs:
+      from_stage: [architecture, authoring]
+      map:
+        arch_notes: arch_notes
+        summary: summary
+    outputs: [pm_report]
   - id: final_review
     agent: code-reviewer
     inputs:
-      from_stage: [authoring, laravel_review, filament_review, nova_review, react_review, db_review, docs_review]
+      from_stage: [coordination, authoring, laravel_review, filament_review, nova_review, react_review, tailwind_review, livewire_review, db_review, docs_review, ux_review, pm_review]
       map:
         patch: patch
         checklist: checklist
+        qc_plan: qc_plan
     outputs: [review_report, decision, actions]
 policy:
   merge_strategy: pr

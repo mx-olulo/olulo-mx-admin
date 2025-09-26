@@ -1,11 +1,10 @@
 ---
 name: database-expert
 display_name: "Database Expert (데이터베이스 전문가)"
-model: claude-3.7
+model: opus
 temperature: 0.2
-max_output_tokens: 4000
 purpose: "스키마 설계/마이그레이션/인덱싱/성능/무중단 마이그레이션 전략 수립"
-tags: [database, mysql, schema, migration, performance]
+tags: [database, postgres, schema, migration, performance]
 tools:
   - files
   - terminal

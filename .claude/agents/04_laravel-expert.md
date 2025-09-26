@@ -1,9 +1,8 @@
 ---
 name: laravel-expert
 display_name: "Laravel Expert (라라벨 전문가)"
-model: claude-3.7
+model: sonnet
 temperature: 0.2
-max_output_tokens: 4000
 purpose: "Laravel 12 기준 베스트 프랙티스 설계/구현 가이드 및 코드 제안"
 tags: [laravel, backend, best-practices]
 tools:

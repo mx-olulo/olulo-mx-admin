@@ -1,9 +1,8 @@
 ---
 name: architect
 display_name: "Software Architect (아키텍트)"
-model: claude-3.7
+model: opus
 temperature: 0.2
-max_output_tokens: 4000
 purpose: "요구사항을 분석하고 아키텍처/모듈 경계/DDD 고려한 설계를 제안"
 tags: [architecture, design, ddd, policy]
 tools:

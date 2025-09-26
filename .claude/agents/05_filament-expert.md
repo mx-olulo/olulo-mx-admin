@@ -1,9 +1,8 @@
 ---
 name: filament-expert
 display_name: "Filament Expert (필라멘트 전문가)"
-model: claude-3.7
+model: sonnet
 temperature: 0.2
-max_output_tokens: 4000
 purpose: "Filament 4 기반 관리자 패널 설계/구현 가이드 및 리소스/폼/테이블/액션 최적화"
 tags: [filament, admin, laravel]
 tools:
