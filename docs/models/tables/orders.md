@@ -7,7 +7,7 @@
 - `store_id` bigint FK
 - `order_session_id` bigint FK nullable
 - `order_type` enum(table, pickup, reservation, delivery)
-- `status` enum(pending, accepted, preparing, served, completed, canceled, refunded)
+- `status` enum(pending, accepted, preparing, ready_for_pickup, out_for_delivery, served, completed, canceled, refunded, confirmed, arrived)
 - `customer_uid` string nullable(Firebase UID)
 - `customer_name` string
 - `customer_phone` string
