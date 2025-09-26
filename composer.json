@@ -38,10 +38,6 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
-            "Olulo\\": "src/",
-            "Olulo\\Domain\\": "src/Domain/",
-            "Olulo\\Application\\": "src/Application/",
-            "Olulo\\Infrastructure\\": "src/Infrastructure/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }
@@ -65,7 +61,6 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
         "dev": [
