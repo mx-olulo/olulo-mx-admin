@@ -108,6 +108,15 @@ stages:
         checklist: checklist
         qc_plan: qc_plan
     outputs: [review_report, decision, actions]
+  - id: github_ops
+    agent: github-expert
+    inputs:
+      from_stage: final_review
+      map:
+        decision: decision
+        actions: actions
+        review_report: review_report
+    outputs: [branch, commits, pr_link, issue_links]
 policy:
   merge_strategy: pr
   branch_naming: feature/{short}
