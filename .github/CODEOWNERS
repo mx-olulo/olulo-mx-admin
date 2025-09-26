@@ -1,5 +1,8 @@
 # Default owner for the repo
 * @bluelucifer
+.claude/** @bluelucifer
+docs/** @bluelucifer
+.github/** @bluelucifer
 
 # Docs
 /docs/ @bluelucifer
