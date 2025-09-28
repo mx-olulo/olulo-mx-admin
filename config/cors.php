@@ -29,24 +29,36 @@ return [
     | 로컬: localhost 도메인
     | 스테이징: demo.olulo.com.mx 서브도메인
     | 프로덕션: olulo.com.mx 서브도메인
+    | Firebase 호스팅: firebaseapp.com, web.app 도메인
     */
     'allowed_origins' => env('APP_ENV') === 'local'
         ? [
+            'http://localhost',
             'http://localhost:3000',
             'http://localhost:8000',
             'http://admin.localhost',
             'http://menu.localhost',
+            'https://mx-olulo.firebaseapp.com',
+            'https://mx-olulo.web.app',
         ]
         : (env('APP_ENV') === 'staging'
             ? [
                 'https://admin.demo.olulo.com.mx',
                 'https://menu.demo.olulo.com.mx',
                 'https://api.demo.olulo.com.mx',
+                'https://mx-olulo.firebaseapp.com',
+                'https://mx-olulo.web.app',
+                'https://admin.dev.olulo.com.mx',
+                'https://menu.dev.olulo.com.mx',
             ]
             : [
                 'https://admin.olulo.com.mx',
                 'https://menu.olulo.com.mx',
                 'https://api.olulo.com.mx',
+                'https://mx-olulo.firebaseapp.com',
+                'https://mx-olulo.web.app',
+                'https://admin.dev.olulo.com.mx',
+                'https://menu.dev.olulo.com.mx',
             ]),
 
     /*

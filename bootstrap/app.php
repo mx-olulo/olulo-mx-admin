@@ -21,6 +21,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // CORS 미들웨어 글로벌 적용
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+
+        // 로컬 개발 환경에서 Firebase 콜백은 CSRF 예외 처리 (fetch JSON 호출 때문)
+        if (env('APP_ENV') === 'local') {
+            $middleware->validateCsrfTokens(except: [
+                'auth/firebase/callback',
+            ]);
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

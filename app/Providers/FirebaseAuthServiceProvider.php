@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Services\Auth\Contracts\FirebaseAuthInterface;
 use App\Services\Auth\FirebaseAuthService;
+use App\Services\FirebaseService;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -20,6 +21,11 @@ class FirebaseAuthServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Firebase 통합 서비스를 싱글톤으로 등록
+        $this->app->singleton(FirebaseService::class, function () {
+            return new FirebaseService;
+        });
+
         // Firebase 인증 서비스를 싱글톤으로 등록
         $this->app->singleton(FirebaseAuthInterface::class, function () {
             return new FirebaseAuthService;

@@ -161,15 +161,15 @@ return [
     |
     */
 
-    // 'brand' => [
-    //     'logo' => resource_path('/img/example-logo.svg'),
+    'brand' => [
+        // 'logo' => resource_path('/img/olulo-logo.svg'),
 
-    //     'colors' => [
-    //         "400" => "24, 182, 155, 0.5",
-    //         "500" => "24, 182, 155",
-    //         "600" => "24, 182, 155, 0.75",
-    //     ]
-    // ],
+        'colors' => [
+            '400' => '3, 214, 123', // Primary Brand Color #03D67B
+            '500' => '0, 185, 111', // Primary Variant #00B96F
+            '600' => '0, 155, 94',  // Darker shade for hover states
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -185,6 +185,19 @@ return [
     'actions' => [
         'resource' => \Laravel\Nova\Actions\ActionResource::class,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Nova Login URL
+    |--------------------------------------------------------------------------
+    |
+    | This configuration option allows you to specify the URL that Nova should
+    | redirect users to when they are not authenticated. This allows for
+    | integration with external authentication systems like Firebase.
+    |
+    */
+
+    'login_path' => '/auth/login',
 
     /*
     |--------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Auth\FirebaseAuthController;
+use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,17 +15,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// 인증 관련 라우트 그룹
-Route::prefix('auth')->name('auth.')->group(function () {
-    // Firebase 인증
-    Route::prefix('firebase')->name('firebase.')->group(function () {
-        Route::post('/login', [FirebaseAuthController::class, 'login'])->name('login');
-        Route::post('/verify', [FirebaseAuthController::class, 'verify'])->name('verify');
+// Sanctum SPA 인증을 위한 CSRF 쿠키 엔드포인트
+// 이 라우트는 Laravel Sanctum에서 자동으로 제공되지만 명시적으로 문서화
+// Route::get('/sanctum/csrf-cookie', ...); // Sanctum에서 자동 제공
+
+// 인증 관련 API 라우트 그룹
+Route::prefix('auth')->name('api.auth.')->group(function () {
+    // Firebase 로그인 (게스트용)
+    Route::post('/firebase-login', [AuthController::class, 'apiFirebaseLogin'])->name('firebase.login');
+
+    // 로그아웃 (인증된 사용자용)
+    Route::middleware('auth:web')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });
 
-    // 인증 필요 라우트
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/user', [FirebaseAuthController::class, 'user'])->name('user');
-        Route::post('/logout', [FirebaseAuthController::class, 'logout'])->name('logout');
-    });
+    // 언어 변경 (인증 여부 무관)
+    Route::post('/locale/{locale}', [AuthController::class, 'changeLocale'])->name('locale.change');
 });

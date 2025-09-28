@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:olulo-was-php-main-gmawyz.laravel.cloud)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
