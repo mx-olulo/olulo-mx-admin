@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Services\Auth\Contracts\FirebaseAuthInterface;
-use App\Services\Auth\FirebaseAuthService;
 use App\Services\FirebaseService;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,11 +23,6 @@ class FirebaseAuthServiceProvider extends ServiceProvider
         $this->app->singleton(FirebaseService::class, function () {
             return new FirebaseService;
         });
-
-        // Firebase 인증 서비스를 싱글톤으로 등록
-        $this->app->singleton(FirebaseAuthInterface::class, function () {
-            return new FirebaseAuthService;
-        });
     }
 
     /**
@@ -37,10 +30,6 @@ class FirebaseAuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Firebase 설정 기본값 설정
-        $this->mergeConfigFrom(
-            __DIR__ . '/../../config/firebase.php',
-            'services.firebase'
-        );
+        // 현재 특별한 부트스트랩 작업이 필요하지 않음
     }
 }
