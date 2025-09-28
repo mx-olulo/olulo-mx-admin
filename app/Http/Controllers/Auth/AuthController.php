@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -54,11 +55,14 @@ class AuthController extends Controller
             Session::put('auth.intended_url', $request->input('intended'));
         }
 
-        // 현재 locale 설정 (세션 사용 없이, 요청 우선) - config('app.available_locales') 사용
+        // 현재 locale 설정
         $availableLocales = config('app.available_locales', ['ko', 'en', 'es-MX']);
         $locale = $request->query('locale')
             ?: $request->getPreferredLanguage($availableLocales)
             ?: config('app.locale', 'ko');
+
+        // 애플리케이션 로케일 설정
+        App::setLocale($locale);
 
         // 다크/라이트 모드 설정 (기본값: light)
         $theme = Session::get('theme', 'light');
@@ -294,6 +298,9 @@ class AuthController extends Controller
 
         // 세션에 locale 저장
         Session::put('locale', $locale);
+
+        // 애플리케이션 로케일 설정
+        App::setLocale($locale);
 
         Log::info('언어 변경', [
             'locale' => $locale,
