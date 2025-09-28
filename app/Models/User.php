@@ -34,6 +34,9 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at',
         'locale',
         'last_login_at',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
     ];
 
     /**
@@ -45,6 +48,8 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'remember_token',
         'firebase_claims',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -57,8 +62,10 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
             'firebase_claims' => 'array',
+            'two_factor_recovery_codes' => 'array',
         ];
     }
 
