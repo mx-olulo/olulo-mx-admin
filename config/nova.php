@@ -197,7 +197,7 @@ return [
     |
     */
 
-    'login_path' => '/auth/login',
+    'login_path' => env('NOVA_LOGIN_PATH', '/auth/login'),
 
     /*
     |--------------------------------------------------------------------------
