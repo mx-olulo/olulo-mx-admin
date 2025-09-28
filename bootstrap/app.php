@@ -19,11 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
             Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
-        // 웹 미들웨어 그룹에 SetLocale 추가
-        $middleware->web(append: [
-            \App\Http\Middleware\SetLocale::class,
-        ]);
-
         // CORS 미들웨어 글로벌 적용
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
 

@@ -296,9 +296,6 @@ class AuthController extends Controller
             $locale = config('app.locale', 'ko');
         }
 
-        // 세션에 locale 저장
-        Session::put('locale', $locale);
-
         // 애플리케이션 로케일 설정
         App::setLocale($locale);
 
