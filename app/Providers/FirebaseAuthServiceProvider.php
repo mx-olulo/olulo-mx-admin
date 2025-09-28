@@ -24,12 +24,4 @@ class FirebaseAuthServiceProvider extends ServiceProvider
             return new FirebaseService;
         });
     }
-
-    /**
-     * Bootstrap services.
-     */
-    public function boot(): void
-    {
-        // 현재 특별한 부트스트랩 작업이 필요하지 않음
-    }
 }

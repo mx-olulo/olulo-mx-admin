@@ -17,11 +17,6 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     public function boot(): void
     {
         parent::boot();
-
-        // Nova 로그인 경로를 /auth/login으로 리다이렉트
-        Nova::auth(function (Request $request) {
-            return redirect('/auth/login');
-        });
     }
 
     /**
