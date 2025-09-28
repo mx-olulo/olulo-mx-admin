@@ -20,8 +20,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// 로그인 라우트 별칭 (Laravel 기본 인증 호환성)
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+// 로그인 라우트 별칭 (Laravel 기본 인증 호환성) - /auth/login으로 리다이렉트
+Route::get('/login', function () {
+    return redirect()->route('auth.login');
+})->name('login');
 
 // 홈 및 대시보드 라우트 (인증 후 리다이렉트용)
 Route::middleware('auth:web')->group(function () {

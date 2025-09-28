@@ -184,7 +184,8 @@ class AuthController extends Controller
 ```php
 // routes/web.php
 Route::prefix('auth')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('auth.login');
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login'); // 기존 Laravel 호환
+// 실제 로그인은 /auth/login 경로 사용:
     Route::post('/callback', [AuthController::class, 'firebaseCallback'])->name('auth.callback');
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 });
