@@ -285,11 +285,6 @@ class FirebaseService
                 'avatar_url' => $firebaseUserData['picture'] ?? $user->avatar_url,
             ]);
 
-            Log::info('기존 Laravel 사용자 업데이트 완료', [
-                'user_id' => $user->id,
-                'firebase_uid' => $uid,
-                'email' => $email,
-            ]);
         } else {
             // 새 사용자 생성
             $user = User::create([

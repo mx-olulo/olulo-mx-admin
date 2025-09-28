@@ -117,11 +117,6 @@ class AuthController extends Controller
             // Laravel 세션 생성: Filament 패널 가드(web)와 일치시키기 위해 명시적으로 web 가드 사용
             Auth::guard('web')->login($user, true);
 
-            Log::info('Firebase 로그인 성공', [
-                'user_id' => $user->id,
-                'ip' => $request->ip(),
-            ]);
-
             // intended URL 또는 기본 경로로 리다이렉트
             $intendedUrl = Session::pull('auth.intended_url', '/admin');
 
@@ -194,11 +189,6 @@ class AuthController extends Controller
             // Laravel 세션 생성 (Sanctum SPA)
             Auth::login($user, true);
 
-            Log::info('Firebase API 로그인 성공', [
-                'user_id' => $user->id,
-                'ip' => $request->ip(),
-            ]);
-
             return response()->json([
                 'success' => true,
                 'message' => __('auth.login_success'),
@@ -247,15 +237,6 @@ class AuthController extends Controller
      */
     public function logout(Request $request): RedirectResponse|JsonResponse
     {
-        $user = Auth::user();
-
-        if ($user) {
-            Log::info('사용자 로그아웃', [
-                'user_id' => $user->id,
-                'ip' => $request->ip(),
-            ]);
-        }
-
         // Laravel 세션 종료
         Auth::logout();
 
@@ -289,7 +270,7 @@ class AuthController extends Controller
     public function changeLocale(Request $request, string $locale): RedirectResponse|JsonResponse
     {
         // 지원하는 언어 목록
-        $supportedLocales = ['ko', 'en', 'es-MX'];
+        $supportedLocales = config('app.available_locales', ['ko', 'en', 'es-MX']);
 
         // 유효한 언어인지 확인
         if (! in_array($locale, $supportedLocales, true)) {
@@ -298,12 +279,6 @@ class AuthController extends Controller
 
         // 애플리케이션 로케일 설정
         App::setLocale($locale);
-
-        Log::info('언어 변경', [
-            'locale' => $locale,
-            'user_id' => Auth::id(),
-            'ip' => $request->ip(),
-        ]);
 
         // API 요청인 경우 JSON 응답
         if ($request->expectsJson()) {
