@@ -1,4 +1,4 @@
-# 인증 설계 — Firebase + Sanctum(SPA, 동일 루트 도메인)
+# 인증 설계 — Firebase + Sanctum(SPA, 동일 루트 도메인) ✅ READ
 
 본 문서는 동일 루트 도메인(예: `api.example.com`, `store1.example.com`, `admin.example.com`)을 공유하는 서브도메인 구조에서 Firebase 인증과 Laravel Sanctum을 병행하여 세션을 관리하는 방법을 정의합니다.
 

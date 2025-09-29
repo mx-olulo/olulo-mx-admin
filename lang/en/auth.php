@@ -33,4 +33,12 @@ return [
     'session_expired' => 'Your session has expired. Please sign in again.',
     'try_again' => 'Please try again.',
 
+    // Login page specific
+    'app_name' => 'Olulo MX',
+    'login_methods_info' => 'You can sign in with email, Google, or phone number',
+    'powered_by' => 'Powered by',
+    'privacy_policy' => 'Privacy Policy',
+    'terms_of_service' => 'Terms of Service',
+    'login_error' => 'An error occurred during login',
+
 ];

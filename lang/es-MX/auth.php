@@ -33,4 +33,12 @@ return [
     'session_expired' => 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
     'try_again' => 'Por favor intenta de nuevo.',
 
+    // Login page specific
+    'app_name' => 'Olulo MX',
+    'login_methods_info' => 'Puedes iniciar sesión con email, Google o número de teléfono',
+    'powered_by' => 'Powered by',
+    'privacy_policy' => 'Política de Privacidad',
+    'terms_of_service' => 'Términos de Servicio',
+    'login_error' => 'Ocurrió un error durante el inicio de sesión',
+
 ];

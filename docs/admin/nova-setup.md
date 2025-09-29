@@ -1,4 +1,4 @@
-# Laravel Nova 설정 — 프로젝트 1
+# Laravel Nova 설정 — 프로젝트 1 ✅ READ
 
 ## 목적
 - 마스터 관리자 패널(Nova) 기본 설치 및 접근 검증

@@ -33,4 +33,12 @@ return [
     'session_expired' => '세션이 만료되었습니다. 다시 로그인해주세요.',
     'try_again' => '다시 시도해주세요.',
 
+    // Login page specific
+    'app_name' => 'Olulo MX',
+    'login_methods_info' => '이메일, Google 또는 전화번호로 로그인할 수 있습니다',
+    'powered_by' => 'Powered by',
+    'privacy_policy' => '개인정보처리방침',
+    'terms_of_service' => '이용약관',
+    'login_error' => '로그인 중 오류가 발생했습니다',
+
 ];

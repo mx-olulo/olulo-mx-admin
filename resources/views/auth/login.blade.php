@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', __('auth.login'))
+@section('title', __('auth.login_title'))
 
 @section('content')
 <div class="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -9,29 +9,8 @@
         <div class="absolute inset-0" style="background-image: radial-gradient(circle at 25% 25%, #FF6B35 0%, transparent 50%), radial-gradient(circle at 75% 75%, #FF4757 0%, transparent 50%);"></div>
     </div>
 
-    <!-- Language Selector (Server-side locale switch) -->
-    <div class="absolute top-4 right-4 z-10">
-        <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-ghost btn-sm language-selector rounded-full">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
-                </svg>
-                @php($languageNames = ['ko' => '한국어', 'en' => 'English', 'es-MX' => 'Español'])
-                <span id="current-language" class="ml-1">{{ $languageNames[$locale] ?? '한국어' }}</span>
-            </div>
-            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-40">
-                <li>
-                    <a class="text-sm" href="{{ url()->current() . '?' . http_build_query(array_merge(request()->query(), ['locale' => 'ko'])) }}">🇰🇷 한국어</a>
-                </li>
-                <li>
-                    <a class="text-sm" href="{{ url()->current() . '?' . http_build_query(array_merge(request()->query(), ['locale' => 'en'])) }}">🇺🇸 English</a>
-                </li>
-                <li>
-                    <a class="text-sm" href="{{ url()->current() . '?' . http_build_query(array_merge(request()->query(), ['locale' => 'es-MX'])) }}">🇲🇽 Español</a>
-                </li>
-            </ul>
-        </div>
-    </div>
+    <!-- Language Selector -->
+    <x-language-selector />
 
     <!-- Theme Toggle -->
     <div class="absolute top-4 left-4 z-10">
@@ -59,8 +38,8 @@
                         </svg>
                     </div>
                 </div>
-                <h1 class="text-3xl font-bold brand-text mb-2" data-translate="app_name">Olulo MX</h1>
-                <p class="text-base-content/70 text-sm" data-translate="login_subtitle">관리자 로그인</p>
+                <h1 class="text-3xl font-bold brand-text mb-2">{{ __('auth.app_name') }}</h1>
+                <p class="text-base-content/70 text-sm">{{ __('auth.login_subtitle') }}</p>
             </div>
 
             <!-- Error Messages -->
@@ -77,7 +56,7 @@
             <div id="loading-container" class="hidden mb-6">
                 <div class="flex items-center justify-center space-x-2">
                     <span class="loading loading-spinner loading-md"></span>
-                    <span data-translate="loading">로딩 중...</span>
+                    <span>{{ __('auth.loading') }}</span>
                 </div>
             </div>
 
@@ -86,21 +65,21 @@
 
             <!-- Alternative Login Methods Info -->
             <div class="text-center mt-6">
-                <p class="text-xs text-base-content/60" data-translate="login_methods_info">
-                    이메일, Google 또는 전화번호로 로그인할 수 있습니다
+                <p class="text-xs text-base-content/60">
+                    {{ __('auth.login_methods_info') }}
                 </p>
             </div>
 
             <!-- Footer Links -->
             <div class="text-center mt-8 space-y-2">
                 <div class="text-xs text-base-content/50">
-                    <span data-translate="powered_by">Powered by</span>
-                    <span class="brand-text font-semibold">Olulo MX</span>
+                    <span>{{ __('auth.powered_by') }}</span>
+                    <span class="brand-text font-semibold">{{ __('auth.app_name') }}</span>
                 </div>
                 <div class="text-xs text-base-content/40">
-                    <a href="#" class="hover:text-primary" data-translate="privacy_policy">개인정보처리방침</a>
+                    <a href="#" class="hover:text-primary">{{ __('auth.privacy_policy') }}</a>
                     <span class="mx-2">|</span>
-                    <a href="#" class="hover:text-primary" data-translate="terms_of_service">이용약관</a>
+                    <a href="#" class="hover:text-primary">{{ __('auth.terms_of_service') }}</a>
                 </div>
             </div>
         </div>
@@ -112,77 +91,26 @@
 <!-- Firebase config + emulator flag for Vite bundle -->
 <script>
     window.firebaseConfig = {
-        apiKey: "{{ config('services.firebase.api_key') }}",
-        authDomain: "{{ config('services.firebase.auth_domain') }}",
-        projectId: "{{ config('services.firebase.project_id') }}",
-        storageBucket: "{{ config('services.firebase.storage_bucket') }}",
-        messagingSenderId: "{{ config('services.firebase.messaging_sender_id') }}",
-        appId: "{{ config('services.firebase.app_id') }}"
+        apiKey: "{{ config('firebase.web.api_key') }}",
+        authDomain: "{{ config('firebase.web.auth_domain') }}",
+        projectId: "{{ config('firebase.web.project_id') }}",
+        storageBucket: "{{ config('firebase.web.storage_bucket') }}",
+        messagingSenderId: "{{ config('firebase.web.messaging_sender_id') }}",
+        appId: "{{ config('firebase.web.app_id') }}"
     };
     window.useAuthEmulator = {{ config('app.env') === 'local' ? 'true' : 'false' }};
-    // Vite bundle will read these and expose window.firebase, window.firebaseui, window.firebaseAuth
+    window.currentLanguage = @json(app()->getLocale());
+    // Translated messages for JavaScript use
+    window.authMessages = {
+        loginError: @json(__('auth.login_error')),
+        loginSuccess: @json(__('auth.login_success'))
+    };
 </script>
 
 <!-- Page-specific Firebase/FirebaseUI bundle via Vite -->
 @vite('resources/js/auth-login.js')
 
 <script>
-// Translation object
-const translations = {
-    ko: {
-        app_name: 'Olulo MX',
-        login_subtitle: '관리자 로그인',
-        loading: '로딩 중...',
-        login_methods_info: '이메일, Google 또는 전화번호로 로그인할 수 있습니다',
-        powered_by: 'Powered by',
-        privacy_policy: '개인정보처리방침',
-        terms_of_service: '이용약관',
-        login_error: '로그인 중 오류가 발생했습니다',
-        login_success: '로그인 성공! 리디렉션 중...'
-    },
-    en: {
-        app_name: 'Olulo MX',
-        login_subtitle: 'Admin Login',
-        loading: 'Loading...',
-        login_methods_info: 'You can sign in with email, Google, or phone number',
-        powered_by: 'Powered by',
-        privacy_policy: 'Privacy Policy',
-        terms_of_service: 'Terms of Service',
-        login_error: 'An error occurred during login',
-        login_success: 'Login successful! Redirecting...'
-    },
-    'es-MX': {
-        app_name: 'Olulo MX',
-        login_subtitle: 'Inicio de Sesión Administrativo',
-        loading: 'Cargando...',
-        login_methods_info: 'Puedes iniciar sesión con email, Google o número de teléfono',
-        powered_by: 'Powered by',
-        privacy_policy: 'Política de Privacidad',
-        terms_of_service: 'Términos de Servicio',
-        login_error: 'Ocurrió un error durante el inicio de sesión',
-        login_success: '¡Inicio de sesión exitoso! Redirigiendo...'
-    }
-};
-
-// Current language (from server locale)
-let currentLanguage = @json($locale);
-
-// Translation helper with locale fallback mapping
-const FALLBACK_LANG = 'en';
-function resolveLangKey(lang) {
-    if (!lang) return FALLBACK_LANG;
-    // Map primary locales to supported keys
-    if (lang === 'es') return 'es-MX';
-    return lang;
-}
-function t(key) {
-    const langKey = resolveLangKey(currentLanguage);
-    const dict = translations[langKey] || translations[FALLBACK_LANG] || {};
-    return dict[key] || key;
-}
-
-// Client-side language switching is disabled; use server-side locale route instead.
-
 // Theme functions
 function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -238,7 +166,7 @@ function getFirebaseUIConfig() {
                 });
 
                 showLoading(true);
-                showMessage(t('login_success'), 'success');
+                showMessage(window.authMessages.loginSuccess, 'success');
 
                 // Get ID token and send to Laravel backend
                 authResult.user.getIdToken().then(function(idToken) {
@@ -280,12 +208,12 @@ function getFirebaseUIConfig() {
                     })
                     .catch(error => {
                         console.error('[FirebaseUI] Authentication error', error);
-                        showMessage(t('login_error'), 'error');
+                        showMessage(window.authMessages.loginError, 'error');
                         showLoading(false);
                     });
                 }).catch(err => {
                     console.error('[FirebaseUI] getIdToken() failed', err);
-                    showMessage(t('login_error'), 'error');
+                    showMessage(window.authMessages.loginError, 'error');
                     showLoading(false);
                 });
 
@@ -298,7 +226,7 @@ function getFirebaseUIConfig() {
 
             signInFailure: function(error) {
                 console.error('Sign-in error:', error);
-                showMessage(translations[currentLanguage].login_error, 'error');
+                showMessage(window.authMessages.loginError, 'error');
                 showLoading(false);
             }
         },
@@ -324,7 +252,7 @@ function initFirebaseUI() {
 
     // Set language via Firebase Auth (used by FirebaseUI) before creating UI
     const languageMap = { 'ko': 'ko', 'en': 'en', 'es-MX': 'es' };
-    window.firebaseAuth.languageCode = languageMap[currentLanguage] || 'en';
+    window.firebaseAuth.languageCode = languageMap[window.currentLanguage] || 'en';
 
     // Create new instance
     window.firebaseUI = new firebaseui.auth.AuthUI(window.firebaseAuth);
@@ -367,15 +295,14 @@ function showMessage(message, type = 'error') {
 document.addEventListener('DOMContentLoaded', function() {
     console.debug('[LoginPage] DOMContentLoaded', {
         url: window.location.href,
-        currentLanguage,
+        currentLanguage: window.currentLanguage,
         useAuthEmulator: window.useAuthEmulator,
     });
+
     // Set initial theme toggle state
     const themeToggle = document.getElementById('theme-toggle');
     const currentTheme = document.documentElement.getAttribute('data-theme');
     themeToggle.checked = currentTheme === 'light';
-
-    // Client-side language updates removed; server renders texts in the selected locale
 
     // Show loading
     showLoading(true);

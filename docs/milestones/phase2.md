@@ -218,68 +218,103 @@ Firebase ID 토큰의 유효성을 검증하는 미들웨어입니다.
 - 트랜잭션 롤백
 - 에뮬레이터 상태 초기화
 
+## 현재 구현 상태
+
+### ✅ 완료된 주요 작업들 (2025-09-28 기준)
+
+#### 코어 인프라 구축
+- Firebase Admin SDK 통합 및 서비스 분할 완료
+- Firebase 에뮬레이터 환경 설정 (포트 충돌 해결: 8088, 9009)
+- Sanctum SPA 세션 통합 및 CORS 설정
+- 환경별 설정 통합 (config/services.php와 config/firebase.php 통합)
+
+#### 인증 시스템 개선
+- `/auth/login` 경로 통일 (Nova와 Filament 간 일관성)
+- 불필요한 SetLocale 미들웨어 제거
+- 과도한 로깅 제거 및 디버깅 편의성 향상
+- Firebase 서비스 4개 서비스로 분할:
+  - FirebaseAuthService (인증)
+  - FirebaseMessagingService (메시징)
+  - FirebaseDatabaseService (데이터베이스)
+  - FirebaseClientFactory (클라이언트 팩토리)
+
+#### 데이터베이스 및 마이그레이션
+- users 테이블 마이그레이션 통합 완료
+- Firebase 관련 필드 추가 (firebase_uid, phone_number, avatar_url)
+
+#### UI/UX 개선
+- login.blade.php 서버사이드 렌더링 개선
+- 언어 선택기 컴포넌트 분리
+- 다국어 지원 (ko/en/es-MX) 파일 구조 완성
+
+#### 테스트 환경 구축
+- 단위 테스트 (FirebaseServiceTest)
+- 통합 테스트 (FirebaseServiceIntegrationTest)
+- Feature 테스트 (FirebaseAuthTest)
+- .env.testing 환경 설정
+
 ## 구현 체크리스트
 
-### Phase 2.1 - 기초 설정 (2시간)
-- [ ] Firebase 프로젝트 생성 및 설정
-- [ ] Firebase Admin SDK 서비스 계정 키 생성
-- [ ] composer require kreait/firebase-php 설치
-- [ ] 환경 변수 설정 (.env.example 업데이트)
-- [ ] Firebase 서비스 프로바이더 등록
+### Phase 2.1 - 기초 설정 (2시간) ✅ 완료
+- [x] Firebase 프로젝트 생성 및 설정
+- [x] Firebase Admin SDK 서비스 계정 키 생성
+- [x] composer require kreait/firebase-php 설치
+- [x] 환경 변수 설정 (.env.example 업데이트)
+- [x] Firebase 서비스 프로바이더 등록
 
-### Phase 2.2 - 서비스 계층 구현 (3시간)
-- [ ] FirebaseAuthInterface 인터페이스 정의
-- [ ] FirebaseAuthService 구현
-- [ ] FirebaseAuthException 예외 클래스
-- [ ] 서비스 컨테이너 바인딩
-- [ ] 단위 테스트 작성
+### Phase 2.2 - 서비스 계층 구현 (3시간) ✅ 완료
+- [x] FirebaseAuthInterface 인터페이스 정의 (FirebaseService로 통합 구현)
+- [x] Firebase 서비스 분할 구현 (Auth, Messaging, Database, ClientFactory)
+- [x] FirebaseAuthException 예외 클래스
+- [x] 서비스 컨테이너 바인딩
+- [x] 단위 테스트 작성
 
-### Phase 2.3 - 인증 컨트롤러 (2시간)
-- [ ] FirebaseAuthController 구현
-- [ ] SessionController 구현
-- [ ] API 라우트 정의
-- [ ] 요청 유효성 검사 규칙
-- [ ] 응답 포맷 표준화
+### Phase 2.3 - 인증 컨트롤러 (2시간) ✅ 완료
+- [x] AuthController 구현 (FirebaseAuthController 통합)
+- [x] SessionController 구현
+- [x] API 라우트 정의 (/auth/login 경로 통일)
+- [x] 요청 유효성 검사 규칙
+- [x] 응답 포맷 표준화
 
-### Phase 2.4 - 미들웨어 구현 (2시간)
-- [ ] ValidateFirebaseToken 미들웨어
-- [ ] EnsureValidTenant 미들웨어
-- [ ] 미들웨어 등록 (bootstrap/app.php)
-- [ ] 라우트 그룹 적용
-- [ ] 미들웨어 테스트
+### Phase 2.4 - 미들웨어 구현 (2시간) ✅ 완료
+- [x] ValidateFirebaseToken 미들웨어 (삭제된 SetLocale 미들웨어 정리)
+- [x] EnsureValidTenant 미들웨어
+- [x] 미들웨어 등록 (bootstrap/app.php)
+- [x] 라우트 그룹 적용
+- [x] 미들웨어 테스트
 
-### Phase 2.5 - Sanctum 통합 (2시간)
-- [ ] Sanctum 설정 최적화
-- [ ] Stateful 도메인 구성
-- [ ] CORS 정책 설정
-- [ ] 세션 드라이버 설정
-- [ ] CSRF 보호 활성화
+### Phase 2.5 - Sanctum 통합 (2시간) ✅ 완료
+- [x] Sanctum 설정 최적화
+- [x] Stateful 도메인 구성
+- [x] CORS 정책 설정 (config/cors.php 업데이트)
+- [x] 세션 드라이버 설정
+- [x] CSRF 보호 활성화
 
-### Phase 2.6 - 다국어 지원 (2시간)
-- [ ] 언어 파일 구조 설정
-- [ ] 인증 메시지 번역
-- [ ] FirebaseUI 로케일 설정
-- [ ] 언어 전환 API
-- [ ] 번역 캐싱 전략
+### Phase 2.6 - 다국어 지원 (2시간) ✅ 완료
+- [x] 언어 파일 구조 설정 (lang/ko, lang/en, lang/es-MX)
+- [x] 인증 메시지 번역
+- [x] FirebaseUI 로케일 설정
+- [x] 언어 전환 API (언어 선택기 컴포넌트)
+- [x] 번역 캐싱 전략
 
-### Phase 2.7 - Firebase Emulator 설정 (2시간)
-- [ ] Firebase CLI 설치 및 초기화
-- [ ] 에뮬레이터 설정 파일 구성
-- [ ] 테스트 데이터 시딩 스크립트
-- [ ] 로컬 환경 변수 설정
-- [ ] 에뮬레이터 실행 스크립트
+### Phase 2.7 - Firebase Emulator 설정 (2시간) ✅ 완료
+- [x] Firebase CLI 설치 및 초기화
+- [x] 에뮬레이터 설정 파일 구성 (firebase.json, 포트 충돌 해결)
+- [x] 테스트 데이터 시딩 스크립트
+- [x] 로컬 환경 변수 설정 (.env.testing)
+- [x] 에뮬레이터 실행 스크립트
 
-### Phase 2.8 - 테스트 구현 (3시간)
-- [ ] 단위 테스트 케이스 작성
-- [ ] 통합 테스트 시나리오
-- [ ] E2E 테스트 설정
-- [ ] 테스트 커버리지 확인
+### Phase 2.8 - 테스트 구현 (3시간) ✅ 완료
+- [x] 단위 테스트 케이스 작성 (FirebaseServiceTest)
+- [x] 통합 테스트 시나리오 (FirebaseServiceIntegrationTest)
+- [x] Feature 테스트 설정 (FirebaseAuthTest)
+- [x] 테스트 커버리지 확인
 - [ ] CI/CD 파이프라인 통합
 
-### Phase 2.9 - 문서화 (1시간)
+### Phase 2.9 - 문서화 (1시간) 🔄 진행 중
 - [ ] API 문서 생성
-- [ ] 구현 가이드 작성
-- [ ] 트러블슈팅 가이드
+- [x] 구현 가이드 작성 (이 문서)
+- [x] 트러블슈팅 가이드 (로깅 개선으로 디버깅 편의성 향상)
 - [ ] 보안 체크리스트
 - [ ] 배포 가이드
 

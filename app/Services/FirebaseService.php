@@ -5,39 +5,39 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
+use App\Services\Firebase\FirebaseAuthService;
+use App\Services\Firebase\FirebaseClientFactory;
+use App\Services\Firebase\FirebaseDatabaseService;
+use App\Services\Firebase\FirebaseMessagingService;
 use Exception;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use Kreait\Firebase\Contract\Auth;
-use Kreait\Firebase\Contract\Database;
-use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
 use Kreait\Firebase\Exception\FirebaseException;
-use Kreait\Firebase\Factory;
-use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification;
 
 /**
- * Firebase 통합 서비스
+ * Firebase 통합 서비스 (파사드 패턴)
  *
- * Firebase Admin SDK를 통한 인증, 사용자 관리, FCM 푸시 알림,
- * Realtime Database 연동을 담당하는 서비스 클래스입니다.
+ * Firebase의 다양한 기능들을 통합하여 제공하는 파사드 서비스입니다.
+ * 내부적으로 기능별로 분할된 서비스들을 조합하여 사용하며,
+ * 기존 코드와의 호환성을 보장합니다.
  *
  * 주요 기능:
- * - Firebase ID Token 검증
- * - Firebase User와 Laravel User 동기화
- * - 사용자 생성/업데이트/조회
- * - FCM 푸시 알림 (향후 확장)
- * - Realtime Database 연동 (향후 확장)
+ * - Firebase ID Token 검증 (FirebaseAuthService)
+ * - Firebase User와 Laravel User 동기화 (FirebaseAuthService)
+ * - 사용자 생성/업데이트/조회 (FirebaseAuthService)
+ * - FCM 푸시 알림 (FirebaseMessagingService)
+ * - Realtime Database 연동 (FirebaseDatabaseService)
+ *
+ * 아키텍처 패턴: 파사드 (Facade Pattern)
  */
 class FirebaseService
 {
-    private Auth $auth;
+    private FirebaseClientFactory $clientFactory;
 
-    private ?Database $database = null;
+    private ?FirebaseAuthService $authService = null;
 
-    private ?Messaging $messaging = null;
+    private ?FirebaseMessagingService $messagingService = null;
+
+    private ?FirebaseDatabaseService $databaseService = null;
 
     /**
      * Firebase 서비스 초기화
@@ -46,83 +46,54 @@ class FirebaseService
      */
     public function __construct()
     {
-        $this->initializeFirebase();
+        $this->clientFactory = new FirebaseClientFactory;
     }
 
     /**
-     * Firebase Admin SDK 초기화
+     * Firebase Auth 서비스 인스턴스 반환 (지연 로딩)
      *
-     * 환경 변수 또는 서비스 어카운트 키 파일을 통해 Firebase를 초기화합니다.
-     * Emulator 환경도 지원합니다.
-     *
-     * @throws Exception 초기화 실패 시
+     * @return FirebaseAuthService Firebase 인증 서비스
      */
-    private function initializeFirebase(): void
+    private function getAuthService(): FirebaseAuthService
     {
-        try {
-            $factory = (new Factory);
-
-            // 환경 변수를 통한 설정 우선 시도
-            if ($this->hasEnvironmentCredentials()) {
-                $factory = $factory->withServiceAccount([
-                    'type' => 'service_account',
-                    'project_id' => Config::get('services.firebase.project_id'),
-                    'private_key_id' => Config::get('services.firebase.private_key_id'),
-                    'private_key' => str_replace('\\n', "\n", Config::get('services.firebase.private_key')),
-                    'client_email' => Config::get('services.firebase.client_email'),
-                    'client_id' => Config::get('services.firebase.client_id'),
-                    'auth_uri' => 'https://accounts.google.com/o/oauth2/auth',
-                    'token_uri' => 'https://oauth2.googleapis.com/token',
-                    'auth_provider_x509_cert_url' => 'https://www.googleapis.com/oauth2/v1/certs',
-                    'client_x509_cert_url' => sprintf(
-                        'https://www.googleapis.com/robot/v1/metadata/x509/%s',
-                        urlencode(Config::get('services.firebase.client_email'))
-                    ),
-                ]);
-            } else {
-                // 서비스 어카운트 키 파일 사용
-                $serviceAccountPath = resource_path('firebase/mx-olulo-firebase-adminsdk-fbsvc-417ad72871.json');
-                if (file_exists($serviceAccountPath)) {
-                    $factory = $factory->withServiceAccount($serviceAccountPath);
-                } else {
-                    throw new Exception('Firebase 서비스 어카운트 키 파일이 존재하지 않습니다: ' . $serviceAccountPath);
-                }
-            }
-
-            // Emulator 설정 (개발 환경)
-            // Note: Emulator 메서드들은 Firebase SDK 버전에 따라 사용 가능 여부가 다를 수 있습니다.
-
-            $this->auth = $factory->createAuth();
-        } catch (Exception $e) {
-            Log::error('Firebase 초기화 실패: ' . $e->getMessage());
-            throw new Exception('Firebase 서비스 초기화에 실패했습니다: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * 환경 변수에 Firebase 자격증명이 설정되어 있는지 확인
-     */
-    private function hasEnvironmentCredentials(): bool
-    {
-        return ! empty(Config::get('services.firebase.project_id')) &&
-               ! empty(Config::get('services.firebase.client_email')) &&
-               ! empty(Config::get('services.firebase.private_key'));
-    }
-
-    /**
-     * Firebase 클레임에서 sign_in_provider 추출
-     *
-     * @param  mixed  $firebaseClaims  Firebase 클레임 데이터
-     * @return string|null 로그인 프로바이더 ID
-     */
-    private function extractFirebaseSignInProvider(mixed $firebaseClaims): ?string
-    {
-        if (is_array($firebaseClaims) && isset($firebaseClaims['sign_in_provider'])) {
-            return (string) $firebaseClaims['sign_in_provider'];
+        if ($this->authService === null) {
+            $this->authService = new FirebaseAuthService($this->clientFactory);
         }
 
-        return null;
+        return $this->authService;
     }
+
+    /**
+     * Firebase Messaging 서비스 인스턴스 반환 (지연 로딩)
+     *
+     * @return FirebaseMessagingService Firebase 메시징 서비스
+     */
+    private function getMessagingService(): FirebaseMessagingService
+    {
+        if ($this->messagingService === null) {
+            $this->messagingService = new FirebaseMessagingService($this->clientFactory);
+        }
+
+        return $this->messagingService;
+    }
+
+    /**
+     * Firebase Database 서비스 인스턴스 반환 (지연 로딩)
+     *
+     * @return FirebaseDatabaseService Firebase 데이터베이스 서비스
+     */
+    private function getDatabaseService(): FirebaseDatabaseService
+    {
+        if ($this->databaseService === null) {
+            $this->databaseService = new FirebaseDatabaseService($this->clientFactory);
+        }
+
+        return $this->databaseService;
+    }
+
+    // =========================================================================
+    // Firebase Auth 관련 메서드 (FirebaseAuthService로 위임)
+    // =========================================================================
 
     /**
      * Firebase ID Token 검증
@@ -137,21 +108,7 @@ class FirebaseService
      */
     public function verifyIdToken(string $idToken): array
     {
-        try {
-            $verifiedIdToken = $this->auth->verifyIdToken($idToken);
-
-            return [
-                'uid' => $verifiedIdToken->claims()->get('sub'),
-                'email' => $verifiedIdToken->claims()->get('email'),
-                'email_verified' => $verifiedIdToken->claims()->get('email_verified', false),
-                'phone_number' => $verifiedIdToken->claims()->get('phone_number'),
-                'name' => $verifiedIdToken->claims()->get('name'),
-                'picture' => $verifiedIdToken->claims()->get('picture'),
-                'provider_id' => $this->extractFirebaseSignInProvider($verifiedIdToken->claims()->get('firebase')),
-            ];
-        } catch (FailedToVerifyToken $e) {
-            throw $e;
-        }
+        return $this->getAuthService()->verifyIdToken($idToken);
     }
 
     /**
@@ -161,44 +118,15 @@ class FirebaseService
      * 2) 실패하고 APP_ENV=local 이면 토큰의 payload만 디코드하여 최소 정보(sub/email 등) 추출
      *
      * 보안 주의: 이 경로는 로컬 개발에서만 사용해야 하며, 운영 환경에서는 절대 사용 금지
+     *
+     * @param  string  $idToken  Firebase ID Token
+     * @return array<string, mixed> 검증된 토큰 정보
+     *
+     * @throws FailedToVerifyToken 토큰 검증 실패 시
      */
     public function verifyIdTokenLenient(string $idToken): array
     {
-        try {
-            return $this->verifyIdToken($idToken);
-        } catch (FailedToVerifyToken $e) {
-            if (config('app.env') !== 'local') {
-                throw $e;
-            }
-
-            // 로컬 환경: 에뮬레이터 토큰은 서명 없이 발급되므로 payload만 신뢰(개발 용도)
-            $parts = explode('.', $idToken);
-            if (count($parts) < 2) {
-                throw $e; // 형식 자체가 아님
-            }
-            $payload = $parts[1];
-            $payload = strtr($payload, '-_', '+/');
-            $padding = strlen($payload) % 4;
-            if ($padding > 0) {
-                $payload .= str_repeat('=', 4 - $padding);
-            }
-            $json = base64_decode($payload, true);
-            $claims = json_decode($json, true);
-
-            if (! is_array($claims) || ! isset($claims['sub'])) {
-                throw $e;
-            }
-
-            return [
-                'uid' => (string) ($claims['sub'] ?? ''),
-                'email' => $claims['email'] ?? null,
-                'email_verified' => (bool) ($claims['email_verified'] ?? false),
-                'phone_number' => $claims['phone_number'] ?? null,
-                'name' => $claims['name'] ?? null,
-                'picture' => $claims['picture'] ?? null,
-                'provider_id' => $this->extractFirebaseSignInProvider($claims['firebase'] ?? []),
-            ];
-        }
+        return $this->getAuthService()->verifyIdTokenLenient($idToken);
     }
 
     /**
@@ -211,37 +139,7 @@ class FirebaseService
      */
     public function getFirebaseUser(string $uid): ?array
     {
-        try {
-            $userRecord = $this->auth->getUser($uid);
-
-            return [
-                'uid' => $userRecord->uid,
-                'email' => $userRecord->email,
-                'email_verified' => $userRecord->emailVerified,
-                'phone_number' => $userRecord->phoneNumber,
-                'display_name' => $userRecord->displayName,
-                'photo_url' => $userRecord->photoUrl,
-                'disabled' => $userRecord->disabled,
-                'created_at' => $userRecord->metadata->createdAt,
-                'last_sign_in_at' => $userRecord->metadata->lastSignInTime ?? null,
-                'provider_data' => array_map(function ($provider) {
-                    return [
-                        'provider_id' => $provider->providerId,
-                        'uid' => $provider->uid,
-                        'email' => $provider->email,
-                        'display_name' => $provider->displayName,
-                        'photo_url' => $provider->photoUrl,
-                    ];
-                }, $userRecord->providerData),
-            ];
-        } catch (FirebaseException $e) {
-            Log::warning('Firebase 사용자 조회 실패', [
-                'uid' => $uid,
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
+        return $this->getAuthService()->getFirebaseUser($uid);
     }
 
     /**
@@ -252,72 +150,12 @@ class FirebaseService
      *
      * @param  array<string, mixed>  $firebaseUserData  Firebase 사용자 데이터
      * @return User Laravel 사용자 모델
+     *
+     * @throws Exception 이메일과 전화번호가 모두 없는 경우
      */
     public function syncFirebaseUserWithLaravel(array $firebaseUserData): User
     {
-        $uid = $firebaseUserData['uid'];
-        $email = $firebaseUserData['email'];
-        $phoneNumber = $firebaseUserData['phone_number'];
-
-        // 이메일이 없는 경우 전화번호로 자동 생성
-        if (empty($email) && ! empty($phoneNumber)) {
-            $cleanPhoneNumber = preg_replace('/[^0-9]/', '', $phoneNumber);
-            $email = $cleanPhoneNumber . '@olulo.com.mx';
-        }
-
-        if (empty($email)) {
-            throw new Exception('이메일 또는 전화번호가 필요합니다.');
-        }
-
-        // 기존 사용자 조회 (Firebase UID 또는 이메일로)
-        $user = User::where('firebase_uid', $uid)
-            ->orWhere('email', $email)
-            ->first();
-
-        if ($user) {
-            // 기존 사용자 업데이트
-            $user->update([
-                'firebase_uid' => $uid,
-                'name' => $firebaseUserData['name'] ?? $user->name,
-                'email' => $email,
-                'email_verified_at' => $firebaseUserData['email_verified'] ? now() : null,
-                'phone_number' => $phoneNumber,
-                'avatar_url' => $firebaseUserData['picture'] ?? $user->avatar_url,
-            ]);
-
-        } else {
-            // 새 사용자 생성
-            $user = User::create([
-                'firebase_uid' => $uid,
-                'name' => $firebaseUserData['name'] ?? $this->extractNameFromEmail($email),
-                'email' => $email,
-                'email_verified_at' => $firebaseUserData['email_verified'] ? now() : null,
-                'phone_number' => $phoneNumber,
-                'avatar_url' => $firebaseUserData['picture'],
-                'password' => bcrypt(Str::random(32)), // 랜덤 비밀번호 (Firebase 인증 우선)
-            ]);
-
-            Log::info('새 Laravel 사용자 생성 완료', [
-                'user_id' => $user->id,
-                'firebase_uid' => $uid,
-                'email' => $email,
-            ]);
-        }
-
-        return $user;
-    }
-
-    /**
-     * 이메일에서 사용자 이름 추출
-     *
-     * @param  string  $email  이메일 주소
-     * @return string 추출된 이름
-     */
-    private function extractNameFromEmail(string $email): string
-    {
-        $localPart = explode('@', $email)[0];
-
-        return ucfirst(str_replace(['.', '_', '-'], ' ', $localPart));
+        return $this->getAuthService()->syncFirebaseUserWithLaravel($firebaseUserData);
     }
 
     /**
@@ -332,44 +170,7 @@ class FirebaseService
      */
     public function createFirebaseUser(array $userData): string
     {
-        try {
-            $userCreationRequest = $this->auth->createUserRequest();
-
-            if (! empty($userData['email'])) {
-                $userCreationRequest = $userCreationRequest->withEmail($userData['email']);
-            }
-
-            if (! empty($userData['phone_number'])) {
-                $userCreationRequest = $userCreationRequest->withPhoneNumber($userData['phone_number']);
-            }
-
-            if (! empty($userData['display_name'])) {
-                $userCreationRequest = $userCreationRequest->withDisplayName($userData['display_name']);
-            }
-
-            if (! empty($userData['photo_url'])) {
-                $userCreationRequest = $userCreationRequest->withPhotoUrl($userData['photo_url']);
-            }
-
-            if (! empty($userData['password'])) {
-                $userCreationRequest = $userCreationRequest->withPassword($userData['password']);
-            }
-
-            $userRecord = $this->auth->createUser($userCreationRequest);
-
-            Log::info('Firebase 사용자 생성 완료', [
-                'uid' => $userRecord->uid,
-                'email' => $userData['email'] ?? null,
-            ]);
-
-            return $userRecord->uid;
-        } catch (FirebaseException $e) {
-            Log::error('Firebase 사용자 생성 실패', [
-                'error' => $e->getMessage(),
-                'user_data' => $userData,
-            ]);
-            throw $e;
-        }
+        return $this->getAuthService()->createFirebaseUser($userData);
     }
 
     /**
@@ -383,54 +184,7 @@ class FirebaseService
      */
     public function updateFirebaseUser(string $uid, array $updateData): bool
     {
-        try {
-            $userUpdateRequest = $this->auth->updateUserRequest($uid);
-
-            if (array_key_exists('email', $updateData)) {
-                $userUpdateRequest = $userUpdateRequest->withEmail($updateData['email']);
-            }
-
-            if (array_key_exists('phone_number', $updateData)) {
-                $userUpdateRequest = $userUpdateRequest->withPhoneNumber($updateData['phone_number']);
-            }
-
-            if (array_key_exists('display_name', $updateData)) {
-                $userUpdateRequest = $userUpdateRequest->withDisplayName($updateData['display_name']);
-            }
-
-            if (array_key_exists('photo_url', $updateData)) {
-                $userUpdateRequest = $userUpdateRequest->withPhotoUrl($updateData['photo_url']);
-            }
-
-            if (array_key_exists('password', $updateData)) {
-                $userUpdateRequest = $userUpdateRequest->withPassword($updateData['password']);
-            }
-
-            if (array_key_exists('disabled', $updateData)) {
-                if ($updateData['disabled']) {
-                    $userUpdateRequest = $userUpdateRequest->markAsDisabled();
-                } else {
-                    $userUpdateRequest = $userUpdateRequest->markAsEnabled();
-                }
-            }
-
-            $this->auth->updateUser($userUpdateRequest);
-
-            Log::info('Firebase 사용자 업데이트 완료', [
-                'uid' => $uid,
-                'updated_fields' => array_keys($updateData),
-            ]);
-
-            return true;
-        } catch (FirebaseException $e) {
-            Log::error('Firebase 사용자 업데이트 실패', [
-                'uid' => $uid,
-                'error' => $e->getMessage(),
-                'update_data' => $updateData,
-            ]);
-
-            return false;
-        }
+        return $this->getAuthService()->updateFirebaseUser($uid, $updateData);
     }
 
     /**
@@ -443,60 +197,12 @@ class FirebaseService
      */
     public function deleteFirebaseUser(string $uid): bool
     {
-        try {
-            $this->auth->deleteUser($uid);
-
-            Log::info('Firebase 사용자 삭제 완료', ['uid' => $uid]);
-
-            return true;
-        } catch (FirebaseException $e) {
-            Log::error('Firebase 사용자 삭제 실패', [
-                'uid' => $uid,
-                'error' => $e->getMessage(),
-            ]);
-
-            return false;
-        }
+        return $this->getAuthService()->deleteFirebaseUser($uid);
     }
 
     // =========================================================================
-    // FCM 푸시 알림 관련 메서드 (향후 확장용)
+    // FCM 푸시 알림 관련 메서드 (FirebaseMessagingService로 위임)
     // =========================================================================
-
-    /**
-     * FCM Messaging 인스턴스 초기화 (지연 로딩)
-     */
-    private function getMessaging(): Messaging
-    {
-        if ($this->messaging === null) {
-            $factory = (new Factory);
-
-            if ($this->hasEnvironmentCredentials()) {
-                $factory = $factory->withServiceAccount([
-                    'type' => 'service_account',
-                    'project_id' => Config::get('services.firebase.project_id'),
-                    'private_key_id' => Config::get('services.firebase.private_key_id'),
-                    'private_key' => str_replace('\\n', "\n", Config::get('services.firebase.private_key')),
-                    'client_email' => Config::get('services.firebase.client_email'),
-                    'client_id' => Config::get('services.firebase.client_id'),
-                    'auth_uri' => 'https://accounts.google.com/o/oauth2/auth',
-                    'token_uri' => 'https://oauth2.googleapis.com/token',
-                    'auth_provider_x509_cert_url' => 'https://www.googleapis.com/oauth2/v1/certs',
-                    'client_x509_cert_url' => sprintf(
-                        'https://www.googleapis.com/robot/v1/metadata/x509/%s',
-                        urlencode(Config::get('services.firebase.client_email'))
-                    ),
-                ]);
-            } else {
-                $serviceAccountPath = resource_path('firebase/mx-olulo-firebase-adminsdk-fbsvc-417ad72871.json');
-                $factory = $factory->withServiceAccount($serviceAccountPath);
-            }
-
-            $this->messaging = $factory->createMessaging();
-        }
-
-        return $this->messaging;
-    }
 
     /**
      * FCM 푸시 알림 전송 (단일 디바이스)
@@ -504,38 +210,24 @@ class FirebaseService
      * @param  string  $deviceToken  FCM 디바이스 토큰
      * @param  string  $title  알림 제목
      * @param  string  $body  알림 내용
-     * @param  array<string, mixed>|null  $data  추가 데이터
+     * @param  array<string, mixed>|null  $data  추가 데이터 페이로드
+     * @param  array<string, mixed>|null  $options  알림 옵션 (배지, 소리 등)
      * @return bool 전송 성공 여부
      */
-    public function sendPushNotification(string $deviceToken, string $title, string $body, ?array $data = null): bool
-    {
-        try {
-            $notification = Notification::create($title, $body);
-
-            $message = CloudMessage::withTarget('token', $deviceToken)
-                ->withNotification($notification);
-
-            if ($data) {
-                $message = $message->withData($data);
-            }
-
-            $this->getMessaging()->send($message);
-
-            Log::info('FCM 푸시 알림 전송 완료', [
-                'device_token' => substr($deviceToken, 0, 20) . '...',
-                'title' => $title,
-            ]);
-
-            return true;
-        } catch (Exception $e) {
-            Log::error('FCM 푸시 알림 전송 실패', [
-                'error' => $e->getMessage(),
-                'device_token' => substr($deviceToken, 0, 20) . '...',
-                'title' => $title,
-            ]);
-
-            return false;
-        }
+    public function sendPushNotification(
+        string $deviceToken,
+        string $title,
+        string $body,
+        ?array $data = null,
+        ?array $options = null
+    ): bool {
+        return $this->getMessagingService()->sendPushNotification(
+            $deviceToken,
+            $title,
+            $body,
+            $data,
+            $options
+        );
     }
 
     /**
@@ -544,110 +236,29 @@ class FirebaseService
      * @param  array<int, string>  $deviceTokens  FCM 디바이스 토큰 배열
      * @param  string  $title  알림 제목
      * @param  string  $body  알림 내용
-     * @param  array<string, mixed>|null  $data  추가 데이터
+     * @param  array<string, mixed>|null  $data  추가 데이터 페이로드
+     * @param  array<string, mixed>|null  $options  알림 옵션
      * @return array<string, mixed> 전송 결과 (성공/실패 토큰 리스트)
      */
-    public function sendPushNotificationToMultipleDevices(array $deviceTokens, string $title, string $body, ?array $data = null): array
-    {
-        try {
-            $notification = Notification::create($title, $body);
-
-            $message = CloudMessage::new()->withNotification($notification);
-
-            if ($data) {
-                $message = $message->withData($data);
-            }
-
-            $sendReport = $this->getMessaging()->sendMulticast($message, $deviceTokens);
-
-            $results = [
-                'success_count' => $sendReport->successes()->count(),
-                'failure_count' => $sendReport->failures()->count(),
-                'success_tokens' => [],
-                'failed_tokens' => [],
-            ];
-
-            foreach ($sendReport->successes() as $result) {
-                $results['success_tokens'][] = $result->target()->value();
-            }
-
-            foreach ($sendReport->failures() as $result) {
-                $results['failed_tokens'][] = [
-                    'token' => $result->target()->value(),
-                    'error' => $result->error()->getMessage(),
-                ];
-            }
-
-            Log::info('FCM 다중 푸시 알림 전송 완료', [
-                'total_tokens' => count($deviceTokens),
-                'success_count' => $results['success_count'],
-                'failure_count' => $results['failure_count'],
-                'title' => $title,
-            ]);
-
-            return $results;
-        } catch (Exception $e) {
-            Log::error('FCM 다중 푸시 알림 전송 실패', [
-                'error' => $e->getMessage(),
-                'token_count' => count($deviceTokens),
-                'title' => $title,
-            ]);
-
-            return [
-                'success_count' => 0,
-                'failure_count' => count($deviceTokens),
-                'success_tokens' => [],
-                'failed_tokens' => array_map(function ($token) use ($e) {
-                    return [
-                        'token' => $token,
-                        'error' => $e->getMessage(),
-                    ];
-                }, $deviceTokens),
-            ];
-        }
+    public function sendPushNotificationToMultipleDevices(
+        array $deviceTokens,
+        string $title,
+        string $body,
+        ?array $data = null,
+        ?array $options = null
+    ): array {
+        return $this->getMessagingService()->sendPushNotificationToMultipleDevices(
+            $deviceTokens,
+            $title,
+            $body,
+            $data,
+            $options
+        );
     }
 
     // =========================================================================
-    // Realtime Database 관련 메서드 (향후 확장용)
+    // Realtime Database 관련 메서드 (FirebaseDatabaseService로 위임)
     // =========================================================================
-
-    /**
-     * Realtime Database 인스턴스 초기화 (지연 로딩)
-     */
-    private function getDatabase(): Database
-    {
-        if ($this->database === null) {
-            $factory = (new Factory);
-
-            if ($this->hasEnvironmentCredentials()) {
-                $factory = $factory->withServiceAccount([
-                    'type' => 'service_account',
-                    'project_id' => Config::get('services.firebase.project_id'),
-                    'private_key_id' => Config::get('services.firebase.private_key_id'),
-                    'private_key' => str_replace('\\n', "\n", Config::get('services.firebase.private_key')),
-                    'client_email' => Config::get('services.firebase.client_email'),
-                    'client_id' => Config::get('services.firebase.client_id'),
-                    'auth_uri' => 'https://accounts.google.com/o/oauth2/auth',
-                    'token_uri' => 'https://oauth2.googleapis.com/token',
-                    'auth_provider_x509_cert_url' => 'https://www.googleapis.com/oauth2/v1/certs',
-                    'client_x509_cert_url' => sprintf(
-                        'https://www.googleapis.com/robot/v1/metadata/x509/%s',
-                        urlencode(Config::get('services.firebase.client_email'))
-                    ),
-                ]);
-            } else {
-                $serviceAccountPath = resource_path('firebase/mx-olulo-firebase-adminsdk-fbsvc-417ad72871.json');
-                $factory = $factory->withServiceAccount($serviceAccountPath);
-            }
-
-            // Emulator 설정 (개발 환경)
-            // Note: Database Emulator 설정은 Firebase SDK 버전에 따라 다를 수 있습니다.
-
-            $this->database = $factory->createDatabase();
-        }
-
-        return $this->database;
-    }
 
     /**
      * Realtime Database에 데이터 저장
@@ -658,20 +269,7 @@ class FirebaseService
      */
     public function setRealtimeData(string $path, mixed $data): bool
     {
-        try {
-            $this->getDatabase()->getReference($path)->set($data);
-
-            Log::info('Realtime Database 데이터 저장 완료', ['path' => $path]);
-
-            return true;
-        } catch (Exception $e) {
-            Log::error('Realtime Database 데이터 저장 실패', [
-                'path' => $path,
-                'error' => $e->getMessage(),
-            ]);
-
-            return false;
-        }
+        return $this->getDatabaseService()->setRealtimeData($path, $data);
     }
 
     /**
@@ -682,20 +280,7 @@ class FirebaseService
      */
     public function getRealtimeData(string $path): mixed
     {
-        try {
-            $snapshot = $this->getDatabase()->getReference($path)->getSnapshot();
-
-            Log::info('Realtime Database 데이터 조회 완료', ['path' => $path]);
-
-            return $snapshot->getValue();
-        } catch (Exception $e) {
-            Log::error('Realtime Database 데이터 조회 실패', [
-                'path' => $path,
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
+        return $this->getDatabaseService()->getRealtimeData($path);
     }
 
     /**
@@ -706,28 +291,131 @@ class FirebaseService
      */
     public function deleteRealtimeData(string $path): bool
     {
-        try {
-            $this->getDatabase()->getReference($path)->remove();
-
-            Log::info('Realtime Database 데이터 삭제 완료', ['path' => $path]);
-
-            return true;
-        } catch (Exception $e) {
-            Log::error('Realtime Database 데이터 삭제 실패', [
-                'path' => $path,
-                'error' => $e->getMessage(),
-            ]);
-
-            return false;
-        }
+        return $this->getDatabaseService()->deleteRealtimeData($path);
     }
 
     // =========================================================================
-    // Firestore 관련 메서드 (향후 확장용 - 별도 서비스로 분리 예정)
+    // 추가 편의 메서드들 (FirebaseDatabaseService 확장 기능들)
     // =========================================================================
 
     /**
-     * Firestore 기능은 향후 별도의 FirestoreService로 분리될 예정입니다.
-     * 현재는 Firebase Admin SDK의 Auth와 Database 기능에 집중합니다.
+     * Realtime Database에서 데이터 업데이트
+     *
+     * @param  string  $path  데이터 경로
+     * @param  array<string, mixed>  $updates  업데이트할 필드들
+     * @return bool 업데이트 성공 여부
      */
+    public function updateRealtimeData(string $path, array $updates): bool
+    {
+        return $this->getDatabaseService()->updateRealtimeData($path, $updates);
+    }
+
+    /**
+     * Realtime Database에 새로운 자식 노드 추가
+     *
+     * @param  string  $path  부모 노드 경로
+     * @param  mixed  $data  추가할 데이터
+     * @return string|null 생성된 키 또는 null (실패 시)
+     */
+    public function pushRealtimeData(string $path, mixed $data): ?string
+    {
+        return $this->getDatabaseService()->pushRealtimeData($path, $data);
+    }
+
+    /**
+     * FCM 주제로 푸시 알림 전송
+     *
+     * @param  string  $topic  주제 이름
+     * @param  string  $title  알림 제목
+     * @param  string  $body  알림 내용
+     * @param  array<string, mixed>|null  $data  추가 데이터 페이로드
+     * @param  array<string, mixed>|null  $options  알림 옵션
+     * @return bool 전송 성공 여부
+     */
+    public function sendPushNotificationToTopic(
+        string $topic,
+        string $title,
+        string $body,
+        ?array $data = null,
+        ?array $options = null
+    ): bool {
+        return $this->getMessagingService()->sendPushNotificationToTopic(
+            $topic,
+            $title,
+            $body,
+            $data,
+            $options
+        );
+    }
+
+    /**
+     * 디바이스 토큰을 주제에 구독
+     *
+     * @param  array<int, string>|string  $deviceTokens  디바이스 토큰(들)
+     * @param  string  $topic  구독할 주제
+     * @return array<string, mixed> 구독 결과
+     */
+    public function subscribeToTopic(array|string $deviceTokens, string $topic): array
+    {
+        return $this->getMessagingService()->subscribeToTopic($deviceTokens, $topic);
+    }
+
+    /**
+     * 디바이스 토큰을 주제에서 구독 해제
+     *
+     * @param  array<int, string>|string  $deviceTokens  디바이스 토큰(들)
+     * @param  string  $topic  구독 해제할 주제
+     * @return array<string, mixed> 구독 해제 결과
+     */
+    public function unsubscribeFromTopic(array|string $deviceTokens, string $topic): array
+    {
+        return $this->getMessagingService()->unsubscribeFromTopic($deviceTokens, $topic);
+    }
+
+    // =========================================================================
+    // 서비스 관리 메서드들
+    // =========================================================================
+
+    /**
+     * 모든 서비스 인스턴스 재설정
+     *
+     * 테스트 또는 설정 변경 시 서비스들을 재초기화하기 위해 사용합니다.
+     */
+    public function resetServices(): void
+    {
+        $this->clientFactory->reset();
+        $this->authService = null;
+        $this->messagingService = null;
+        $this->databaseService = null;
+    }
+
+    /**
+     * 특정 서비스 직접 접근 (고급 사용자용)
+     *
+     * @return FirebaseAuthService Firebase 인증 서비스
+     */
+    public function auth(): FirebaseAuthService
+    {
+        return $this->getAuthService();
+    }
+
+    /**
+     * 특정 서비스 직접 접근 (고급 사용자용)
+     *
+     * @return FirebaseMessagingService Firebase 메시징 서비스
+     */
+    public function messaging(): FirebaseMessagingService
+    {
+        return $this->getMessagingService();
+    }
+
+    /**
+     * 특정 서비스 직접 접근 (고급 사용자용)
+     *
+     * @return FirebaseDatabaseService Firebase 데이터베이스 서비스
+     */
+    public function database(): FirebaseDatabaseService
+    {
+        return $this->getDatabaseService();
+    }
 }
