@@ -1,4 +1,4 @@
-# 환경 구성 — 도메인/쿠키/CORS (dev/staging/prod)
+# 환경 구성 — 도메인/쿠키/CORS (dev/staging/prod) ✅ READ
 
 본 문서는 동일 루트 도메인 전략 하에서 개발/스테이징/프로덕션 환경의 도메인 및 인증 관련 설정 예시를 제공합니다. (Firebase + Sanctum SPA 세션 기준)
 
