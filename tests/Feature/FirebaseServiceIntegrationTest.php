@@ -15,6 +15,8 @@ use Tests\TestCase;
  *
  * Firebase 서비스의 실제 사용 시나리오를 테스트합니다.
  * 실제 Firebase API 호출 없이 모킹을 통해 통합성을 검증합니다.
+ *
+ * @group firebase
  */
 class FirebaseServiceIntegrationTest extends TestCase
 {

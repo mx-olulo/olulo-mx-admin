@@ -27,6 +27,8 @@ use Tests\TestCase;
  * - 언어 변경
  * - API 엔드포인트 인증
  * - 보호된 라우트 접근 제어
+ *
+ * @group firebase
  */
 class FirebaseAuthTest extends TestCase
 {
