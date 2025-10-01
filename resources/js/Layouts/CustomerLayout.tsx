@@ -38,7 +38,7 @@ function Header({
 }: Pick<Props, 'title' | 'showBack' | 'showLocation' | 'onBack'>) {
     return (
         <header className="bg-[#03D67B] dark:bg-[#00B96F] sticky top-0 z-50 w-full">
-            <div className="flex items-center justify-between px-4 h-[6.636vh]">
+            <div className="flex items-center justify-between px-4 h-[3.5rem]">
                 <div className="flex items-center gap-3">
                     {showBack && (
                         <button
