@@ -4,7 +4,7 @@
 .env.backup
 .env.production
 .env.*.local
-.vite
+.vite/
 .phpactor.json
 .phpunit.result.cache
 /.fleet

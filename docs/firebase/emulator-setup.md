@@ -133,5 +133,12 @@ FIREBASE_AUTH_DOMAIN=mx-olulo.firebaseapp.com
 
 ## 참고 문서
 
-- Firebase 에뮬레이터: https://firebase.google.com/docs/emulator-suite
-- 인증 에뮬레이터: https://firebase.google.com/docs/emulator-suite/connect_auth
+### 내부 문서
+- [인증 설계 문서](../auth.md)
+- [환경 설정 가이드](../devops/environments.md)
+- [프로젝트 1 마일스톤](../milestones/project-1.md)
+- [환경변수 관리](../todo/environment-variables.md)
+
+### 외부 문서
+- [Firebase 에뮬레이터 공식 문서](https://firebase.google.com/docs/emulator-suite)
+- [인증 에뮬레이터 가이드](https://firebase.google.com/docs/emulator-suite/connect_auth)

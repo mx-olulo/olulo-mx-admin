@@ -60,7 +60,7 @@ class AuthController extends Controller
         $availableLocales = array_keys(config('app.available_locales', []));
         $locale = $request->query('locale')
             ?: ($availableLocales ? $request->getPreferredLanguage($availableLocales) : null)
-            ?: config('app.locale', 'ko');
+            ?: config('app.locale', 'es-MX');
 
         // 애플리케이션 로케일 설정
         App::setLocale($locale);
