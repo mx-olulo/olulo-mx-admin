@@ -7,7 +7,8 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                'resources/css/app.css',
+                'resources/css/app.css', // Filament + Admin
+                'resources/css/customer-app.css', // 고객앱 전용 CSS (Tailwind v4 + ref)
                 'resources/js/app.js',
                 'resources/js/auth-login.js',
                 'resources/js/customer-app.tsx', // 고객앱 (Inertia + React)
