@@ -35,6 +35,7 @@
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.7",
         "laravel/boost": "*",
+        "laravel/dusk": "^8.3",
         "laravel/nova-devtool": "^1.8",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
