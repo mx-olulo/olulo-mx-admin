@@ -18,9 +18,9 @@ final readonly class RateLimit
      * 인증 엔드포인트 최대 시도 횟수
      *
      * 로그인, 회원가입, 비밀번호 재설정 등 인증 관련 엔드포인트에 적용됩니다.
-     * 브루트 포스 공격을 방지하기 위해 낮은 제한을 설정합니다.
+     * 브루트 포스 공격을 방지하면서도 정상 사용자의 편의성을 고려합니다.
      */
-    public const int AUTH_MAX_ATTEMPTS = 5;
+    public const int AUTH_MAX_ATTEMPTS = 10;
 
     /**
      * 인증 엔드포인트 제한 시간(분)
