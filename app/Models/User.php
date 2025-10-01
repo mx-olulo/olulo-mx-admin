@@ -87,10 +87,17 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * Firebase 커스텀 클레임 가져오기
+     *
+     * @return ($key is null ? array<string, mixed> : mixed)
      */
     public function getFirebaseClaim(?string $key = null): mixed
     {
-        $claims = $this->firebase_claims ?? [];
+        // firebase_claims는 casts()에서 'array'로 선언되어 있지만,
+        // 아직 설정되지 않은 경우 null일 수 있으므로 안전하게 처리
+        $claims = $this->firebase_claims;
+        if (! is_array($claims)) {
+            $claims = [];
+        }
 
         if ($key === null) {
             return $claims;
@@ -155,7 +162,7 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Firebase 사용자 데이터로 업데이트
      *
-     * @param  array  $firebaseUserData  Firebase에서 가져온 사용자 데이터
+     * @param  array<string, mixed>  $firebaseUserData  Firebase에서 가져온 사용자 데이터
      */
     public function updateFromFirebase(array $firebaseUserData): void
     {

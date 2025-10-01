@@ -31,7 +31,7 @@ class User extends Resource
     /**
      * The columns that should be searched.
      *
-     * @var array
+     * @var array<int, string>
      */
     public static $search = [
         'id', 'name', 'email',

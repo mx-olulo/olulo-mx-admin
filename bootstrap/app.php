@@ -22,8 +22,16 @@ return Application::configure(basePath: dirname(__DIR__))
         // CORS 미들웨어 글로벌 적용
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
 
+        // Rate Limiting 설정 (인증 엔드포인트)
+        $middleware->alias([
+            'throttle.auth' => \Illuminate\Routing\Middleware\ThrottleRequests::class . ':10,1',
+        ]);
+
+        // 보안 헤더 미들웨어
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // 로컬 개발 환경에서 Firebase 콜백은 CSRF 예외 처리 (fetch JSON 호출 때문)
-        if (env('APP_ENV') === 'local') {
+        if (config('app.env') === 'local') {
             $middleware->validateCsrfTokens(except: [
                 'auth/firebase/callback',
             ]);

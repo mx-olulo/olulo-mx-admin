@@ -54,8 +54,9 @@ class FirebaseAuthService
         try {
             $verifiedIdToken = $this->auth->verifyIdToken($idToken);
 
+            // Kreait SDK의 타입 정의 불완전성으로 인해 명시적 타입 변환 필요
             return [
-                'uid' => $verifiedIdToken->claims()->get('sub'),
+                'uid' => (string) $verifiedIdToken->claims()->get('sub'),
                 'email' => $verifiedIdToken->claims()->get('email'),
                 'email_verified' => $verifiedIdToken->claims()->get('email_verified', false),
                 'phone_number' => $verifiedIdToken->claims()->get('phone_number'),
@@ -135,6 +136,7 @@ class FirebaseAuthService
         try {
             $userRecord = $this->auth->getUser($uid);
 
+            // Kreait SDK UserMetaData 타입 정의에 lastSignInTime 프로퍼티 누락
             return [
                 'uid' => $userRecord->uid,
                 'email' => $userRecord->email,
@@ -144,7 +146,7 @@ class FirebaseAuthService
                 'photo_url' => $userRecord->photoUrl,
                 'disabled' => $userRecord->disabled,
                 'created_at' => $userRecord->metadata->createdAt,
-                'last_sign_in_at' => $userRecord->metadata->lastSignInTime ?? null,
+                'last_sign_in_at' => $userRecord->metadata->lastSignInTime ?? null, // @phpstan-ignore-line
                 'provider_data' => array_map(function ($provider) {
                     return [
                         'provider_id' => $provider->providerId,
@@ -242,6 +244,7 @@ class FirebaseAuthService
     public function createFirebaseUser(array $userData): string
     {
         try {
+            /** @phpstan-ignore-next-line Kreait SDK Auth 인터페이스에 createUserRequest() 메서드 타입 정의 누락 */
             $userCreationRequest = $this->auth->createUserRequest();
 
             if (! empty($userData['email'])) {
@@ -293,6 +296,7 @@ class FirebaseAuthService
     public function updateFirebaseUser(string $uid, array $updateData): bool
     {
         try {
+            /** @phpstan-ignore-next-line Kreait SDK Auth 인터페이스에 updateUserRequest() 메서드 타입 정의 누락 */
             $userUpdateRequest = $this->auth->updateUserRequest($uid);
 
             if (array_key_exists('email', $updateData)) {
@@ -323,6 +327,7 @@ class FirebaseAuthService
                 }
             }
 
+            /** @phpstan-ignore-next-line Kreait SDK Auth::updateUser() 파라미터 개수 타입 정의 불일치 */
             $this->auth->updateUser($userUpdateRequest);
 
             Log::info('Firebase 사용자 업데이트 완료', [

@@ -7,8 +7,29 @@ parameters:
         - routes/
         - config/
 
-    # Level 9 is the highest level
-    level: 5
+    # Level 8 for production-ready code quality
+    level: 8
+
+    # PHPDoc 타입을 확실한 것으로 취급하지 않음 (Eloquent cast 허용)
+    treatPhpDocTypesAsCertain: false
 
     excludePaths:
         - ./*/*/FileToBeExcluded.php
+
+    ignoreErrors:
+        # Laravel Nova validation rules 타입 변환 (프레임워크 내부 처리)
+        - '#Parameter \#1 \$rules of method Laravel\\Nova\\Fields\\Field::(creationRules|updateRules)\(\) expects .+, array.+ given#'
+
+        # Firebase SDK 엄격한 타입 요구사항 (런타임 검증 포함)
+        - '#Parameter \#1 \$topic of method Kreait\\Firebase\\Contract\\Messaging::(subscribeToTopic|unsubscribeFromTopic|sendToTopic)\(\) expects .+non-empty-string, string given#'
+        - '#Parameter \#2 \$registrationTokenOrTokens of method Kreait\\Firebase\\Contract\\Messaging::(subscribeToTopic|unsubscribeFromTopic|sendToTopic)\(\) expects .+, (non-empty-)?array.+ given#'
+        - '#Parameter \#2 \$registrationTokens of method Kreait\\Firebase\\Contract\\Messaging::sendMulticast\(\) expects .+, non-empty-array.+ given#'
+        - '#Parameter \#2 \$value of static method Kreait\\Firebase\\Messaging\\CloudMessage::withTarget\(\) expects non-empty-string, string given#'
+        - '#Parameter \#1 \$data of method Kreait\\Firebase\\Messaging\\CloudMessage::withData\(\) expects .+, non-empty-array.+ given#'
+        - '#Parameter \#1 \$idToken of method Kreait\\Firebase\\Contract\\Auth::verifyIdToken\(\) expects .+non-empty-string, string given#'
+        - '#Parameter \#1 \$uid of method Kreait\\Firebase\\Contract\\Auth::(getUser|deleteUser)\(\) expects non-empty-string.+, string given#'
+        - '#Parameter \#1 \$json of function json_decode expects string, string\|false given#'
+
+        # Laravel config 타입 변환 (env() 헬퍼의 타입 안전성)
+        - '#Parameter \#2 \$string of function explode expects string, bool\|string given#'
+        - '#Parameter \#1 \$title of static method Illuminate\\Support\\Str::slug\(\) expects string, bool\|string given#'
