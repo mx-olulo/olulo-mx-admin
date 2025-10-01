@@ -187,10 +187,12 @@ sequenceDiagram
 - 모니터링: Laravel Telescope, OpenTelemetry, Error Tracking(Sentry), Uptime.
 - 큐/Horizon 대시보드, 스케줄러 헬스체크.
 
-관련 문서
-- 인증 설계: `docs/auth.md`
-- 환경별 도메인/CORS: `docs/devops/environments.md`
-- 프로젝트 1 상세: `docs/milestones/project-1.md`
+## 관련 문서
+- 인증 설계: [docs/auth.md](auth.md)
+- 환경별 도메인/CORS: [docs/devops/environments.md](devops/environments.md)
+- 프로젝트 1 상세: [docs/milestones/project-1.md](milestones/project-1.md)
+- 테넌시 설계: [docs/tenancy/host-middleware.md](tenancy/host-middleware.md)
+- QA 체크리스트: [docs/qa/checklist.md](qa/checklist.md)
 
 ## 18. React 고객 앱 설계(요약)
 - 라우팅: `/app?store&table&seat` 진입. Onboarding → Session attach → Menu → Cart → Order → Payment
