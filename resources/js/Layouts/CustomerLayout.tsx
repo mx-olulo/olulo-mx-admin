@@ -38,8 +38,8 @@ function Header({
 }: Pick<Props, 'title' | 'showBack' | 'showLocation' | 'onBack'>) {
     return (
         <header className="bg-[#03D67B] dark:bg-[#00B96F] sticky top-0 z-50 w-full">
-            <div className="flex items-center justify-between px-4 h-14">
-                <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between p-[min(5vw,1rem)] h-[calc(3.5rem+1vw)]">
+                <div className="flex items-center gap-[min(3vw,1rem)]">
                     {showBack && (
                         <button
                             onClick={onBack}
@@ -51,7 +51,7 @@ function Header({
                         </button>
                     )}
                     <h1
-                        className="text-white font-bold text-lg tracking-tight truncate"
+                        className="text-white font-bold text-[calc(1rem+0.5vw)] tracking-tight truncate"
                         style={{ fontFamily: 'Noto Sans' }}
                     >
                         {title}
