@@ -152,6 +152,9 @@ function getFirebaseUIConfig() {
 
         signInFlow: 'redirect',
 
+        // Redirect URL after successful sign-in (required for redirect mode)
+        signInSuccessUrl: '{{ route("auth.login") }}',
+
         callbacks: {
             uiShown: function() {
                 showLoading(false);
