@@ -41,10 +41,13 @@ class SecurityHeaders
         // Permissions-Policy: 브라우저 기능 제어
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
 
+        // X-Powered-By: 정보 노출 방지 (PHP 버전 숨김)
+        $response->headers->remove('X-Powered-By');
+
         // HTTPS 환경에서만 Strict-Transport-Security 헤더 설정
-        if ($request->secure() || config('app.env') === 'production') {
+        if ($request->secure() && config('app.env') === 'production') {
             // HSTS: HTTPS 강제 (1년)
-            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
 
         // Content-Security-Policy: 프로덕션 환경에서만 엄격한 정책 적용

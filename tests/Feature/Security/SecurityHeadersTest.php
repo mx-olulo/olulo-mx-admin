@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Feature\Security;
+namespace Tests\Feature\Security;
 
 use Tests\TestCase;
 
@@ -16,8 +16,6 @@ class SecurityHeadersTest extends TestCase
 {
     /**
      * 테스트: 기본 보안 헤더 존재 확인
-     *
-     * @test
      */
     public function test_includes_basic_security_headers(): void
     {
@@ -33,8 +31,6 @@ class SecurityHeadersTest extends TestCase
 
     /**
      * 테스트: Content-Security-Policy 헤더는 production에서만 존재
-     *
-     * @test
      */
     public function test_includes_content_security_policy_in_production(): void
     {
@@ -53,8 +49,6 @@ class SecurityHeadersTest extends TestCase
 
     /**
      * 테스트: HSTS 헤더는 HTTPS에서만 적용
-     *
-     * @test
      */
     public function test_hsts_header_only_on_https(): void
     {
@@ -70,17 +64,14 @@ class SecurityHeadersTest extends TestCase
 
     /**
      * 테스트: HSTS 헤더는 production 환경에서 활성화
-     *
-     * @test
      */
     public function test_hsts_header_in_production_with_https(): void
     {
         // Arrange: production 환경 시뮬레이션
         config(['app.env' => 'production']);
 
-        // HTTPS 요청 시뮬레이션 (서버 변수 설정)
-        $response = $this->withServerVariables(['HTTPS' => 'on'])
-            ->get('/');
+        // HTTPS 요청 시뮬레이션 (https:// 스킴 사용)
+        $response = $this->get('https://localhost/');
 
         // Assert: HSTS 헤더 확인 (production + HTTPS)
         $response->assertHeader('Strict-Transport-Security');
@@ -88,12 +79,11 @@ class SecurityHeadersTest extends TestCase
         $hsts = $response->headers->get('Strict-Transport-Security');
         $this->assertStringContainsString('max-age=', $hsts);
         $this->assertStringContainsString('includeSubDomains', $hsts);
+        $this->assertStringContainsString('preload', $hsts);
     }
 
     /**
      * 테스트: CSP는 production에서 더 엄격
-     *
-     * @test
      */
     public function test_csp_stricter_in_production(): void
     {
@@ -114,8 +104,6 @@ class SecurityHeadersTest extends TestCase
 
     /**
      * 테스트: 모든 라우트에 기본 보안 헤더 적용
-     *
-     * @test
      */
     public function test_security_headers_apply_to_all_routes(): void
     {
@@ -147,8 +135,6 @@ class SecurityHeadersTest extends TestCase
 
     /**
      * 테스트: X-Powered-By 헤더 제거 확인
-     *
-     * @test
      */
     public function test_removes_x_powered_by_header(): void
     {
