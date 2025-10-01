@@ -17,7 +17,7 @@
  */
 
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
 
 /**
  * Firebase 설정 객체
@@ -43,6 +43,24 @@ export const app: FirebaseApp = initializeApp(firebaseConfig);
  * Firebase Auth 인스턴스
  */
 export const auth: Auth = getAuth(app);
+
+/**
+ * Firebase Emulator 연결
+ *
+ * 개발 환경에서 Firebase Emulator를 사용합니다.
+ */
+if (import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true') {
+    const emulatorHost = import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST || '127.0.0.1:9099';
+
+    // Emulator 연결 (한 번만 호출)
+    try {
+        connectAuthEmulator(auth, `http://${emulatorHost}`, { disableWarnings: true });
+        console.log(`🔧 Firebase Auth Emulator connected: ${emulatorHost}`);
+    } catch (error) {
+        // 이미 연결된 경우 에러 무시
+        console.warn('Auth Emulator already connected');
+    }
+}
 
 /**
  * Firebase 초기화 상태 확인
