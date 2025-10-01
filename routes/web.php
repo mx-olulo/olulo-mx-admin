@@ -56,12 +56,12 @@ Route::prefix('auth')->name('auth.')->group(function () {
 // Firebase Auth Handler Proxy
 // Laravel Cloud에서도 작동하도록 Laravel 라우트로 Firebase 프록시 구현
 Route::any('__/auth/{path}', function (string $path) {
-    $firebaseUrl = 'https://'.config('firebase.web.project_id').'.firebaseapp.com/__/auth/'.$path;
+    $firebaseUrl = 'https://' . config('firebase.web.project_id') . '.firebaseapp.com/__/auth/' . $path;
 
     // Query string 전달
     $queryString = request()->getQueryString();
     if ($queryString) {
-        $firebaseUrl .= '?'.$queryString;
+        $firebaseUrl .= '?' . $queryString;
     }
 
     try {
