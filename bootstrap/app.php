@@ -13,6 +13,16 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__ . '/../routes/api.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
+        then: function ($router) {
+            // 고객 라우트 (Web)
+            $router->middleware('web')
+                ->group(base_path('routes/customer.php'));
+
+            // 고객 API 라우트
+            $router->middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/customer-api.php'));
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // API 미들웨어 그룹 설정
@@ -34,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Firebase 콜백은 CSRF 예외 처리 (fetch JSON 호출 때문)
         $middleware->validateCsrfTokens(except: [
             'auth/firebase/callback',
+            'customer/auth/firebase/callback',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
