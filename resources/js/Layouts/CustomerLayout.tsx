@@ -38,12 +38,12 @@ function Header({
 }: Pick<Props, 'title' | 'showBack' | 'showLocation' | 'onBack'>) {
     return (
         <header className="bg-[#03D67B] dark:bg-[#00B96F] sticky top-0 z-50 w-full">
-            <div className="flex items-center justify-between p-[min(5vw,1rem)] min-h-[calc(3.5rem+1vw)]">
-                <div className="flex items-center gap-[min(3vw,1rem)]">
+            <div className="flex items-center justify-between px-4 h-14">
+                <div className="flex items-center gap-3">
                     {showBack && (
                         <button
                             onClick={onBack}
-                            className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                            className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors flex-shrink-0"
                             aria-label="뒤로가기"
                         >
                             {/* ArrowLeft 아이콘 (임시 이모지) */}
@@ -51,7 +51,7 @@ function Header({
                         </button>
                     )}
                     <h1
-                        className="text-white font-bold text-[calc(1rem+0.5vw)] tracking-tight px-[20px] py-[0px]"
+                        className="text-white font-bold text-lg tracking-tight truncate"
                         style={{ fontFamily: 'Noto Sans' }}
                     >
                         {title}
@@ -59,7 +59,7 @@ function Header({
                 </div>
                 {showLocation && (
                     <button
-                        className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                        className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors flex-shrink-0"
                         aria-label="위치 설정"
                     >
                         {/* MapPin 아이콘 (임시 이모지) */}
