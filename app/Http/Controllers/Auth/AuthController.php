@@ -56,10 +56,11 @@ class AuthController extends Controller
         }
 
         // 현재 locale 설정
-        $availableLocales = config('app.available_locales', ['ko', 'en', 'es-MX']);
+        /** @var array<string> $availableLocales */
+        $availableLocales = array_keys(config('app.available_locales', []));
         $locale = $request->query('locale')
-            ?: $request->getPreferredLanguage($availableLocales)
-            ?: config('app.locale', 'ko');
+            ?: ($availableLocales ? $request->getPreferredLanguage($availableLocales) : null)
+            ?: config('app.locale', 'es-MX');
 
         // 애플리케이션 로케일 설정
         App::setLocale($locale);
@@ -275,7 +276,7 @@ class AuthController extends Controller
     public function changeLocale(Request $request, string $locale): RedirectResponse|JsonResponse
     {
         // 지원하는 언어 목록
-        $supportedLocales = config('app.available_locales', ['ko', 'en', 'es-MX']);
+        $supportedLocales = array_keys(config('app.available_locales', ['ko' => '한국어', 'en' => 'English', 'es-MX' => 'Español']));
 
         // 유효한 언어인지 확인
         if (! in_array($locale, $supportedLocales, true)) {

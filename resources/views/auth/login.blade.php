@@ -154,23 +154,10 @@ function getFirebaseUIConfig() {
 
         callbacks: {
             signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-                console.debug('[FirebaseUI] signInSuccessWithAuthResult', {
-                    redirectUrl,
-                    operationType: authResult?.operationType,
-                    user: {
-                        uid: authResult?.user?.uid,
-                        email: authResult?.user?.email,
-                        providerData: authResult?.user?.providerData?.map(p => ({ providerId: p.providerId, uid: p.uid }))
-                    },
-                    location: window.location.href
-                });
-
                 showLoading(true);
                 showMessage(window.authMessages.loginSuccess, 'success');
 
-                // Get ID token and send to Laravel backend
                 authResult.user.getIdToken().then(function(idToken) {
-                    console.debug('[FirebaseUI] Obtained ID token', { length: idToken?.length });
                     const url = '{{ route("auth.firebase.callback") }}';
                     const payload = {
                         idToken: idToken,
@@ -179,10 +166,10 @@ function getFirebaseUIConfig() {
                             email: authResult.user.email,
                             displayName: authResult.user.displayName,
                             photoURL: authResult.user.photoURL,
-                            phoneNumber: authResult.user.phoneNumber
+                            phoneNumber: authResult.user.phoneNumber,
+                            providerData: authResult.user.providerData
                         }
                     };
-                    console.debug('[FirebaseUI] POST callback', { url, payload: { ...payload, idToken: `[len:${idToken?.length}]` } });
 
                     return fetch(url, {
                         method: 'POST',
@@ -198,26 +185,22 @@ function getFirebaseUIConfig() {
                         const text = await response.text();
                         let data;
                         try { data = JSON.parse(text); } catch (_) { data = null; }
-                        console.debug('[FirebaseUI] Callback response', { status: response.status, ok: response.ok, data: data ?? text });
                         if (!response.ok || !data?.success) {
                             throw new Error((data && (data.message || JSON.stringify(data))) || text || 'Auth callback failed');
                         }
                         const redirectTo = data.redirect || '{{ route("dashboard") }}';
-                        console.debug('[FirebaseUI] Redirecting to', { redirectTo });
                         window.location.href = redirectTo;
                     })
                     .catch(error => {
-                        console.error('[FirebaseUI] Authentication error', error);
                         showMessage(window.authMessages.loginError, 'error');
                         showLoading(false);
                     });
                 }).catch(err => {
-                    console.error('[FirebaseUI] getIdToken() failed', err);
                     showMessage(window.authMessages.loginError, 'error');
                     showLoading(false);
                 });
 
-                return false; // Do not redirect automatically
+                return false;
             },
 
             uiShown: function() {
@@ -225,9 +208,9 @@ function getFirebaseUIConfig() {
             },
 
             signInFailure: function(error) {
-                console.error('Sign-in error:', error);
                 showMessage(window.authMessages.loginError, 'error');
                 showLoading(false);
+                return Promise.resolve();
             }
         },
 
@@ -310,13 +293,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize FirebaseUI when Firebase is ready
     const checkFirebase = setInterval(() => {
         if (window.firebaseAuth && window.firebaseui) {
-            console.debug('[LoginPage] Firebase globals detected, initializing UI');
             clearInterval(checkFirebase);
             try {
                 initFirebaseUI();
-                console.debug('[LoginPage] FirebaseUI initialized');
             } catch (e) {
-                console.error('[LoginPage] initFirebaseUI() failed', e);
+                showMessage('Firebase 초기화 실패. 페이지를 새로고침해주세요.', 'error');
+                showLoading(false);
             }
         }
     }, 100);
