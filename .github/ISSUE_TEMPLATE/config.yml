@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / Discussion
+    url: https://github.com/mx-olulo/olulo-mx-admin/discussions
+    about: 일반 질의/논의는 Discussions를 사용하세요.

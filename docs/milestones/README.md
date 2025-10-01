@@ -1,5 +1,10 @@
 # Milestones Index
 
+관련 문서
+- 화이트페이퍼: `../whitepaper.md`
+- 인증 설계: `../auth.md`
+- 환경별 도메인/CORS: `../devops/environments.md`
+
 본 문서는 단계별 개발 마일스톤을 실제 사용/검증 가능한 최소 단위 기능(MVF) 기준으로 구분합니다.
 모든 로그인은 동일한 Firebase 프로젝트/계정으로 통일하며, 마스터 어드민은 Laravel Nova로 구성합니다.
 

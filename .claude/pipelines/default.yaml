@@ -1,0 +1,54 @@
+# Claude project-level pipeline: author -> reviewer
+version: 1
+name: default-code-pipeline
+stages:
+  - id: authoring
+    agent: code-author
+    inputs:
+      required:
+        - goal
+        - scope
+        - related_docs
+      optional:
+        - constraints
+        - files_changed
+    outputs:
+      - patch
+      - summary
+      - checklist
+  - id: review
+    agent: code-reviewer
+    inputs:
+      from_stage: authoring
+      map:
+        patch: patch
+        summary: author_summary
+        checklist: author_checklist
+    outputs:
+      - review_report
+      - decision   # approve | request_changes
+      - actions    # follow-up tasks
+  - id: github_ops
+    agent: github-expert
+    inputs:
+      from_stage: review
+      map:
+        decision: decision
+        actions: actions
+        review_report: review_report
+    outputs:
+      - branch
+      - commits
+      - pr_link
+      - issue_links
+policy:
+  merge_strategy: pr
+  branch_naming: chore/{short}
+  mandatory_rules:
+    - require_docs_first: true
+    - require_pint: true
+    - require_larastan: true
+    - enforce_naming_consistency: true
+notes:
+  - This pipeline enforces small, atomic changes and documentation-first practice.
+  - Project-level agents defined in .claude/agents/ override user-level agents.

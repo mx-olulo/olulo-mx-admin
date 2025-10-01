@@ -1,0 +1,19 @@
+# Default owner for the repo
+* @bluelucifer
+.claude/** @bluelucifer
+docs/** @bluelucifer
+.github/** @bluelucifer
+
+# Docs
+/docs/ @bluelucifer
+
+# Workflows
+/.github/workflows/ @bluelucifer
+
+# PHP/Laravel backend
+/app/ @bluelucifer
+/config/ @bluelucifer
+/routes/ @bluelucifer
+
+# Frontend (if present)
+/resources/ @bluelucifer
