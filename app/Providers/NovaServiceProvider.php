@@ -16,8 +16,6 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     public function boot(): void
     {
         parent::boot();
-
-        //
     }
 
     /**
@@ -40,7 +38,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     protected function routes(): void
     {
         Nova::routes()
-            ->withAuthenticationRoutes(default: true)
+            ->withAuthenticationRoutes(default: false) // 기본 인증 라우트 비활성화
             ->withPasswordResetRoutes()
             ->withoutEmailVerificationRoutes()
             ->register();
@@ -54,9 +52,9 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewNova', function (User $user) {
-            return in_array($user->email, [
-                //
-            ]);
+            // 현재 단계에서는 인증된 모든 사용자가 Nova에 접근 가능
+            // 추후 role-based 권한 체계로 확장 예정
+            return true;
         });
     }
 

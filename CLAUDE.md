@@ -136,6 +136,10 @@
   - TailwindCSS: https://tailwindcss.com/docs
   - daisyUI: https://daisyui.com/components/
 
+## 다국어 지원
+- 다국어 파일은 'lang' 폴더에 위치
+- 한국어, 영어, 스페인어(멕시코) 지원
+
 ---
 
 # CLAUDE 실행 예시 프롬프트(샘플)
@@ -346,11 +350,11 @@ Forms\Components\Select::make('user_id')
 </code-snippet>
 
 
-=== filament/v3 rules ===
+=== filament/v4 rules ===
 
-## Filament 3
+## Filament 4
 
-## Version 3 Changes To Focus On
+## Version 4 Changes To Focus On
 - Resources are located in `app/Filament/Resources/` directory.
 - Resource pages (List, Create, Edit) are auto-generated within the resource's directory - e.g., `app/Filament/Resources/PostResource/Pages/`.
 - Forms use the `Forms\Components` namespace for form fields.
@@ -537,3 +541,69 @@ document.addEventListener('livewire:init', function () {
 - To run all tests in a file: `php artisan test tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `php artisan test --filter=testName` (recommended after making a change to a related file).
 </laravel-boost-guidelines>
+
+=== Design Guidelines ===
+
+📱 Layout & Responsiveness
+- Use viewport-based units (vw, vh, vmin, vmax) for widths and heights instead of px
+- Use rem for typography (1rem = 16px base)
+- Use calc(1rem + 1vw) for responsive font sizes
+- Use padding: min(5vw, 2rem) for adaptive spacing
+- Ensure mobile-first design that adapts to various phone screen sizes
+- Always support light mode & dark mode switch
+
+🎨 Brand & Colors (Light/Dark Mode)
+Primary: #03D67B  
+Primary Variant: #00B96F  
+Secondary: #7A4FFC  
+Secondary Variant: #522CC6  
+
+Neutrals Light: #434343  
+Neutrals Dark: #F6F6F6  
+Neutrals Secondary: #C4C4C4  
+
+Background Light: #F6F6F6  
+Background Dark: #434343  
+Background Variant Light: #FFFFFF  
+Background Variant Dark: #202020  
+
+State Info: #C5F447  
+State Success: #81B7FF  
+State Warning: #FFD6A8  
+State Error: #FF8955  
+Unavailable: #F1EEEE  
+Line Primary: #202020  
+Line Secondary: #878787  
+Line Subline: #A0A5A3  
+Line Icon: #00B96F  
+Line Error: #FF8955  
+
+🖋 Typography
+- Use Noto Sans for all text
+- FontPrimary: #202020
+- FontSecondary: #878787
+- FontSecondary Variant: #A0A5A3
+- FontNeutrals: #F6F6F6
+- FontError: #FF8955
+- Use rem for consistency and vw for responsiveness
+
+🖼 Images & Icons
+- Always support png, svg imports directly
+- Keep vector quality for scaling
+- Reference images should be inserted as-is (not converted)
+
+🌍 Multi-language
+- Base language: Korean,Spanish,English
+- Support automatic Korean ↔ Spanish switching
+- All text must be editable for translation
+
+💱 Currency & Units
+- Always show values with dynamic currency unit (KRW, MXN, USD, EUR)
+- Implement exchange-rate-ready text fields (placeholders: {{price}} {{currency}})
+
+🛠 Features to include
+- Table Order page (QR code order flow)
+- Pickup page (store selection, waiting time, order progress)
+- Responsive navigation (tab bar or drawer depending on screen size)
+- Support for order details, payment, receipt view
+- Buttons and inputs styled with brand colors, rounded corners (2xl), soft shadows

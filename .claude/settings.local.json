@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:olulo-was-php-main-gmawyz.laravel.cloud)",
+      "Bash(git log:*)",
+      "Bash(vendor/bin/phpstan analyse:*)",
+      "Bash(vendor/bin/pint:*)",
+      "Bash(php:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\ndocs: Phase2 문서 정리 및 중복 제거\n\n- Phase2 완료 보고서 추가 (phase2-completion-report.md)\n- 중복 문서 제거 (auth/phase2-implementation.md)\n- 자동생성 리뷰 체크 파일 정리 (auth-phase2-implementation.md)\n- phase2.md 관련 문서 링크 업데이트\n\nPhase2 문서 구조를 단순화하고 유지보수성을 향상시켰습니다.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git reset:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

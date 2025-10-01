@@ -1,4 +1,7 @@
+/* Load Bunny Fonts via Vite build */
+@import url('https://fonts.bunny.net/css?family=noto-sans:400,500,600&display=swap');
 @import 'tailwindcss';
+@plugin "daisyui";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
