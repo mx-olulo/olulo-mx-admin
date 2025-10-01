@@ -3,19 +3,19 @@
 ## Phase 1: 백엔드 기초
 - [x] Inertia.js 설치
 - [x] Customer 컨트롤러 생성
-- [ ] 라우트 정의 (web.php, api.php)
+- [x] 라우트 정의 (routes/customer.php)
 
 ## Phase 2: 프론트엔드 설정
-- [ ] React + TypeScript 설치
-- [ ] Vite React 플러그인 설정
-- [ ] Firebase 초기화
-- [ ] Inertia 앱 엔트리 생성
+- [x] React + TypeScript 설치
+- [x] Vite React 플러그인 설정
+- [x] Firebase 초기화 (설정 파일 준비)
+- [x] Inertia 앱 엔트리 생성
 
 ## Phase 3: Placeholder 페이지
-- [ ] `/` (Home.tsx)
-- [ ] `/customer/auth/login` (Login.tsx)
-- [ ] `/my/orders` (Orders.tsx)
-- [ ] 공통 레이아웃
+- [x] `/` (Home.tsx)
+- [x] `/customer/auth/login` (Login.tsx)
+- [x] `/my/orders` (Orders.tsx)
+- [x] 공통 레이아웃 (CustomerLayout.tsx)
 
 ## Phase 4: 플로우 테스트
 - [ ] CSRF 쿠키 획득 확인

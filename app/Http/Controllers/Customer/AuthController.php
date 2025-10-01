@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +30,7 @@ class AuthController extends Controller
     /**
      * Firebase 콜백 처리 (세션 확립)
      */
-    public function firebaseCallback(Request $request)
+    public function firebaseCallback(Request $request): JsonResponse
     {
         // TODO: Firebase ID Token 검증 및 세션 확립
         // Phase 2에서 구현
@@ -38,7 +40,7 @@ class AuthController extends Controller
     /**
      * Firebase 로그인 API
      */
-    public function apiFirebaseLogin(Request $request)
+    public function apiFirebaseLogin(Request $request): JsonResponse
     {
         // TODO: Firebase ID Token 검증 및 세션 확립
         // Phase 4에서 구현
@@ -50,7 +52,7 @@ class AuthController extends Controller
      *
      * 세션을 종료하고 홈으로 리다이렉트합니다.
      */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         // 세션 종료
         auth()->guard('web')->logout();

@@ -1,30 +1,14 @@
 import { Link } from '@inertiajs/react';
 
 /**
- * QR 파라미터 인터페이스
- */
-interface QRParams {
-    store?: string;
-    table?: string;
-    seat?: string;
-}
-
-/**
- * Home 페이지 Props
- */
-interface Props {
-    qrParams?: QRParams | null;
-}
-
-/**
- * 고객 홈 페이지 (QR 진입점)
+ * 고객 홈 페이지
  *
- * QR 코드로 스캔하여 진입하는 첫 페이지입니다.
- * - QR 파라미터 표시 (매장, 테이블, 좌석)
+ * 첫 진입 페이지입니다.
  * - 로그인 또는 비회원 진행 선택
  * - Phase 3: Placeholder UI만 구현
+ * - TODO: QR 코드 처리는 별도 진행에서 구현
  */
-export default function Home({ qrParams }: Props) {
+export default function Home() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-base-200 to-base-300">
             {/* 헤더 영역 */}
@@ -47,35 +31,6 @@ export default function Home({ qrParams }: Props) {
                         <h2 className="card-title text-2xl mb-4" style={{ fontFamily: 'Noto Sans' }}>
                             환영합니다! 👋
                         </h2>
-
-                        {/* QR 파라미터 표시 */}
-                        {qrParams && (
-                            <div className="alert alert-info rounded-xl mb-6">
-                                <div className="w-full">
-                                    <h3 className="font-bold mb-2">QR 코드 정보</h3>
-                                    <div className="grid grid-cols-1 gap-2 text-sm">
-                                        {qrParams.store && (
-                                            <div className="flex justify-between">
-                                                <span className="opacity-70">매장:</span>
-                                                <span className="font-semibold">{qrParams.store}</span>
-                                            </div>
-                                        )}
-                                        {qrParams.table && (
-                                            <div className="flex justify-between">
-                                                <span className="opacity-70">테이블:</span>
-                                                <span className="font-semibold">{qrParams.table}</span>
-                                            </div>
-                                        )}
-                                        {qrParams.seat && (
-                                            <div className="flex justify-between">
-                                                <span className="opacity-70">좌석:</span>
-                                                <span className="font-semibold">{qrParams.seat}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
 
                         {/* Placeholder 알림 */}
                         <div className="alert alert-warning rounded-xl mb-6">
