@@ -158,6 +158,7 @@ class AuthController extends Controller
 
         // Firebase Factory 초기화
         $factory = (new Factory)->withServiceAccount([
+            'type' => 'service_account',
             'project_id' => $projectId,
             'client_email' => $clientEmail,
             'private_key' => $privateKey,

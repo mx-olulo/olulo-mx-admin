@@ -47,10 +47,11 @@ export const auth: Auth = getAuth(app);
 /**
  * Firebase Emulator 연결
  *
- * 개발 환경에서 Firebase Emulator를 사용합니다.
+ * 개발 환경(local)에서 Firebase Emulator를 자동으로 사용합니다.
+ * 어드민 화면과 동일한 로직: import.meta.env.DEV 기반 판단
  */
-if (import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true') {
-    const emulatorHost = import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST || '127.0.0.1:9099';
+if (import.meta.env.DEV) {
+    const emulatorHost = import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST || 'localhost:9099';
 
     // Emulator 연결 (한 번만 호출)
     try {
