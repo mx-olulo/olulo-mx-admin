@@ -726,4 +726,392 @@ class FirebaseAuthTest extends TestCase
             'phone_number' => '+821098765432',
         ]);
     }
+
+    // =========================================================================
+    // CSRF 토큰 및 보안 시나리오 테스트
+    // =========================================================================
+
+    /**
+     * 테스트: CSRF 토큰 없이 API 요청 시 성공 (Sanctum SPA 세션)
+     *
+     * Sanctum SPA는 CSRF 토큰을 자동으로 처리하므로,
+     * API 라우트에서는 CSRF 검증이 필요하지 않습니다.
+     *
+     * @test
+     */
+    public function test_api_request_works_without_explicit_csrf_token(): void
+    {
+        // Arrange: 유효한 토큰 데이터
+        $tokenData = $this->createValidFirebaseTokenData();
+        $idToken = 'valid-firebase-id-token';
+
+        $user = User::factory()->create([
+            'firebase_uid' => $tokenData['uid'],
+            'email' => $tokenData['email'],
+        ]);
+
+        $this->firebaseServiceMock
+            ->shouldReceive('verifyIdToken')
+            ->once()
+            ->andReturn($tokenData);
+
+        $this->firebaseServiceMock
+            ->shouldReceive('syncFirebaseUserWithLaravel')
+            ->once()
+            ->andReturn($user);
+
+        // Act: CSRF 토큰 없이 API 로그인 요청 (JSON)
+        $response = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => $idToken,
+        ]);
+
+        // Assert: 정상 처리 확인
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+    }
+
+    /**
+     * 테스트: Web 라우트는 CSRF 토큰 필요
+     *
+     * @test
+     */
+    public function test_web_callback_requires_csrf_token(): void
+    {
+        // Arrange: CSRF 미들웨어 활성화
+        $this->withoutExceptionHandling();
+
+        // Act & Assert: CSRF 토큰 없이 웹 콜백 요청 시 예외 발생
+        $this->expectException(\Illuminate\Session\TokenMismatchException::class);
+
+        $this->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+            ->post(route('auth.firebase.callback'), [
+                'idToken' => 'test-token',
+            ]);
+    }
+
+    // =========================================================================
+    // Firebase 토큰 형식 및 검증 에러 시나리오
+    // =========================================================================
+
+    /**
+     * 테스트: 빈 문자열 토큰 처리
+     *
+     * @test
+     */
+    public function test_rejects_empty_string_token(): void
+    {
+        // Act: 빈 문자열 토큰으로 로그인 시도
+        $response = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => '',
+        ]);
+
+        // Assert: 검증 실패
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['idToken']);
+    }
+
+    /**
+     * 테스트: null 토큰 처리
+     *
+     * @test
+     */
+    public function test_rejects_null_token(): void
+    {
+        // Act: null 토큰으로 로그인 시도
+        $response = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => null,
+        ]);
+
+        // Assert: 검증 실패
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['idToken']);
+    }
+
+    /**
+     * 테스트: JWT 형식이 아닌 잘못된 문자열 토큰
+     *
+     * @test
+     */
+    public function test_rejects_malformed_token_format(): void
+    {
+        // Arrange: 형식이 잘못된 토큰
+        $idToken = 'not-a-valid-jwt-format';
+
+        $this->firebaseServiceMock
+            ->shouldReceive('verifyIdToken')
+            ->once()
+            ->with($idToken)
+            ->andThrow(new FailedToVerifyToken('Malformed token'));
+
+        // Act: 잘못된 형식의 토큰으로 로그인 시도
+        $response = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => $idToken,
+        ]);
+
+        // Assert: 422 응답 및 에러 메시지 확인
+        $response->assertStatus(422);
+        $response->assertJson([
+            'success' => false,
+            'message' => __('auth.invalid_firebase_token'),
+        ]);
+    }
+
+    /**
+     * 테스트: 만료된 Firebase 토큰 처리
+     *
+     * @test
+     */
+    public function test_rejects_expired_firebase_token(): void
+    {
+        // Arrange: 만료된 토큰
+        $idToken = 'expired-firebase-id-token';
+
+        $this->firebaseServiceMock
+            ->shouldReceive('verifyIdToken')
+            ->once()
+            ->with($idToken)
+            ->andThrow(new FailedToVerifyToken('Token expired'));
+
+        // Act: 만료된 토큰으로 로그인 시도
+        $response = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => $idToken,
+        ]);
+
+        // Assert: 422 응답 및 토큰 만료 에러 확인
+        $response->assertStatus(422);
+        $response->assertJson([
+            'success' => false,
+            'message' => __('auth.invalid_firebase_token'),
+            'errors' => [
+                'idToken' => [__('auth.invalid_firebase_token')],
+            ],
+        ]);
+        $this->assertGuest();
+    }
+
+    /**
+     * 테스트: 서명이 잘못된 Firebase 토큰 처리
+     *
+     * @test
+     */
+    public function test_rejects_token_with_invalid_signature(): void
+    {
+        // Arrange: 서명이 잘못된 토큰
+        $idToken = 'token-with-invalid-signature';
+
+        $this->firebaseServiceMock
+            ->shouldReceive('verifyIdToken')
+            ->once()
+            ->with($idToken)
+            ->andThrow(new FailedToVerifyToken('Invalid signature'));
+
+        // Act: 서명이 잘못된 토큰으로 로그인 시도
+        $response = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => $idToken,
+        ]);
+
+        // Assert: 422 응답 및 서명 검증 실패 확인
+        $response->assertStatus(422);
+        $response->assertJson([
+            'success' => false,
+            'errors' => [
+                'idToken' => [__('auth.invalid_firebase_token')],
+            ],
+        ]);
+        $this->assertGuest();
+    }
+
+    /**
+     * 테스트: 다른 프로젝트의 Firebase 토큰 거부
+     *
+     * @test
+     */
+    public function test_rejects_token_from_different_firebase_project(): void
+    {
+        // Arrange: 다른 프로젝트의 토큰
+        $idToken = 'token-from-different-project';
+
+        $this->firebaseServiceMock
+            ->shouldReceive('verifyIdToken')
+            ->once()
+            ->with($idToken)
+            ->andThrow(new FailedToVerifyToken('Token audience mismatch'));
+
+        // Act: 다른 프로젝트의 토큰으로 로그인 시도
+        $response = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => $idToken,
+        ]);
+
+        // Assert: 422 응답 및 프로젝트 불일치 확인
+        $response->assertStatus(422);
+        $response->assertJson([
+            'success' => false,
+            'message' => __('auth.invalid_firebase_token'),
+        ]);
+    }
+
+    // =========================================================================
+    // 세션 관리 엣지 케이스
+    // =========================================================================
+
+    /**
+     * 테스트: 동일 사용자의 연속 로그인 처리
+     *
+     * @test
+     */
+    public function test_handles_multiple_consecutive_logins_same_user(): void
+    {
+        // Arrange: 동일 사용자 토큰 데이터
+        $tokenData = $this->createValidFirebaseTokenData();
+        $idToken = 'valid-firebase-id-token';
+
+        $user = User::factory()->create([
+            'firebase_uid' => $tokenData['uid'],
+            'email' => $tokenData['email'],
+        ]);
+
+        $this->firebaseServiceMock
+            ->shouldReceive('verifyIdToken')
+            ->twice()
+            ->andReturn($tokenData);
+
+        $this->firebaseServiceMock
+            ->shouldReceive('syncFirebaseUserWithLaravel')
+            ->twice()
+            ->andReturn($user);
+
+        // Act: 첫 번째 로그인
+        $response1 = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => $idToken,
+        ]);
+
+        // 두 번째 로그인 (연속)
+        $response2 = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => $idToken,
+        ]);
+
+        // Assert: 두 로그인 모두 성공
+        $response1->assertStatus(200);
+        $response2->assertStatus(200);
+        $this->assertAuthenticated();
+
+        // 동일 사용자로 인증 확인
+        $this->assertEquals($user->id, Auth::id());
+    }
+
+    /**
+     * 테스트: 로그아웃 후 동일 세션으로 재요청 거부
+     *
+     * @test
+     */
+    public function test_rejects_requests_with_old_session_after_logout(): void
+    {
+        // Arrange: 로그인한 사용자
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        // 세션 ID 저장
+        $oldSessionId = Session::getId();
+
+        // Act: 로그아웃
+        $this->post(route('auth.logout'));
+
+        // Assert: 세션 ID가 변경됨
+        $this->assertNotEquals($oldSessionId, Session::getId());
+
+        // 로그아웃 후 게스트 상태 확인
+        $this->assertGuest();
+
+        // 보호된 리소스 접근 시도
+        $response = $this->get('/admin');
+        $response->assertRedirect(route('filament.admin.auth.login'));
+    }
+
+    /**
+     * 테스트: 다른 디바이스에서 로그인 시 세션 동시 유지 (다중 세션)
+     *
+     * @test
+     */
+    public function test_allows_multiple_sessions_from_different_devices(): void
+    {
+        // Arrange: 사용자 토큰 데이터
+        $tokenData = $this->createValidFirebaseTokenData();
+        $idToken = 'valid-firebase-id-token';
+
+        $user = User::factory()->create([
+            'firebase_uid' => $tokenData['uid'],
+            'email' => $tokenData['email'],
+        ]);
+
+        $this->firebaseServiceMock
+            ->shouldReceive('verifyIdToken')
+            ->twice()
+            ->andReturn($tokenData);
+
+        $this->firebaseServiceMock
+            ->shouldReceive('syncFirebaseUserWithLaravel')
+            ->twice()
+            ->andReturn($user);
+
+        // Act: 첫 번째 디바이스에서 로그인
+        $response1 = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => $idToken,
+        ]);
+        $session1 = Session::getId();
+
+        // 세션 초기화 (새 디바이스 시뮬레이션)
+        Session::flush();
+        Session::regenerate();
+
+        // 두 번째 디바이스에서 로그인
+        $response2 = $this->postJson(route('api.auth.firebase.login'), [
+            'idToken' => $idToken,
+        ]);
+        $session2 = Session::getId();
+
+        // Assert: 두 세션 모두 성공, 세션 ID는 다름
+        $response1->assertStatus(200);
+        $response2->assertStatus(200);
+        $this->assertNotEquals($session1, $session2);
+    }
+
+    /**
+     * 테스트: 세션 재생성 공격 방지 (로그인 후 세션 ID 변경)
+     *
+     * @test
+     */
+    public function test_regenerates_session_id_after_login_to_prevent_fixation(): void
+    {
+        // Arrange: 유효한 토큰 데이터
+        $tokenData = $this->createValidFirebaseTokenData();
+        $idToken = 'valid-firebase-id-token';
+
+        $user = User::factory()->create([
+            'firebase_uid' => $tokenData['uid'],
+            'email' => $tokenData['email'],
+        ]);
+
+        // 로그인 전 세션 ID 저장
+        $oldSessionId = Session::getId();
+
+        $this->firebaseServiceMock
+            ->shouldReceive('verifyIdToken')
+            ->once()
+            ->andReturn($tokenData);
+
+        $this->firebaseServiceMock
+            ->shouldReceive('syncFirebaseUserWithLaravel')
+            ->once()
+            ->andReturn($user);
+
+        // Act: 로그인
+        $this->post(route('auth.firebase.callback'), [
+            'idToken' => $idToken,
+        ]);
+
+        // Assert: 로그인 후 세션 ID 변경 확인 (세션 고정 공격 방지)
+        $newSessionId = Session::getId();
+        $this->assertNotEquals($oldSessionId, $newSessionId);
+        $this->assertAuthenticated();
+    }
 }

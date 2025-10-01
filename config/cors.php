@@ -40,6 +40,8 @@ return [
             'http://menu.localhost',
             'https://mx-olulo.firebaseapp.com',
             'https://mx-olulo.web.app',
+            'https://admin.dev.olulo.com.mx',
+            'https://menu.dev.olulo.com.mx',
         ]
         : (env('APP_ENV') === 'staging'
             ? [
