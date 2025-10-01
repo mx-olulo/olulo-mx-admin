@@ -312,12 +312,93 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.firebaseAuth && window.firebaseui) {
             console.debug('[LoginPage] Firebase globals detected, initializing UI');
             clearInterval(checkFirebase);
-            try {
-                initFirebaseUI();
-                console.debug('[LoginPage] FirebaseUI initialized');
-            } catch (e) {
-                console.error('[LoginPage] initFirebaseUI() failed', e);
-            }
+
+            // Check for redirect result first (important for redirect flow!)
+            window.firebaseAuth.getRedirectResult().then((result) => {
+                console.debug('[LoginPage] Redirect result checked', {
+                    hasResult: !!result.user,
+                    operationType: result?.operationType
+                });
+
+                if (result.user) {
+                    // User just signed in via redirect
+                    console.debug('[LoginPage] User signed in via redirect', {
+                        uid: result.user.uid,
+                        email: result.user.email
+                    });
+
+                    showLoading(true);
+                    showMessage(window.authMessages.loginSuccess, 'success');
+
+                    // Get ID token and send to Laravel backend
+                    result.user.getIdToken().then(function(idToken) {
+                        console.debug('[LoginPage] Obtained ID token from redirect', { length: idToken?.length });
+                        const url = '{{ route("auth.firebase.callback") }}';
+                        const payload = {
+                            idToken: idToken,
+                            user: {
+                                uid: result.user.uid,
+                                email: result.user.email,
+                                displayName: result.user.displayName,
+                                photoURL: result.user.photoURL,
+                                phoneNumber: result.user.phoneNumber
+                            }
+                        };
+                        console.debug('[LoginPage] POST callback from redirect', { url, payload: { ...payload, idToken: `[len:${idToken?.length}]` } });
+
+                        return fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify(payload),
+                            credentials: 'same-origin'
+                        })
+                        .then(async response => {
+                            const text = await response.text();
+                            let data;
+                            try { data = JSON.parse(text); } catch (_) { data = null; }
+                            console.debug('[LoginPage] Callback response from redirect', { status: response.status, ok: response.ok, data: data ?? text });
+                            if (!response.ok || !data?.success) {
+                                throw new Error((data && (data.message || JSON.stringify(data))) || text || 'Auth callback failed');
+                            }
+                            const redirectTo = data.redirect || '{{ route("dashboard") }}';
+                            console.debug('[LoginPage] Redirecting to', { redirectTo });
+                            window.location.href = redirectTo;
+                        })
+                        .catch(error => {
+                            console.error('[LoginPage] Authentication error from redirect', error);
+                            showMessage(window.authMessages.loginError, 'error');
+                            showLoading(false);
+                        });
+                    }).catch(err => {
+                        console.error('[LoginPage] getIdToken() failed from redirect', err);
+                        showMessage(window.authMessages.loginError, 'error');
+                        showLoading(false);
+                    });
+                } else {
+                    // No redirect result, initialize FirebaseUI normally
+                    try {
+                        initFirebaseUI();
+                        console.debug('[LoginPage] FirebaseUI initialized');
+                    } catch (e) {
+                        console.error('[LoginPage] initFirebaseUI() failed', e);
+                    }
+                }
+            }).catch((error) => {
+                console.error('[LoginPage] Redirect result error', error);
+                showMessage('로그인 중 오류가 발생했습니다: ' + error.message, 'error');
+                showLoading(false);
+
+                // Still try to initialize FirebaseUI for retry
+                try {
+                    initFirebaseUI();
+                } catch (e) {
+                    console.error('[LoginPage] initFirebaseUI() failed after redirect error', e);
+                }
+            });
         }
     }, 100);
 
