@@ -25,7 +25,8 @@
       "Bash(gh issue comment:*)",
       "Bash(gh pr merge:*)",
       "Bash(gh issue view:*)",
-      "Bash(composer:*)"
+      "Bash(composer:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

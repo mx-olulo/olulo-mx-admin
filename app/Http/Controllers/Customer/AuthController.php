@@ -21,7 +21,8 @@ class AuthController extends Controller
      */
     public function showLogin(): Response
     {
-        return Inertia::render('Customer/Auth/Login');
+        return Inertia::render('Customer/Auth/Login')
+            ->rootView('customer.app');
     }
 
     /**

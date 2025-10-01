@@ -23,6 +23,6 @@ class ProfileController extends Controller
     {
         return Inertia::render('My/Orders', [
             'user' => $request->user(),
-        ]);
+        ])->rootView('customer.app');
     }
 }

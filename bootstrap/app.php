@@ -25,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Inertia 미들웨어 (Web 그룹)
+        $middleware->web(append: [
+            \Inertia\Middleware\HandleInertiaRequests::class,
+        ]);
+
         // API 미들웨어 그룹 설정
         $middleware->api(prepend: [
             Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
