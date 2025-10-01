@@ -80,9 +80,9 @@
    - `GET /my/orders` → 로그인 성공 확인 페이지 (마이페이지)
 
 2. **미들웨어**
-   - `LocaleMiddleware`: Accept-Language 헤더 감지, `app()->setLocale()` 설정
-   - `CustomerContextMiddleware`: QR 파라미터 (`store`, `table`, `seat`) 세션 저장
    - `EnsureFrontendRequestsAreStateful`: Sanctum SPA 세션 미들웨어 (기존)
+   - ~~`LocaleMiddleware`~~: **제외** - Laravel 기본 `App::setLocale()` 사용
+   - ~~`CustomerContextMiddleware`~~: **제외** - 리소스(Store/Table) 구현 후 작성
 
 3. **컨트롤러**
    - `App\Http\Controllers\Customer\AuthController`: 고객 로그인/로그아웃 처리

@@ -256,68 +256,29 @@ Route::middleware('auth:web')->group(function () {
 });
 ```
 
-## 미들웨어 구조
+## 미들웨어 구조 (제외)
 
-### CustomerContextMiddleware
-```php
-namespace App\Http\Middleware;
+### ~~CustomerContextMiddleware~~ - **리소스 구현 후 작성**
+QR 파라미터(`store`, `table`, `seat`)를 세션에 저장하는 미들웨어는
+Store/Table 모델이 생성된 이후에 유효성 검증과 함께 구현합니다.
 
-class CustomerContextMiddleware
-{
-    public function handle($request, Closure $next)
-    {
-        // QR 파라미터 처리
-        if ($request->has(['store', 'table'])) {
-            session()->put('customer_context', [
-                'store' => $request->query('store'),
-                'table' => $request->query('table'),
-                'seat' => $request->query('seat'),
-                'timestamp' => now(),
-            ]);
-        }
+**제외 이유**:
+- Store/Table 모델이 아직 없어 유효성 검증 불가
+- 실제 리소스 구현 시 함께 작성하는 것이 효율적
 
-        return $next($request);
-    }
-}
-```
+### ~~LocaleMiddleware~~ - **Laravel 기본 기능 사용**
+Laravel 기본 `App::setLocale()` 메서드를 컨트롤러/미들웨어에서 직접 호출합니다.
 
-### LocaleMiddleware
-```php
-namespace App\Http\Middleware;
-
-class LocaleMiddleware
-{
-    public function handle($request, Closure $next)
-    {
-        $locale = $this->determineLocale($request);
-        app()->setLocale($locale);
-
-        return $next($request);
-    }
-
-    private function determineLocale($request): string
-    {
-        // 1. 세션
-        if ($locale = session('locale')) {
-            return $locale;
-        }
-
-        // 2. Accept-Language 헤더
-        $acceptLanguage = $request->header('Accept-Language');
-        // ... 파싱 로직
-
-        // 3. 기본값
-        return config('app.locale', 'es-MX');
-    }
-}
-```
+**제외 이유**:
+- Laravel 기본 기능으로 충분
+- 복잡한 언어 감지 로직은 필요 시 추가 가능
 
 ## 작업 순서 및 예상 시간
 
-### Phase 1: 백엔드 기초 (2-3시간)
-- [ ] Inertia.js Laravel 패키지 설치
-- [ ] 미들웨어 구현 (`CustomerContextMiddleware`, `LocaleMiddleware`)
-- [ ] 컨트롤러 생성 (`Customer\*`)
+### Phase 1: 백엔드 기초 (1-2시간)
+- [x] Inertia.js Laravel 패키지 설치
+- [ ] ~~미들웨어 구현~~: **제외** - 리소스 구현 후 작성
+- [x] 컨트롤러 생성 (`Customer\*`)
 - [ ] 라우트 정의 (web.php, api.php)
 
 ### Phase 2: 프론트엔드 설정 (2-3시간)
