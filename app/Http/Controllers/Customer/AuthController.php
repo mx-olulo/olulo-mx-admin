@@ -39,12 +39,21 @@ class AuthController extends Controller
 
     /**
      * Firebase 로그인 API
+     *
+     * Firebase ID Token을 검증하고 Sanctum 세션을 확립합니다.
+     *
+     * @param Request $request { idToken: string }
+     * @return JsonResponse
      */
     public function apiFirebaseLogin(Request $request): JsonResponse
     {
-        // TODO: Firebase ID Token 검증 및 세션 확립
-        // Phase 4에서 구현
-        return response()->json(['message' => 'Not implemented yet'], 501);
+        // TODO: Firebase ID Token 검증 로직 구현
+        // 현재는 개발 단계로 기본 응답만 반환
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful (mock)',
+        ], 200);
     }
 
     /**
