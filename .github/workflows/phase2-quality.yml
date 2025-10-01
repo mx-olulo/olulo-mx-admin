@@ -66,7 +66,7 @@ jobs:
         run: php -d memory_limit=-1 vendor/bin/phpstan analyse --error-format=github
 
       - name: Run Tests (Excluding Firebase)
-        run: php artisan test --parallel --exclude-group=firebase
+        run: php artisan test --exclude-group=firebase
         env:
           APP_ENV: testing
           DB_CONNECTION: sqlite
