@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Constants\RateLimit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Rate Limiting 설정 (인증 엔드포인트)
         $middleware->alias([
-            'throttle.auth' => \Illuminate\Routing\Middleware\ThrottleRequests::class . ':5,1',
+            'throttle.auth' => \Illuminate\Routing\Middleware\ThrottleRequests::class . ':' . RateLimit::authThrottle(),
         ]);
 
         // 보안 헤더 미들웨어
