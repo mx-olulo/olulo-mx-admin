@@ -23,6 +23,10 @@ class SecurityHeaders
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // CSP Nonce 생성 및 요청에 저장
+        $nonce = base64_encode(random_bytes(16));
+        $request->attributes->set('csp-nonce', $nonce);
+
         /** @var Response $response */
         $response = $next($request);
 
@@ -43,6 +47,7 @@ class SecurityHeaders
 
         // X-Powered-By: 정보 노출 방지 (PHP 버전 숨김)
         $response->headers->remove('X-Powered-By');
+        $response->headers->remove('Server');
 
         // HTTPS 환경에서만 Strict-Transport-Security 헤더 설정
         if ($request->secure() && config('app.env') === 'production') {
@@ -54,8 +59,8 @@ class SecurityHeaders
         if (config('app.env') === 'production') {
             $csp = implode('; ', [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.googleapis.com",
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "script-src 'self' 'nonce-{$nonce}' https://www.gstatic.com https://www.googleapis.com",
+                "style-src 'self' 'nonce-{$nonce}' https://fonts.googleapis.com",
                 "font-src 'self' data: https://fonts.gstatic.com",
                 "img-src 'self' data: https: blob:",
                 "connect-src 'self' https://*.firebaseapp.com https://*.web.app https://*.olulo.com.mx",

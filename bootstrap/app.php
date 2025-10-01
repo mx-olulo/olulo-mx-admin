@@ -24,7 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Rate Limiting 설정 (인증 엔드포인트)
         $middleware->alias([
-            'throttle.auth' => \Illuminate\Routing\Middleware\ThrottleRequests::class . ':10,1',
+            'throttle.auth' => \Illuminate\Routing\Middleware\ThrottleRequests::class .
+                ':' . config('api.rate_limit.auth.max_attempts') .
+                ',' . config('api.rate_limit.auth.decay_minutes'),
         ]);
 
         // 보안 헤더 미들웨어
