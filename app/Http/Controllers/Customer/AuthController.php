@@ -5,11 +5,18 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Kreait\Firebase\Contract\Auth as FirebaseAuth;
+use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
+use Kreait\Firebase\Factory;
 
 /**
  * 고객 인증 컨트롤러
@@ -42,18 +49,159 @@ class AuthController extends Controller
      *
      * Firebase ID Token을 검증하고 Sanctum 세션을 확립합니다.
      *
-     * @param Request $request { idToken: string }
-     * @return JsonResponse
+     * @param  Request  $request  { idToken: string }
+     * @return JsonResponse { success: bool, message: string, user?: array, error?: string }
+     *
+     * @throws ValidationException
      */
     public function apiFirebaseLogin(Request $request): JsonResponse
     {
-        // TODO: Firebase ID Token 검증 로직 구현
-        // 현재는 개발 단계로 기본 응답만 반환
+        // 1. Request 유효성 검증
+        $validated = $request->validate([
+            'idToken' => 'required|string',
+        ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Login successful (mock)',
-        ], 200);
+        try {
+            // 2. Firebase Admin SDK 초기화
+            $auth = $this->initializeFirebaseAuth();
+
+            // 3. ID Token 검증
+            $verifiedIdToken = $auth->verifyIdToken($validated['idToken']);
+
+            // 4. Firebase 사용자 정보 추출
+            $uid = $verifiedIdToken->claims()->get('sub');
+            $email = $verifiedIdToken->claims()->get('email');
+            $name = $verifiedIdToken->claims()->get('name');
+            $phoneNumber = $verifiedIdToken->claims()->get('phone_number');
+            $picture = $verifiedIdToken->claims()->get('picture');
+            $emailVerified = $verifiedIdToken->claims()->get('email_verified', false);
+
+            // 5. 사용자 조회 또는 생성
+            $user = $this->findOrCreateUser([
+                'firebase_uid' => $uid,
+                'email' => $email,
+                'name' => $name,
+                'phone_number' => $phoneNumber,
+                'picture' => $picture,
+                'email_verified' => $emailVerified,
+            ]);
+
+            // 6. Sanctum 세션 확립
+            Auth::guard('web')->login($user);
+            $request->session()->regenerate();
+
+            // 7. 마지막 로그인 시간 업데이트
+            $user->updateLastLoginAt();
+
+            // 8. 성공 응답
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone_number' => $user->phone_number,
+                    'avatar_url' => $user->avatar_url,
+                ],
+            ], 200);
+        } catch (FailedToVerifyToken $e) {
+            // Firebase 토큰 검증 실패
+            Log::warning('Firebase token verification failed', [
+                'error' => $e->getMessage(),
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication failed',
+                'error' => config('app.debug') ? $e->getMessage() : 'Invalid or expired token',
+            ], 401);
+        } catch (\Exception $e) {
+            // 기타 예외 처리
+            Log::error('Firebase authentication error', [
+                'error' => $e->getMessage(),
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null,
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication failed',
+                'error' => config('app.debug') ? $e->getMessage() : 'An error occurred during authentication',
+            ], 500);
+        }
+    }
+
+    /**
+     * Firebase Auth 인스턴스 초기화
+     *
+     * @return FirebaseAuth Firebase Auth 인스턴스
+     *
+     * @throws \InvalidArgumentException Firebase 설정이 올바르지 않은 경우
+     */
+    private function initializeFirebaseAuth(): FirebaseAuth
+    {
+        $projectId = config('firebase.project_id');
+        $clientEmail = config('firebase.client_email');
+        $privateKey = config('firebase.private_key');
+
+        // 환경 변수 검증
+        if (empty($projectId) || empty($clientEmail) || empty($privateKey)) {
+            throw new \InvalidArgumentException(
+                'Firebase configuration is incomplete. Please check your .env file.'
+            );
+        }
+
+        // Private key 포맷 정규화 (줄바꿈 처리)
+        $privateKey = str_replace('\\n', "\n", $privateKey);
+
+        // Firebase Factory 초기화
+        $factory = (new Factory)->withServiceAccount([
+            'project_id' => $projectId,
+            'client_email' => $clientEmail,
+            'private_key' => $privateKey,
+        ]);
+
+        return $factory->createAuth();
+    }
+
+    /**
+     * Firebase 사용자 정보로 User 조회 또는 생성
+     *
+     * @param  array{firebase_uid: string, email: ?string, name: ?string, phone_number: ?string, picture: ?string, email_verified: bool}  $firebaseData  Firebase 사용자 데이터
+     * @return User 조회되거나 생성된 사용자 인스턴스
+     */
+    private function findOrCreateUser(array $firebaseData): User
+    {
+        // Firebase UID로 기존 사용자 조회
+        $user = User::findByFirebaseUid($firebaseData['firebase_uid']);
+
+        if ($user) {
+            // 기존 사용자 정보 업데이트
+            $user->updateFromFirebase([
+                'name' => $firebaseData['name'],
+                'email' => $firebaseData['email'],
+                'phone_number' => $firebaseData['phone_number'],
+                'picture' => $firebaseData['picture'],
+                'email_verified' => $firebaseData['email_verified'],
+            ]);
+
+            return $user;
+        }
+
+        // 신규 사용자 생성
+        return User::create([
+            'firebase_uid' => $firebaseData['firebase_uid'],
+            'email' => $firebaseData['email'] ?? null,
+            'name' => $firebaseData['name'] ?? 'User',
+            'phone_number' => $firebaseData['phone_number'] ?? null,
+            'firebase_phone' => $firebaseData['phone_number'] ?? null,
+            'avatar_url' => $firebaseData['picture'] ?? null,
+            'provider' => 'firebase',
+            'email_verified_at' => $firebaseData['email_verified'] ? now() : null,
+            'locale' => config('app.locale', 'es-MX'),
+        ]);
     }
 
     /**

@@ -39,6 +39,17 @@ Route::prefix('customer/auth')->name('customer.auth.')->group(function () {
     });
 });
 
+// 법적 문서 페이지 (짧은 경로)
+Route::get('/terms', function () {
+    return \Inertia\Inertia::render('Customer/Legal/Terms')
+        ->rootView('customer.app');
+})->name('terms');
+
+Route::get('/privacy', function () {
+    return \Inertia\Inertia::render('Customer/Legal/Privacy')
+        ->rootView('customer.app');
+})->name('privacy');
+
 // 고객 개인 영역 (인증 필요)
 Route::middleware('auth:web')->prefix('my')->name('my.')->group(function () {
     Route::get('/orders', [ProfileController::class, 'orders'])

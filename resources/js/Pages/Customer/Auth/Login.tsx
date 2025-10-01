@@ -107,7 +107,7 @@ export default function Login() {
                     },
                 },
                 // 추가 UI 설정
-                signInFlow: 'popup', // 팝업 방식 로그인 (리다이렉트 대신)
+                signInFlow: 'redirect', // 리다이렉트 방식 로그인
                 tosUrl: '/terms', // 이용약관 URL (추후 구현)
                 privacyPolicyUrl: '/privacy', // 개인정보처리방침 URL (추후 구현)
             };
