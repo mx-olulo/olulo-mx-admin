@@ -6,7 +6,7 @@
     <title inertia>{{ config('app.name', 'Olulo MX') }}</title>
 
     <!-- Scripts -->
-    {{-- @routes - Ziggy 패키지 필요 (Phase 4 이후 추가) --}}
+    @routes
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/customer-app.tsx'])
     @inertiaHead

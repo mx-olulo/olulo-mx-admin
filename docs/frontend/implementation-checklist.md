@@ -10,6 +10,7 @@
 - [x] Vite React 플러그인 설정
 - [x] Firebase 초기화 (설정 파일 준비)
 - [x] Inertia 앱 엔트리 생성
+- [x] Ziggy 라우팅 헬퍼 설치
 
 ## Phase 3: Placeholder 페이지
 - [x] `/` (Home.tsx)
