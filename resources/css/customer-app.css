@@ -1,6 +1,5 @@
 /* Customer App CSS */
 @import 'tailwindcss';
-@plugin "daisyui";
 
 /* Source paths */
 @source '../js/Pages/Customer/**/*.tsx';

@@ -16,14 +16,14 @@ export default function Home() {
             {/* 메인 컨텐츠 */}
             <div className="container mx-auto px-4 py-8">
                 {/* 환영 카드 */}
-                <div className="card bg-base-100 shadow-2xl max-w-2xl mx-auto rounded-2xl">
-                    <div className="card-body p-6">
-                        <h2 className="card-title text-2xl mb-4" style={{ fontFamily: 'Noto Sans' }}>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden max-w-2xl mx-auto">
+                    <div className="p-6">
+                        <h2 className="text-xl font-bold text-2xl mb-4" style={{ fontFamily: 'Noto Sans' }}>
                             환영합니다! 👋
                         </h2>
 
                         {/* Placeholder 알림 */}
-                        <div className="alert alert-warning rounded-xl mb-6">
+                        <div className="p-4 rounded-xl flex items-center gap-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800 mb-6">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="stroke-current shrink-0 h-6 w-6"
@@ -45,7 +45,7 @@ export default function Home() {
                             {/* 로그인 버튼 */}
                             <Link
                                 href="/customer/auth/login"
-                                className="btn btn-primary btn-lg rounded-2xl text-white shadow-lg"
+                                className="inline-flex items-center justify-center px-6 py-3 text-lg rounded-2xl font-medium transition-colors bg-[#03D67B] text-white hover:bg-[#00B96F] active:bg-[#009959] shadow-lg"
                                 style={{ fontFamily: 'Noto Sans' }}
                             >
                                 <svg
@@ -68,7 +68,7 @@ export default function Home() {
                             {/* 비회원 계속 버튼 */}
                             <button
                                 type="button"
-                                className="btn btn-outline btn-lg rounded-2xl"
+                                className="inline-flex items-center justify-center px-6 py-3 text-lg rounded-2xl font-medium transition-colors border-2 border-gray-300 hover:border-[#03D67B] hover:bg-[#03D67B] hover:text-white"
                                 style={{ fontFamily: 'Noto Sans' }}
                                 disabled
                             >
@@ -87,12 +87,12 @@ export default function Home() {
                                     />
                                 </svg>
                                 비회원으로 계속
-                                <span className="badge badge-ghost">추후 구현</span>
+                                <span className="px-2 py-1 text-xs rounded-full font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">추후 구현</span>
                             </button>
                         </div>
 
                         {/* 푸터 정보 */}
-                        <div className="divider mt-8"></div>
+                        <div className="border-t border-gray-200 dark:border-gray-700 my-4 mt-8"></div>
                         <div className="text-center text-sm opacity-60">
                             <p>QR 코드를 스캔하여 주문을 시작하세요</p>
                             <p className="mt-1">멕시코 음식 배달 플랫폼</p>
@@ -102,22 +102,22 @@ export default function Home() {
 
                 {/* 추가 정보 카드 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-2xl mx-auto">
-                    <div className="card bg-base-100 shadow-lg rounded-2xl">
-                        <div className="card-body items-center text-center p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+                        <div className="p-4 flex flex-col items-center text-center">
                             <div className="text-4xl mb-2">🍔</div>
                             <h3 className="font-bold">다양한 메뉴</h3>
                             <p className="text-xs opacity-70">맛있는 음식 선택</p>
                         </div>
                     </div>
-                    <div className="card bg-base-100 shadow-lg rounded-2xl">
-                        <div className="card-body items-center text-center p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+                        <div className="p-4 flex flex-col items-center text-center">
                             <div className="text-4xl mb-2">⚡</div>
                             <h3 className="font-bold">빠른 배달</h3>
                             <p className="text-xs opacity-70">신속한 서비스</p>
                         </div>
                     </div>
-                    <div className="card bg-base-100 shadow-lg rounded-2xl">
-                        <div className="card-body items-center text-center p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+                        <div className="p-4 flex flex-col items-center text-center">
                             <div className="text-4xl mb-2">💳</div>
                             <h3 className="font-bold">간편 결제</h3>
                             <p className="text-xs opacity-70">안전한 결제</p>

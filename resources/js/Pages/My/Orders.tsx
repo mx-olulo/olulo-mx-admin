@@ -52,12 +52,12 @@ export default function Orders({ user }: Props) {
                     {/* 사용자 정보 카드 */}
                     {user ? (
                         <>
-                            <div className="card bg-base-100 shadow-2xl rounded-2xl">
-                                <div className="card-body p-6">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+                                <div className="p-6">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
-                                            <div className="avatar placeholder">
-                                                <div className="bg-primary text-primary-content rounded-full w-16">
+                                            <div className="relative">
+                                                <div className="flex items-center justify-center bg-[#03D67B] text-white rounded-full w-16 h-16">
                                                     <span className="text-2xl">
                                                         {user.name.charAt(0).toUpperCase()}
                                                     </span>
@@ -68,13 +68,13 @@ export default function Orders({ user }: Props) {
                                                     {user.name}
                                                 </h2>
                                                 <p className="text-sm opacity-70">{user.email}</p>
-                                                <div className="badge badge-success mt-2">인증됨</div>
+                                                <div className="px-2 py-1 text-xs rounded-full font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 mt-2 inline-block">인증됨</div>
                                             </div>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={handleLogout}
-                                            className="btn btn-ghost btn-sm rounded-xl"
+                                            className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-xl font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -97,7 +97,7 @@ export default function Orders({ user }: Props) {
                             </div>
 
                             {/* Placeholder 알림 */}
-                            <div className="alert alert-warning rounded-xl shadow-lg">
+                            <div className="p-4 rounded-xl flex items-center gap-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800 shadow-lg">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     className="stroke-current shrink-0 h-6 w-6"
@@ -115,8 +115,8 @@ export default function Orders({ user }: Props) {
                             </div>
 
                             {/* 주문 내역 카드 */}
-                            <div className="card bg-base-100 shadow-2xl rounded-2xl">
-                                <div className="card-body p-6">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+                                <div className="p-6">
                                     <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Noto Sans' }}>
                                         📦 내 주문 내역
                                     </h3>
@@ -129,15 +129,15 @@ export default function Orders({ user }: Props) {
                                     </div>
 
                                     {/* 더미 주문 데이터 예시 */}
-                                    <div className="divider">향후 표시될 주문 예시</div>
+                                    <div className="border-t border-gray-200 dark:border-gray-700 my-4">향후 표시될 주문 예시</div>
                                     <div className="space-y-3 opacity-50">
-                                        <div className="border border-base-300 rounded-xl p-4">
+                                        <div className="border border-gray-300 dark:border-gray-700 rounded-xl p-4">
                                             <div className="flex justify-between items-start mb-2">
                                                 <div>
                                                     <p className="font-bold">주문 #12345</p>
                                                     <p className="text-sm opacity-70">2024-01-15 14:30</p>
                                                 </div>
-                                                <div className="badge badge-success">완료</div>
+                                                <div className="px-2 py-1 text-xs rounded-full font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">완료</div>
                                             </div>
                                             <p className="text-sm">타코 x2, 부리또 x1</p>
                                             <p className="text-sm font-bold mt-2">$450 MXN</p>
@@ -147,15 +147,15 @@ export default function Orders({ user }: Props) {
                             </div>
 
                             {/* 테스트 버튼 */}
-                            <div className="card bg-base-100 shadow-2xl rounded-2xl">
-                                <div className="card-body p-6">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+                                <div className="p-6">
                                     <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Noto Sans' }}>
                                         🧪 개발자 테스트
                                     </h3>
                                     <button
                                         type="button"
                                         onClick={handleTestProtectedApi}
-                                        className="btn btn-outline btn-block rounded-2xl"
+                                        className="inline-flex items-center justify-center w-full px-4 py-2 rounded-2xl font-medium transition-colors border-2 border-gray-300 hover:border-[#03D67B] hover:bg-[#03D67B] hover:text-white"
                                         style={{ fontFamily: 'Noto Sans' }}
                                     >
                                         <svg
@@ -182,8 +182,8 @@ export default function Orders({ user }: Props) {
                         </>
                     ) : (
                         /* 로그인 필요 상태 */
-                        <div className="card bg-base-100 shadow-2xl rounded-2xl">
-                            <div className="card-body p-8 text-center">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+                            <div className="p-8 flex flex-col items-center text-center">
                                 <div className="text-6xl mb-4">🔒</div>
                                 <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Noto Sans' }}>
                                     로그인이 필요합니다
@@ -193,7 +193,7 @@ export default function Orders({ user }: Props) {
                                 </p>
                                 <Link
                                     href="/customer/auth/login"
-                                    className="btn btn-primary btn-lg rounded-2xl text-white"
+                                    className="inline-flex items-center justify-center px-6 py-3 text-lg rounded-2xl font-medium transition-colors bg-[#03D67B] text-white hover:bg-[#00B96F] active:bg-[#009959]"
                                     style={{ fontFamily: 'Noto Sans' }}
                                 >
                                     로그인하기

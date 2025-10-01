@@ -15,8 +15,8 @@ export default function Login() {
         <CustomerLayout title="로그인" showBack={true} showBottomNav={false}>
             {/* 로그인 카드 */}
             <div className="container mx-auto px-4 py-12">
-                <div className="card bg-base-100 shadow-2xl max-w-md mx-auto rounded-2xl">
-                    <div className="card-body p-8">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden max-w-md mx-auto">
+                    <div className="p-8">
                         {/* 로고 영역 */}
                         <div className="text-center mb-6">
                             <div className="text-6xl mb-4">🔐</div>
@@ -29,7 +29,7 @@ export default function Login() {
                         </div>
 
                         {/* Placeholder 알림 */}
-                        <div className="alert alert-warning rounded-xl mb-6">
+                        <div className="p-4 rounded-xl flex items-center gap-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800 mb-6">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="stroke-current shrink-0 h-6 w-6"
@@ -49,7 +49,7 @@ export default function Login() {
                         {/* FirebaseUI 컨테이너 */}
                         <div
                             id="firebaseui-auth-container"
-                            className="min-h-[200px] border-2 border-dashed border-base-300 rounded-xl p-8 flex flex-col items-center justify-center bg-base-200"
+                            className="min-h-[200px] border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900"
                         >
                             <div className="text-center">
                                 <div className="text-4xl mb-4">🔥</div>
@@ -59,7 +59,7 @@ export default function Login() {
 
                             {/* 예상 로그인 방법 표시 */}
                             <div className="mt-6 w-full space-y-3">
-                                <div className="btn btn-outline btn-block rounded-xl justify-start" disabled>
+                                <div className="inline-flex items-center justify-start w-full px-4 py-2 rounded-xl font-medium transition-colors border-2 border-gray-300 hover:border-[#03D67B] hover:bg-[#03D67B] hover:text-white" disabled>
                                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                                         <path
                                             fill="currentColor"
@@ -68,7 +68,7 @@ export default function Login() {
                                     </svg>
                                     Google 로그인
                                 </div>
-                                <div className="btn btn-outline btn-block rounded-xl justify-start" disabled>
+                                <div className="inline-flex items-center justify-start w-full px-4 py-2 rounded-xl font-medium transition-colors border-2 border-gray-300 hover:border-[#03D67B] hover:bg-[#03D67B] hover:text-white" disabled>
                                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                                         <path
                                             fill="currentColor"
@@ -77,7 +77,7 @@ export default function Login() {
                                     </svg>
                                     Facebook 로그인
                                 </div>
-                                <div className="btn btn-outline btn-block rounded-xl justify-start" disabled>
+                                <div className="inline-flex items-center justify-start w-full px-4 py-2 rounded-xl font-medium transition-colors border-2 border-gray-300 hover:border-[#03D67B] hover:bg-[#03D67B] hover:text-white" disabled>
                                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                                         <path
                                             fill="currentColor"
@@ -90,7 +90,7 @@ export default function Login() {
                         </div>
 
                         {/* 추가 정보 */}
-                        <div className="divider my-6"></div>
+                        <div className="border-t border-gray-200 dark:border-gray-700 my-4 my-6"></div>
                         <div className="text-center text-sm">
                             <p className="opacity-70">
                                 계정이 없으신가요?
@@ -103,7 +103,7 @@ export default function Login() {
                         {/* 뒤로가기 버튼 */}
                         <Link
                             href="/"
-                            className="btn btn-ghost btn-block rounded-2xl mt-4"
+                            className="inline-flex items-center justify-center w-full px-4 py-2 rounded-2xl font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 mt-4"
                             style={{ fontFamily: 'Noto Sans' }}
                         >
                             ← 홈으로 돌아가기
