@@ -57,8 +57,6 @@ return [
                 'https://api.olulo.com.mx',
                 'https://mx-olulo.firebaseapp.com',
                 'https://mx-olulo.web.app',
-                'https://admin.dev.olulo.com.mx',
-                'https://menu.dev.olulo.com.mx',
             ]),
 
     /*

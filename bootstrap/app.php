@@ -31,7 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
         // 로컬 개발 환경에서 Firebase 콜백은 CSRF 예외 처리 (fetch JSON 호출 때문)
-        if (env('APP_ENV') === 'local') {
+        if (config('app.env') === 'local') {
             $middleware->validateCsrfTokens(except: [
                 'auth/firebase/callback',
             ]);
