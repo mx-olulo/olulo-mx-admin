@@ -622,7 +622,7 @@ export function Login() {
 
 ### 3. Rate Limiting
 
-- 인증 엔드포인트는 Rate Limiting이 적용됨 (10회/분)
+- 인증 엔드포인트는 Rate Limiting이 적용됨 (5회/분)
 - API 엔드포인트는 기본 60회/분 제한 적용
 - 민감한 작업(결제, 주문)은 10회/분 제한 적용
 - 429 에러 발생 시 지수 백오프(exponential backoff) 전략 사용 권장
