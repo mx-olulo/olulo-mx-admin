@@ -1,3 +1,12 @@
+/* Customer App CSS */
+@import 'tailwindcss';
+@plugin "daisyui";
+
+/* Source paths */
+@source '../js/Pages/Customer/**/*.tsx';
+@source '../js/Pages/My/**/*.tsx';
+@source '../js/Layouts/CustomerLayout.tsx';
+
 /*! tailwindcss v4.1.3 | MIT License | https://tailwindcss.com */
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
