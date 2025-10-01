@@ -1,28 +1,18 @@
 import { Link } from '@inertiajs/react';
+import CustomerLayout from '@/Layouts/CustomerLayout';
 
 /**
  * 고객 홈 페이지
  *
  * 첫 진입 페이지입니다.
  * - 로그인 또는 비회원 진행 선택
+ * - 하단 네비게이션 표시
  * - Phase 3: Placeholder UI만 구현
  * - TODO: QR 코드 처리는 별도 진행에서 구현
  */
 export default function Home() {
     return (
-        <div className="min-h-screen bg-gradient-to-b from-base-200 to-base-300">
-            {/* 헤더 영역 */}
-            <div className="bg-primary text-primary-content">
-                <div className="container mx-auto px-4 py-6">
-                    <h1 className="text-2xl font-bold" style={{ fontFamily: 'Noto Sans' }}>
-                        Olulo MX
-                    </h1>
-                    <p className="text-sm opacity-90 mt-1">
-                        음식 배달 서비스
-                    </p>
-                </div>
-            </div>
-
+        <CustomerLayout title="Olulo MX" activeTab="home" showBottomNav={true}>
             {/* 메인 컨텐츠 */}
             <div className="container mx-auto px-4 py-8">
                 {/* 환영 카드 */}
@@ -135,6 +125,6 @@ export default function Home() {
                     </div>
                 </div>
             </div>
-        </div>
+        </CustomerLayout>
     );
 }

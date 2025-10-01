@@ -1,4 +1,5 @@
 import { Link, router } from '@inertiajs/react';
+import CustomerLayout from '@/Layouts/CustomerLayout';
 
 /**
  * 사용자 인터페이스
@@ -23,6 +24,7 @@ interface Props {
  * - 사용자 정보 표시
  * - 보호 API 호출 테스트 버튼
  * - 로그아웃 버튼
+ * - 하단 네비게이션 표시 (activeTab="orders")
  * - Phase 3: Placeholder UI만 구현
  */
 export default function Orders({ user }: Props) {
@@ -43,41 +45,7 @@ export default function Orders({ user }: Props) {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-base-200 to-base-300">
-            {/* 헤더 영역 */}
-            <div className="bg-primary text-primary-content">
-                <div className="container mx-auto px-4 py-6">
-                    <div className="flex items-center justify-between">
-                        <Link href="/" className="text-2xl font-bold hover:opacity-80" style={{ fontFamily: 'Noto Sans' }}>
-                            ← Olulo MX
-                        </Link>
-                        {user && (
-                            <button
-                                type="button"
-                                onClick={handleLogout}
-                                className="btn btn-ghost btn-sm text-white rounded-xl"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                                    />
-                                </svg>
-                                로그아웃
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </div>
-
+        <CustomerLayout title="내 주문" showBack={true} activeTab="orders" showBottomNav={true}>
             {/* 메인 컨텐츠 */}
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto space-y-6">
@@ -86,21 +54,44 @@ export default function Orders({ user }: Props) {
                         <>
                             <div className="card bg-base-100 shadow-2xl rounded-2xl">
                                 <div className="card-body p-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="avatar placeholder">
-                                            <div className="bg-primary text-primary-content rounded-full w-16">
-                                                <span className="text-2xl">
-                                                    {user.name.charAt(0).toUpperCase()}
-                                                </span>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="avatar placeholder">
+                                                <div className="bg-primary text-primary-content rounded-full w-16">
+                                                    <span className="text-2xl">
+                                                        {user.name.charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Noto Sans' }}>
+                                                    {user.name}
+                                                </h2>
+                                                <p className="text-sm opacity-70">{user.email}</p>
+                                                <div className="badge badge-success mt-2">인증됨</div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <h2 className="text-2xl font-bold" style={{ fontFamily: 'Noto Sans' }}>
-                                                {user.name}
-                                            </h2>
-                                            <p className="text-sm opacity-70">{user.email}</p>
-                                            <div className="badge badge-success mt-2">인증됨</div>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleLogout}
+                                            className="btn btn-ghost btn-sm rounded-xl"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-5 w-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                                />
+                                            </svg>
+                                            로그아웃
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -212,6 +203,6 @@ export default function Orders({ user }: Props) {
                     )}
                 </div>
             </div>
-        </div>
+        </CustomerLayout>
     );
 }

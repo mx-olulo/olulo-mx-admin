@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import CustomerLayout from '@/Layouts/CustomerLayout';
 
 /**
  * 고객 로그인 페이지
@@ -6,20 +7,12 @@ import { Link } from '@inertiajs/react';
  * Firebase 인증을 통한 로그인 페이지입니다.
  * - FirebaseUI 컨테이너 제공
  * - ID Token → Sanctum 세션 확립 플로우 준비
+ * - 하단 네비게이션 숨김 (인증 전 페이지)
  * - Phase 3: Placeholder UI만 구현 (실제 Firebase 초기화는 추후)
  */
 export default function Login() {
     return (
-        <div className="min-h-screen bg-gradient-to-b from-base-200 to-base-300">
-            {/* 헤더 영역 */}
-            <div className="bg-primary text-primary-content">
-                <div className="container mx-auto px-4 py-6">
-                    <Link href="/" className="text-2xl font-bold hover:opacity-80" style={{ fontFamily: 'Noto Sans' }}>
-                        ← Olulo MX
-                    </Link>
-                </div>
-            </div>
-
+        <CustomerLayout title="로그인" showBack={true} showBottomNav={false}>
             {/* 로그인 카드 */}
             <div className="container mx-auto px-4 py-12">
                 <div className="card bg-base-100 shadow-2xl max-w-md mx-auto rounded-2xl">
@@ -124,6 +117,6 @@ export default function Login() {
                     <p className="mt-1">개인정보는 암호화되어 안전하게 저장됩니다</p>
                 </div>
             </div>
-        </div>
+        </CustomerLayout>
     );
 }
