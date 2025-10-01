@@ -142,7 +142,7 @@ function BottomNavigation({
  * - 공통 헤더 (Primary 색상 배경, 뒤로가기 버튼, 타이틀)
  * - children 렌더링
  * - 하단 네비게이션 (5개 탭)
- * - TailwindCSS + daisyUI 스타일링
+ * - TailwindCSS 스타일링
  * - 라이트/다크 모드 대응
  * - Viewport 기반 반응형 디자인
  * - Phase 3: 기본 구조 + 임시 이모지 아이콘
