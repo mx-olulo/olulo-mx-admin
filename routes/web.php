@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Auth\AuthController;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,3 +52,48 @@ Route::prefix('auth')->name('auth.')->group(function () {
 
     // 언어 변경 라우트는 제거됨: 요청 시 query string `?locale=xx`로 처리
 });
+
+// Firebase Auth Handler Proxy
+// Laravel Cloud에서도 작동하도록 Laravel 라우트로 Firebase 프록시 구현
+Route::any('__/auth/{path}', function (string $path) {
+    $firebaseUrl = 'https://'.config('firebase.web.project_id').'.firebaseapp.com/__/auth/'.$path;
+
+    // Query string 전달
+    $queryString = request()->getQueryString();
+    if ($queryString) {
+        $firebaseUrl .= '?'.$queryString;
+    }
+
+    try {
+        $response = Http::withOptions([
+            'verify' => true,
+            'allow_redirects' => true,
+        ])->withHeaders([
+            'User-Agent' => request()->header('User-Agent'),
+            'Accept' => request()->header('Accept', '*/*'),
+            'Accept-Language' => request()->header('Accept-Language', 'en-US,en;q=0.9'),
+            'Referer' => request()->header('Referer', ''),
+        ])->send(
+            request()->method(),
+            $firebaseUrl,
+            [
+                'body' => request()->getContent(),
+            ]
+        );
+
+        return response($response->body(), $response->status())
+            ->withHeaders([
+                'Content-Type' => $response->header('Content-Type') ?? 'text/html',
+                'Cache-Control' => $response->header('Cache-Control') ?? 'no-cache',
+                'Access-Control-Allow-Origin' => config('app.url'),
+                'Access-Control-Allow-Credentials' => 'true',
+            ]);
+    } catch (\Exception $e) {
+        \Log::error('Firebase auth proxy error', [
+            'error' => $e->getMessage(),
+            'url' => $firebaseUrl,
+        ]);
+
+        return response('Firebase Auth Proxy Error', 502);
+    }
+})->where('path', '.*');
