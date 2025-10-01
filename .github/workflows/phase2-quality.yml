@@ -42,6 +42,9 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      - name: Setup Nova authentication
+        run: composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_LICENSE_KEY }}"
+
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
@@ -63,7 +66,7 @@ jobs:
         run: php -d memory_limit=-1 vendor/bin/phpstan analyse --error-format=github
 
       - name: Run Tests (Excluding Firebase)
-        run: php artisan test --parallel --exclude-group=firebase
+        run: php artisan test --exclude-group=firebase
         env:
           APP_ENV: testing
           DB_CONNECTION: sqlite
@@ -83,6 +86,9 @@ jobs:
           php-version: '8.3'
           extensions: mbstring, xml, ctype, iconv, intl
           coverage: none
+
+      - name: Setup Nova authentication
+        run: composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_LICENSE_KEY }}"
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
