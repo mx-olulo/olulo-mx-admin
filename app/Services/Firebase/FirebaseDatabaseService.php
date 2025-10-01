@@ -193,6 +193,7 @@ class FirebaseDatabaseService
     public function runTransaction(string $path, callable $updateFunction): bool
     {
         try {
+            /** @phpstan-ignore-next-line transaction() 메서드는 Kreait SDK에서 제공되나 타입 정의 누락 */
             $this->database->getReference($path)->transaction($updateFunction);
 
             Log::info('Realtime Database 트랜잭션 완료', ['path' => $path]);

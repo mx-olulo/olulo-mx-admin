@@ -41,8 +41,6 @@ class FirebaseService
 
     /**
      * Firebase 서비스 초기화
-     *
-     * @throws Exception Firebase 초기화 실패 시
      */
     public function __construct()
     {

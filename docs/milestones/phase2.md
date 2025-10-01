@@ -375,7 +375,7 @@ Firebase ID 토큰의 유효성을 검증하는 미들웨어입니다.
 ## 관련 문서
 
 - [인증 설계 상세](../auth.md)
-- [Phase2 구현 계획](../auth/phase2-implementation.md)
+- [Phase2 완료 보고서](phase2-completion-report.md)
 - [환경별 설정 가이드](../devops/environments.md)
 - [테넌시 미들웨어 설계](../tenancy/host-middleware.md)
 - [프로젝트 1 마일스톤](project-1.md)

@@ -104,7 +104,7 @@ class AuthController extends Controller
 
         try {
             // Firebase ID Token 검증
-            if (env('APP_ENV') === 'local') {
+            if (config('app.env') === 'local') {
                 // 로컬 환경에서는 에뮬레이터 토큰(서명 없음) 대비 관대한 검증 경로를 사용
                 $firebaseUserData = $this->firebaseService->verifyIdTokenLenient($request->input('idToken'));
             } else {
@@ -128,7 +128,10 @@ class AuthController extends Controller
                 ], 200);
             }
 
-            return redirect($intendedUrl)->with('auth.success', __('auth.login_success'));
+            /** @var RedirectResponse $redirect */
+            $redirect = redirect($intendedUrl);
+
+            return $redirect->with('auth.success', __('auth.login_success'));
         } catch (FailedToVerifyToken $e) {
             Log::warning('Firebase ID Token 검증 실패', [
                 'ip' => $request->ip(),
@@ -253,8 +256,10 @@ class AuthController extends Controller
         }
 
         // 웹 요청인 경우 로그인 페이지로 리다이렉트
-        return redirect()->route('auth.login')
-            ->with('auth.success', __('auth.logout_success'));
+        /** @var RedirectResponse $redirect */
+        $redirect = redirect()->route('auth.login');
+
+        return $redirect->with('auth.success', __('auth.logout_success'));
     }
 
     /**
@@ -290,7 +295,9 @@ class AuthController extends Controller
         }
 
         // 웹 요청인 경우 이전 페이지로 리다이렉트
-        return redirect()->back()
-            ->with('auth.success', __('auth.locale_changed'));
+        /** @var RedirectResponse $redirect */
+        $redirect = redirect()->back();
+
+        return $redirect->with('auth.success', __('auth.locale_changed'));
     }
 }

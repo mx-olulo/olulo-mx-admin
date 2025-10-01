@@ -3,10 +3,14 @@
 namespace App\Nova;
 
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Resource as NovaResource;
 use Laravel\Scout\Builder as ScoutBuilder;
 
+/**
+ * @extends NovaResource<Model>
+ */
 abstract class Resource extends NovaResource
 {
     /**
@@ -19,6 +23,9 @@ abstract class Resource extends NovaResource
 
     /**
      * Build a Scout search query for the given resource.
+     *
+     * @param  ScoutBuilder<Model>  $query
+     * @return ScoutBuilder<Model>
      */
     public static function scoutQuery(NovaRequest $request, ScoutBuilder $query): ScoutBuilder
     {

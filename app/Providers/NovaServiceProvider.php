@@ -54,7 +54,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
         Gate::define('viewNova', function (User $user) {
             // 현재 단계에서는 인증된 모든 사용자가 Nova에 접근 가능
             // 추후 role-based 권한 체계로 확장 예정
-            return $user !== null;
+            return true;
         });
     }
 
