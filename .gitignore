@@ -24,3 +24,12 @@ Homestead.yaml
 Thumbs.db
 .obsidian
 /resources/firebase/*.json
+
+# Firebase Emulator
+.firebase/
+firebase-debug.log
+ui-debug.log
+
+# Laravel Dusk
+/tests/Browser/screenshots
+/tests/Browser/console
