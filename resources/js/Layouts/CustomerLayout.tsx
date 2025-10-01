@@ -97,7 +97,7 @@ function BottomNavigation({
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 bg-[#F6F6F6] dark:bg-[#434343] border-t border-[#A0A5A3]/20 dark:border-[#878787]/30 z-50">
-            <div className="flex items-center justify-around p-[min(2.5vw,0.75rem)] max-w-md mx-auto">
+            <div className="flex items-center justify-around py-[min(1.5vh,0.75rem)] px-4 h-[calc(4rem+1vh)] max-w-md mx-auto">
                 {navItems.map((item) => {
                     const isActive = activeTab === item.id;
                     return (
@@ -107,7 +107,7 @@ function BottomNavigation({
                                 onTabChange(item.id);
                                 router.visit(item.href);
                             }}
-                            className="flex flex-col items-center gap-[min(1vw,0.25rem)] p-[min(1.5vw,0.5rem)] rounded-lg transition-all hover:bg-white/50 dark:hover:bg-[#202020]/50 active:scale-95 min-w-0"
+                            className="flex flex-col items-center gap-1 rounded-lg transition-all hover:bg-white/50 dark:hover:bg-[#202020]/50 active:scale-95 min-w-0 flex-1"
                             aria-label={item.label}
                         >
                             <div className={`text-2xl ${
@@ -118,7 +118,7 @@ function BottomNavigation({
                                 {item.icon}
                             </div>
                             <span
-                                className={`text-[calc(0.625rem+0.125vw)] font-medium leading-none text-center ${
+                                className={`text-[0.625rem] font-medium leading-none text-center ${
                                     isActive
                                         ? 'text-[#00B96F]'
                                         : 'text-[#878787] dark:text-[#A0A5A3]'
