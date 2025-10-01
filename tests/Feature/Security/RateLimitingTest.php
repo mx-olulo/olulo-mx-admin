@@ -19,8 +19,6 @@ class RateLimitingTest extends TestCase
 
     /**
      * 테스트: Rate Limiting이 적용되지 않은 경우 정상 요청
-     *
-     * @test
      */
     public function test_allows_requests_within_rate_limit(): void
     {
@@ -35,8 +33,6 @@ class RateLimitingTest extends TestCase
 
     /**
      * 테스트: Rate Limit 초과 시 429 응답
-     *
-     * @test
      */
     public function test_blocks_requests_exceeding_rate_limit(): void
     {
@@ -58,8 +54,6 @@ class RateLimitingTest extends TestCase
 
     /**
      * 테스트: Rate Limit 헤더 존재 확인
-     *
-     * @test
      */
     public function test_includes_rate_limit_headers(): void
     {
@@ -74,8 +68,6 @@ class RateLimitingTest extends TestCase
 
     /**
      * 테스트: Rate Limit 초과 후 Retry-After 헤더 확인
-     *
-     * @test
      */
     public function test_includes_retry_after_header_when_rate_limited(): void
     {
@@ -96,8 +88,6 @@ class RateLimitingTest extends TestCase
 
     /**
      * 테스트: 다른 사용자는 독립적인 Rate Limit 적용
-     *
-     * @test
      */
     public function test_rate_limit_is_per_ip_address(): void
     {
@@ -120,8 +110,6 @@ class RateLimitingTest extends TestCase
 
     /**
      * 테스트: 언어 변경 이외의 라우트도 Rate Limit 적용 확인
-     *
-     * @test
      */
     public function test_rate_limit_applies_to_all_auth_routes(): void
     {
