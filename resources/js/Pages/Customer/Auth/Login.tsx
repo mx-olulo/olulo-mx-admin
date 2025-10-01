@@ -59,28 +59,21 @@ export default function Login() {
                     signInSuccessWithAuthResult: (authResult) => {
                         // ID Token 획득
                         authResult.user.getIdToken().then((idToken) => {
-                            // 1. Sanctum CSRF 쿠키 먼저 획득
-                            fetch('/sanctum/csrf-cookie', {
-                                method: 'GET',
-                                credentials: 'include',
-                            })
-                                .then(() => {
-                                    // 2. CSRF 토큰 가져오기
-                                    const csrfToken = document
-                                        .querySelector('meta[name="csrf-token"]')
-                                        ?.getAttribute('content') || '';
+                            // CSRF 토큰 가져오기 (meta 태그에서)
+                            const csrfToken = document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute('content') || '';
 
-                                    // 3. Laravel API로 토큰 전송하여 세션 확립
-                                    return fetch('/api/customer/auth/firebase/login', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': csrfToken,
-                                        },
-                                        body: JSON.stringify({ idToken }),
-                                        credentials: 'include', // 쿠키 포함 (Sanctum 세션)
-                                    });
-                                })
+                            // Laravel API로 토큰 전송하여 세션 확립
+                            fetch('/api/customer/auth/firebase/login', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken,
+                                },
+                                body: JSON.stringify({ idToken }),
+                                credentials: 'include', // 쿠키 포함 (Sanctum 세션)
+                            })
                                 .then((response) => {
                                     if (response.ok) {
                                         // 세션 확립 성공 - 내 주문 페이지로 이동
