@@ -13,8 +13,23 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__ . '/../routes/api.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
+        then: function () {
+            // 고객 라우트 (Web)
+            Route::middleware('web')
+                ->group(base_path('routes/customer.php'));
+
+            // 고객 API 라우트
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/customer-api.php'));
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Inertia 미들웨어 (Web 그룹)
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
+
         // API 미들웨어 그룹 설정
         $middleware->api(prepend: [
             Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
@@ -33,7 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Firebase 콜백은 CSRF 예외 처리 (fetch JSON 호출 때문)
         $middleware->validateCsrfTokens(except: [
-            'auth/firebase/callback',
+            'auth/firebase/callback',  // 어드민용
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
