@@ -35,3 +35,7 @@ ui-debug.log
 # Laravel Dusk
 /tests/Browser/screenshots
 /tests/Browser/console
+node_modules
+
+# ref
+/ref

@@ -1,9 +1,11 @@
 # 프로젝트 1 — 인증/기초 화면/개발 환경 준비
 
-관련 문서
-- 화이트페이퍼: `docs/whitepaper.md`
-- 인증 설계: `docs/auth.md`
-- 환경별 도메인/CORS: `docs/devops/environments.md`
+## 관련 문서
+- 화이트페이퍼: [docs/whitepaper.md](../whitepaper.md)
+- 인증 설계: [docs/auth.md](../auth.md)
+- 환경별 도메인/CORS: [docs/devops/environments.md](../devops/environments.md)
+- 테넌시 설계: [docs/tenancy/host-middleware.md](../tenancy/host-middleware.md)
+- QA 체크리스트: [docs/qa/checklist.md](../qa/checklist.md)
 ## 목적
 - 고객/매장 관리자 공통 FirebaseUI 인증 플로우 구현(동일 Firebase 프로젝트)
 - 고객 React 페이지의 부트스트랩 화면 표시

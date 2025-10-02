@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// 메인 페이지
+// 관리자 메인 페이지 (임시 - 추후 고객앱으로 전환)
 Route::get('/', function () {
     return view('welcome');
 });
@@ -52,6 +52,9 @@ Route::prefix('auth')->name('auth.')->group(function () {
 
     // 언어 변경 라우트는 제거됨: 요청 시 query string `?locale=xx`로 처리
 });
+
+// 고객 라우트는 별도 파일로 분리: routes/customer.php
+// bootstrap/app.php에서 로드됨
 
 // Firebase Auth Handler Proxy
 // Laravel Cloud에서도 작동하도록 Laravel 라우트로 Firebase 프록시 구현
