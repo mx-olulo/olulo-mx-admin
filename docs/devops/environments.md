@@ -104,6 +104,8 @@ CORS 예시(요지)
  - PostgreSQL 커넥션: 포트(5432), SSL 모드(`prefer`/`require`) 및 시크릿 값 검증
 
 ## 관련 문서
-- 화이트페이퍼: `../whitepaper.md`
-- 인증 설계: `../auth.md`
-- 프로젝트 1: `../milestones/project-1.md`
+- 화이트페이퍼: [docs/whitepaper.md](../whitepaper.md)
+- 인증 설계: [docs/auth.md](../auth.md)
+- 프로젝트 1: [docs/milestones/project-1.md](../milestones/project-1.md)
+- QA 체크리스트: [docs/qa/checklist.md](../qa/checklist.md)
+- 테넌시 설계: [docs/tenancy/host-middleware.md](../tenancy/host-middleware.md)

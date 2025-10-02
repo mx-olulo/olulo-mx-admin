@@ -113,7 +113,8 @@ Route::get('/customer/menus', ...);
 - 서로 다른 루트 도메인 간에는 이 방식이 제한되므로 Bearer 토큰 방식을 고려
 
 ## 관련 문서
-- 화이트페이퍼: `docs/whitepaper.md`
-- 환경별 도메인/CORS: `docs/devops/environments.md`
-- 프로젝트 1: `docs/milestones/project-1.md`
-- QA 체크리스트: `docs/qa/checklist.md`
+- 화이트페이퍼: [docs/whitepaper.md](whitepaper.md)
+- 환경별 도메인/CORS: [docs/devops/environments.md](devops/environments.md)
+- 프로젝트 1: [docs/milestones/project-1.md](milestones/project-1.md)
+- 테넌시 설계: [docs/tenancy/host-middleware.md](tenancy/host-middleware.md)
+- QA 체크리스트: [docs/qa/checklist.md](qa/checklist.md)
