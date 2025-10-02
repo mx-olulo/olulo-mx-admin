@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { auth, validateFirebaseConfig } from '@/lib/firebase';
 import * as firebaseui from 'firebaseui';
-import { EmailAuthProvider, GoogleAuthProvider } from 'firebase/auth';
+import { EmailAuthProvider, GoogleAuthProvider, type UserCredential } from 'firebase/auth';
 import 'firebaseui/dist/firebaseui.css';
 
 /**
@@ -56,13 +56,18 @@ export default function Login() {
                      * Firebase 인증 성공 후 ID Token을 획득하여
                      * Laravel API로 전송하여 Sanctum 세션을 확립합니다.
                      */
-                    signInSuccessWithAuthResult: (authResult) => {
+                    signInSuccessWithAuthResult: (authResult: UserCredential) => {
                         // ID Token 획득
                         authResult.user.getIdToken().then((idToken) => {
                             // CSRF 토큰 가져오기 (meta 태그에서)
                             const csrfToken = document
                                 .querySelector('meta[name="csrf-token"]')
-                                ?.getAttribute('content') || '';
+                                ?.getAttribute('content');
+
+                            if (!csrfToken) {
+                                setError('CSRF 토큰을 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+                                return;
+                            }
 
                             // Laravel API로 토큰 전송하여 세션 확립
                             fetch('/api/customer/auth/firebase/login', {
@@ -103,7 +108,6 @@ export default function Login() {
                      */
                     uiShown: () => {
                         // 로딩 상태 제거 (필요시)
-                        console.log('FirebaseUI rendered');
                     },
                 },
                 // 추가 UI 설정

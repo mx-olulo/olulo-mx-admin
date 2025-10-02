@@ -48,8 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Firebase 콜백은 CSRF 예외 처리 (fetch JSON 호출 때문)
         $middleware->validateCsrfTokens(except: [
-            'auth/firebase/callback',
-            'customer/auth/firebase/callback',
+            'auth/firebase/callback',  // 어드민용
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

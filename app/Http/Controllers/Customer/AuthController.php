@@ -138,7 +138,7 @@ class AuthController extends Controller
      *
      * @return FirebaseAuth Firebase Auth 인스턴스
      *
-     * @throws \InvalidArgumentException Firebase 설정이 올바르지 않은 경우
+     * @throws \RuntimeException Firebase 설정이 올바르지 않은 경우
      */
     private function initializeFirebaseAuth(): FirebaseAuth
     {
@@ -148,8 +148,14 @@ class AuthController extends Controller
 
         // 환경 변수 검증
         if (empty($projectId) || empty($clientEmail) || empty($privateKey)) {
-            throw new \InvalidArgumentException(
-                'Firebase configuration is incomplete. Please check your .env file.'
+            Log::error('Firebase configuration is incomplete', [
+                'has_project_id' => ! empty($projectId),
+                'has_client_email' => ! empty($clientEmail),
+                'has_private_key' => ! empty($privateKey),
+            ]);
+
+            throw new \RuntimeException(
+                'Authentication service is temporarily unavailable.'
             );
         }
 

@@ -89,9 +89,10 @@ export function validateFirebaseConfig(): boolean {
         'appId',
     ];
 
-    return requiredFields.every(
-        (field) => firebaseConfig[field as keyof typeof firebaseConfig] !== undefined
-    );
+    return requiredFields.every((field) => {
+        const value = firebaseConfig[field as keyof typeof firebaseConfig];
+        return value !== undefined && value !== '';
+    });
 }
 
 /**

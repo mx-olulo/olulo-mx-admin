@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // 고객 인증 API
-Route::prefix('customer/auth')->name('api.customer.auth.')->middleware(['web', 'throttle.auth'])->group(function () {
+Route::prefix('customer/auth')->name('api.customer.auth.')->middleware('throttle.auth')->group(function () {
     // Firebase 로그인
     Route::post('/firebase/login', [AuthController::class, 'apiFirebaseLogin'])
         ->name('firebase.login');

@@ -64,7 +64,6 @@ function LoginHeaderContent({ onLoginClick, language = 'ko' }: LoginHeaderProps)
           <button
             onClick={() => {
               // TODO: BenefitsModal 구현 시 모달 열기
-              console.log('Show benefits modal');
             }}
             className={`font-bold leading-[normal] relative shrink-0 text-white pr-[15px] hover:opacity-80 transition-opacity cursor-pointer text-left ${
               language === 'ko'

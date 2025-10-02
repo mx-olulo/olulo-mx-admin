@@ -54,7 +54,6 @@ export default function CustomerLayout({
 }: Props) {
     const handleTabChange = (tabId: string) => {
         // 탭 변경 시 추가 로직 (필요시)
-        console.log('Tab changed:', tabId);
     };
 
     const handleBackClick = () => {
