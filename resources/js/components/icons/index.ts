@@ -9,4 +9,5 @@ export { default as OrdersIcon } from './OrdersIcon';
 export { default as QrCodeIcon } from './QrCodeIcon';
 export { default as SaleIcon } from './SaleIcon';
 export { default as SettingsIcon } from './SettingsIcon';
-export { default as IconBase, getIconColor } from './IconBase';
+export { default as IconBase } from './IconBase';
+export { getIconColor } from './get-icon-color';

@@ -1,4 +1,5 @@
-import IconBase, { getIconColor } from './IconBase';
+import IconBase from './IconBase';
+import { getIconColor } from './get-icon-color';
 import { svgPaths } from './svgPaths';
 
 interface OrdersIconProps {

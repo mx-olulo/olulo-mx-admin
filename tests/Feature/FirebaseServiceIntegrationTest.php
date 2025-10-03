@@ -9,15 +9,15 @@ use App\Services\FirebaseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * FirebaseService 통합 테스트
  *
  * Firebase 서비스의 실제 사용 시나리오를 테스트합니다.
  * 실제 Firebase API 호출 없이 모킹을 통해 통합성을 검증합니다.
- *
- * @group firebase
  */
+#[Group('firebase')]
 class FirebaseServiceIntegrationTest extends TestCase
 {
     use RefreshDatabase;
