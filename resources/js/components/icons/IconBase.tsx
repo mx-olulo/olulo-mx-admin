@@ -1,3 +1,5 @@
+import type React from 'react';
+
 /**
  * 공통 아이콘 베이스 컴포넌트
  *

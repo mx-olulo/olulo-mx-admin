@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\CoversClass;
 
 /**
  * FirebaseService 통합 테스트
@@ -18,6 +19,7 @@ use PHPUnit\Framework\Attributes\Group;
  * 실제 Firebase API 호출 없이 모킹을 통해 통합성을 검증합니다.
  */
 #[Group('firebase')]
+#[CoversClass(FirebaseService::class)]
 class FirebaseServiceIntegrationTest extends TestCase
 {
     use RefreshDatabase;
