@@ -1,3 +1,5 @@
+import type React from 'react';
+
 /**
  * 공통 아이콘 베이스 컴포넌트
  *
@@ -32,6 +34,8 @@ export default function IconBase({
         <div
             className={`relative shrink-0 ${className}`}
             style={{ width: `${width}px`, height: `${height}px` }}
+            data-active={active ? 'true' : 'false'}
+            aria-current={active ? 'page' : undefined}
         >
             <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox={viewBox}>
                 {children}
@@ -40,9 +44,3 @@ export default function IconBase({
     );
 }
 
-/**
- * 활성/비활성 색상 반환
- */
-export function getIconColor(active: boolean): string {
-    return active ? '#00B96F' : '#878787';
-}

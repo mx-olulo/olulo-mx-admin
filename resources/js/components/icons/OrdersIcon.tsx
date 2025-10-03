@@ -1,4 +1,4 @@
-import IconBase, { getIconColor } from './IconBase';
+import IconBase from './IconBase';
 import { svgPaths } from './svgPaths';
 
 interface OrdersIconProps {
@@ -11,17 +11,15 @@ interface OrdersIconProps {
  * 주문 목록을 나타내는 문서 모양 아이콘입니다.
  */
 export default function OrdersIcon({ active }: OrdersIconProps) {
-    const color = getIconColor(active);
-
     return (
         <IconBase active={active} width={18.34} height={22} viewBox="0 0 19 22">
             <g clipPath="url(#clip0_6_3504)">
-                <path d={svgPaths.orders.outline} fill={color} />
+                <path d={svgPaths.orders.outline} fill="currentColor" />
                 {svgPaths.orders.lines.map((line, index) => (
                     <path
                         key={index}
                         d={line.d}
-                        stroke={color}
+                        stroke="currentColor"
                         strokeLinecap="round"
                         strokeMiterlimit="10"
                         strokeWidth="1.02583"

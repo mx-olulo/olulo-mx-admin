@@ -8,6 +8,7 @@
  * - 다국어 지원 (ko/es/en)
  */
 
+import type React from 'react';
 import { HomeIcon, OrdersIcon, QrCodeIcon, SaleIcon, SettingsIcon } from './icons';
 
 /**

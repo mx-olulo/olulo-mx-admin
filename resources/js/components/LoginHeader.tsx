@@ -1,6 +1,5 @@
-import { useState } from 'react';
-
-export type Language = 'ko' | 'es' | 'en';
+// no state used in this component
+import type { Language } from '@/types/language';
 
 interface LoginHeaderProps {
   onLoginClick: () => void;
