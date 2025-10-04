@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use App\Enums\UserRole;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,11 +15,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // 1) Create default roles from enum
+        foreach (UserRole::toArray() as $roleName) {
+            Role::findOrCreate($roleName);
+        }
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // 2) Create a sample admin user only in local environment
+        if (app()->environment('local')) {
+            $user = User::firstOrCreate(
+                ['email' => 'test@example.com'],
+                [
+                    'name' => 'Test User',
+                    // Local-only default password
+                    'password' => bcrypt('password'),
+                ]
+            );
+
+            // 3) Assign admin role to the sample user
+            $user->syncRoles([UserRole::ADMIN->value]);
+        }
     }
 }

@@ -10,11 +10,13 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+use App\Enums\UserRole;
 
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -114,10 +116,8 @@ class User extends Authenticatable implements FilamentUser
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // 현재는 모든 인증된 사용자가 접근 가능
-        // 향후 역할 기반 접근 제어(RBAC) 구현 시 수정 필요
-        // 예: return $this->hasRole('admin') || $this->hasRole('store_manager');
-        return true;
+        // Allow only staff+ roles to access Filament
+        return $this->hasRole(UserRole::panelAccess());
     }
 
     /**

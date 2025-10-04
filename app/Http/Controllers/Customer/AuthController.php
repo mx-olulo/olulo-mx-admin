@@ -17,6 +17,7 @@ use Inertia\Response;
 use Kreait\Firebase\Contract\Auth as FirebaseAuth;
 use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
 use Kreait\Firebase\Factory;
+use App\Enums\UserRole;
 
 /**
  * 고객 인증 컨트롤러
@@ -92,6 +93,11 @@ class AuthController extends Controller
 
             // 7. 마지막 로그인 시간 업데이트
             $user->updateLastLoginAt();
+
+            // 7-1. 기본 고객 역할 부여 (없을 경우)
+            if (! $user->hasRole(UserRole::CUSTOMER->value)) {
+                $user->assignRole(UserRole::CUSTOMER->value);
+            }
 
             // 8. 성공 응답
             return response()->json([
