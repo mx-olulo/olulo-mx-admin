@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Customer;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -92,6 +93,11 @@ class AuthController extends Controller
 
             // 7. 마지막 로그인 시간 업데이트
             $user->updateLastLoginAt();
+
+            // 7-1. 기본 고객 역할 부여 (없을 경우)
+            if (! $user->hasRole(UserRole::CUSTOMER->value)) {
+                $user->assignRole(UserRole::CUSTOMER->value);
+            }
 
             // 8. 성공 응답
             return response()->json([
