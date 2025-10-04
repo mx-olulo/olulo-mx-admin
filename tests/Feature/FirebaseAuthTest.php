@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Session;
 use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
 use Mockery;
-use Tests\TestCase;
-use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
 
 /**
  * Firebase 인증 기능 테스트
@@ -29,7 +29,6 @@ use PHPUnit\Framework\Attributes\Group;
  * - 언어 변경
  * - API 엔드포인트 인증
  * - 보호된 라우트 접근 제어
- *
  */
 #[Group('firebase')]
 class FirebaseAuthTest extends TestCase
@@ -998,8 +997,8 @@ class FirebaseAuthTest extends TestCase
     }
 
     /**
-      * 테스트: 다른 디바이스에서 로그인 시 세션 동시 유지 (다중 세션)
-      */
+     * 테스트: 다른 디바이스에서 로그인 시 세션 동시 유지 (다중 세션)
+     */
     public function test_allows_multiple_sessions_from_different_devices(): void
     {
         // Arrange: 사용자 토큰 데이터

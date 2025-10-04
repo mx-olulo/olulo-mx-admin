@@ -87,5 +87,4 @@ class FirebaseServiceTest extends TestCase
             $this->assertEquals($expectedName, $actualName);
         }
     }
-
 }
