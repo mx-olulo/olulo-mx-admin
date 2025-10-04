@@ -59,6 +59,34 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      - name: Create Vite manifest for tests
+        run: |
+          mkdir -p public/build
+          cat > public/build/manifest.json << 'EOF'
+          {
+            "resources/css/app.css": {
+              "file": "assets/app.css",
+              "src": "resources/css/app.css"
+            },
+            "resources/css/customer-app.css": {
+              "file": "assets/customer-app.css",
+              "src": "resources/css/customer-app.css"
+            },
+            "resources/js/app.js": {
+              "file": "assets/app.js",
+              "src": "resources/js/app.js"
+            },
+            "resources/js/auth-login.js": {
+              "file": "assets/auth-login.js",
+              "src": "resources/js/auth-login.js"
+            },
+            "resources/js/customer-app.tsx": {
+              "file": "assets/customer-app.js",
+              "src": "resources/js/customer-app.tsx"
+            }
+          }
+          EOF
+
       - name: Run Laravel Pint (Code Style)
         run: vendor/bin/pint --test
 
