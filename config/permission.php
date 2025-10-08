@@ -131,12 +131,12 @@ return [
      * (view the latest version of this package's migration file)
      */
 
-    'teams' => false,
+    'teams' => true,
 
     /*
      * The class to use to resolve the permissions team id
      */
-    'team_resolver' => \Spatie\Permission\DefaultTeamResolver::class,
+    'team_resolver' => \App\Permissions\CurrentScopeResolver::class,
 
     /*
      * Passport Client Credentials Grant
@@ -151,7 +151,7 @@ return [
      * setting is false here for optimum safety.
      */
 
-    'display_permission_in_exception' => false,
+    'display_permission_in_exception' => true,
 
     /*
      * When set to true, the required role names are added to exception messages.
@@ -159,7 +159,7 @@ return [
      * setting is false here for optimum safety.
      */
 
-    'display_role_in_exception' => false,
+    'display_role_in_exception' => true,
 
     /*
      * By default wildcard permission lookups are disabled.
