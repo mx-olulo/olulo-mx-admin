@@ -151,7 +151,7 @@ class ScopeContextService
      * @param int $scopeId
      * @return bool
      */
-    public function userCanAccessScope($user, string $scopeType, int $scopeId): bool
+    public function userCanAccessScope(\App\Models\User $user, string $scopeType, int $scopeId): bool
     {
         // TODO: Membership 모델 구현 후 활성화
         // return $user->memberships()
@@ -169,7 +169,7 @@ class ScopeContextService
      * @param \App\Models\User $user
      * @return bool 설정 성공 여부
      */
-    public function setDefaultScopeForUser($user): bool
+    public function setDefaultScopeForUser(\App\Models\User $user): bool
     {
         // TODO: Membership 모델 구현 후 활성화
         // $firstMembership = $user->memberships()->first();
