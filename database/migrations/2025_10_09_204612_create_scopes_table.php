@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * scopes 테이블: 다형 스코프를 정규화하여 Spatie Permission의 team_id로 사용
      * - id: Spatie의 team_id로 사용됨
      * - scope_type: 스코프 타입 (ORG, BRAND, STORE)
@@ -24,7 +24,7 @@ return new class extends Migration
 
             // 동일한 스코프는 하나만 존재
             $table->unique(['scope_type', 'scope_ref_id'], 'unique_scope');
-            
+
             // 조회 성능 최적화
             $table->index(['scope_type', 'scope_ref_id'], 'idx_scope_lookup');
         });

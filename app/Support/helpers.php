@@ -17,11 +17,9 @@ if (! function_exists('csp_nonce')) {
     }
 }
 
-if (!function_exists('scopeContext')) {
+if (! function_exists('scopeContext')) {
     /**
      * 스코프 컨텍스트 서비스 인스턴스 반환
-     * 
-     * @return \App\Services\ScopeContextService
      */
     function scopeContext(): \App\Services\ScopeContextService
     {
@@ -29,11 +27,9 @@ if (!function_exists('scopeContext')) {
     }
 }
 
-if (!function_exists('currentScopeTeamId')) {
+if (! function_exists('currentScopeTeamId')) {
     /**
      * 현재 활성 스코프의 team_id 반환 (Spatie Permission용)
-     * 
-     * @return int|null
      */
     function currentScopeTeamId(): ?int
     {
