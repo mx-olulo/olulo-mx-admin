@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * Scope 모델
@@ -36,12 +35,15 @@ class Scope extends Model
     /**
      * 다형 관계: 실제 스코프 엔터티
      * 
+     * TODO: Organization, Brand, Store 모델 생성 후 활성화
+     * AppServiceProvider에서 morphMap 등록 필요
+     * 
      * @return MorphTo
      */
-    public function scopeable(): MorphTo
-    {
-        return $this->morphTo(__FUNCTION__, 'scope_type', 'scope_ref_id');
-    }
+    // public function scopeable(): MorphTo
+    // {
+    //     return $this->morphTo(__FUNCTION__, 'scope_type', 'scope_ref_id');
+    // }
 
     /**
      * 특정 스코프 조회 또는 생성

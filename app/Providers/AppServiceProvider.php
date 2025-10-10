@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,6 +21,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // 다형 관계 타입 매핑 (짧은 키 사용)
+        // TODO: Organization, Brand, Store 모델 생성 후 활성화
+        // Relation::morphMap([
+        //     'ORG' => \App\Models\Organization::class,
+        //     'BRAND' => \App\Models\Brand::class,
+        //     'STORE' => \App\Models\Store::class,
+        // ]);
     }
 }
