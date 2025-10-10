@@ -85,9 +85,16 @@ class ScopeContextService
      * @param  string  $scopeType  'ORG'|'BRAND'|'STORE'
      * @param  int  $scopeId  실제 엔터티 PK
      * @param  int|null  $teamId  scopes.id (선택, 없으면 자동 조회)
+     *
+     * @throws \InvalidArgumentException 유효하지 않은 스코프 타입
      */
     public function setScope(string $scopeType, int $scopeId, ?int $teamId = null): void
     {
+        // 스코프 타입 검증
+        if (! in_array($scopeType, \App\Models\Scope::VALID_TYPES, true)) {
+            throw new \InvalidArgumentException("Invalid scope type: {$scopeType}");
+        }
+
         Session::put([
             self::SESSION_SCOPE_TYPE => $scopeType,
             self::SESSION_SCOPE_ID => $scopeId,

@@ -25,6 +25,10 @@ class Scope extends Model
         'scope_ref_id',
     ];
 
+    protected $casts = [
+        'scope_ref_id' => 'integer',
+    ];
+
     /**
      * 스코프 타입 상수
      */
@@ -33,6 +37,15 @@ class Scope extends Model
     public const TYPE_BRAND = 'BRAND';
 
     public const TYPE_STORE = 'STORE';
+
+    /**
+     * 유효한 스코프 타입 목록
+     */
+    public const VALID_TYPES = [
+        self::TYPE_ORG,
+        self::TYPE_BRAND,
+        self::TYPE_STORE,
+    ];
 
     /**
      * 다형 관계: 실제 스코프 엔터티
