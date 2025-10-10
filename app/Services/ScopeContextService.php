@@ -66,16 +66,16 @@ class ScopeContextService
             return $cachedTeamId;
         }
 
-        // TODO: scopes 테이블 조회 (마이그레이션 완료 후 활성화)
-        // $scope = \App\Models\Scope::where('scope_type', $scopeType)
-        //     ->where('scope_ref_id', $scopeId)
-        //     ->first();
-        // 
-        // if ($scope) {
-        //     // 세션에 캐시
-        //     Session::put(self::SESSION_SCOPE_TEAM_ID, $scope->id);
-        //     return $scope->id;
-        // }
+        // scopes 테이블 조회
+        $scope = \App\Models\Scope::where('scope_type', $scopeType)
+            ->where('scope_ref_id', $scopeId)
+            ->first();
+        
+        if ($scope) {
+            // 세션에 캐시
+            Session::put(self::SESSION_SCOPE_TEAM_ID, $scope->id);
+            return $scope->id;
+        }
 
         return null;
     }
@@ -98,9 +98,17 @@ class ScopeContextService
         // team_id가 제공되면 캐시
         if ($teamId !== null) {
             Session::put(self::SESSION_SCOPE_TEAM_ID, $teamId);
+            // Spatie Permission에 team_id 설정
+            setPermissionsTeamId($teamId);
         } else {
             // team_id 캐시 무효화 (다음 조회 시 재계산)
             Session::forget(self::SESSION_SCOPE_TEAM_ID);
+            
+            // team_id 조회 후 Spatie에 설정
+            $resolvedTeamId = $this->getCurrentTeamId();
+            if ($resolvedTeamId !== null) {
+                setPermissionsTeamId($resolvedTeamId);
+            }
         }
     }
 
@@ -116,6 +124,9 @@ class ScopeContextService
             self::SESSION_SCOPE_ID,
             self::SESSION_SCOPE_TEAM_ID,
         ]);
+        
+        // Spatie Permission team_id 초기화
+        setPermissionsTeamId(null);
     }
 
     /**
