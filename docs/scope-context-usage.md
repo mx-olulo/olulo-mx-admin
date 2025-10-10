@@ -15,7 +15,7 @@ ScopeContextService::setScope()
     ↓
 세션 저장 (scope_type, scope_id, team_id)
     ↓
-CurrentScopeResolver (Spatie Permission)
+setPermissionsTeamId(team_id) 호출 (Spatie 공식 방식)
     ↓
 권한 체크 (hasRole/can)
 ```
@@ -151,7 +151,8 @@ public function logout(Request $request)
 public function store(Request $request)
 {
     // 현재 스코프 컨텍스트에서 권한 체크
-    // Spatie가 자동으로 CurrentScopeResolver를 통해 team_id를 가져감
+    // ScopeContextService::setScope()가 이미 setPermissionsTeamId()를 호출했으므로
+    // Spatie가 자동으로 현재 team_id 컨텍스트에서 권한 체크
     
     if (!auth()->user()->can('stores.create')) {
         abort(403);
@@ -235,7 +236,38 @@ event(new ScopeChanged($scopeType, $scopeId));
 ## 관련 파일
 
 - `app/Services/ScopeContextService.php` - 핵심 서비스
-- `app/Permissions/CurrentScopeResolver.php` - Spatie 통합
+- `app/Models/Scope.php` - 스코프 모델
 - `app/Support/helpers.php` - 헬퍼 함수
 - `app/Providers/AppServiceProvider.php` - 서비스 등록
 - `config/permission.php` - Spatie 설정
+- `database/migrations/*_create_scopes_table.php` - scopes 테이블 마이그레이션
+
+## Spatie 통합 방식
+
+### setPermissionsTeamId() 사용 (공식 방식)
+
+`ScopeContextService::setScope()`가 호출되면 자동으로 `setPermissionsTeamId()`를 호출하여 Spatie에 현재 team_id를 설정합니다.
+
+```php
+// ScopeContextService::setScope() 내부
+public function setScope(string $scopeType, int $scopeId, ?int $teamId = null): void
+{
+    // 세션에 저장
+    Session::put([
+        'current_scope_type' => $scopeType,
+        'current_scope_id' => $scopeId,
+    ]);
+
+    // Spatie Permission에 team_id 설정
+    if ($teamId !== null) {
+        setPermissionsTeamId($teamId);
+    } else {
+        $resolvedTeamId = $this->getCurrentTeamId();
+        if ($resolvedTeamId !== null) {
+            setPermissionsTeamId($resolvedTeamId);
+        }
+    }
+}
+```
+
+이후 모든 `hasRole()`, `can()` 호출은 자동으로 현재 team_id 컨텍스트에서 실행됩니다.

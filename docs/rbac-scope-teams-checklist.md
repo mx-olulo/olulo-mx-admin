@@ -4,22 +4,28 @@
 - 범위: 설정, 데이터베이스, 애플리케이션(리졸버/미들웨어), 시드, 테스트, 문서
 
 ## 1) 설정(Config)
-- [ ] `config/permission.php`에서 `teams = true` 적용됨
-- [ ] `team_resolver`가 커스텀 리졸버 클래스로 지정됨
+- [x] `config/permission.php`에서 `teams = true` 적용됨
+- [x] `team_resolver`는 기본값(`DefaultTeamResolver`) 사용 (Spatie 공식 방식)
+- [x] `ScopeContextService`에서 `setPermissionsTeamId()` 호출로 통합
 - [ ] 구성/캐시 초기화 절차 문서화(`config:clear`, `cache:clear` 실행 순서 포함)
 
 ## 2) 데이터베이스(Database)
-- [ ] `scopes` 테이블 생성됨 (PK, Unique(scope_type, scope_ref_id), 인덱스 포함)
-- [ ] `roles`에 `team_id` 존재, (`team_id`, `name`, `guard_name`) UNIQUE 보장
-- [ ] `model_has_roles` 복합 PK에 `team_id` 포함 및 인덱스 존재
-- [ ] `model_has_permissions` 복합 PK에 `team_id` 포함 및 인덱스 존재
-- [ ] `role_has_permissions` 정상 생성(팀 비의존)
-- [ ] `migrate:fresh` + 시드가 CI/로컬에서 무오류 수행됨
+- [x] `scopes` 테이블 생성됨 (PK, Unique(scope_type, scope_ref_id), 인덱스 포함)
+- [x] `Scope` 모델 구현 (`findOrCreateScope()`, 다형 관계)
+- [x] `roles`에 `team_id` 존재, (`team_id`, `name`, `guard_name`) UNIQUE 보장
+- [x] `model_has_roles` 복합 PK에 `team_id` 포함 및 인덱스 존재
+- [x] `model_has_permissions` 복합 PK에 `team_id` 포함 및 인덱스 존재
+- [x] `role_has_permissions` 정상 생성(팀 비의존)
+- [x] `migrate:fresh`가 로컬에서 무오류 수행됨
+- [ ] `migrate:fresh` + 시드가 CI에서 무오류 수행됨
 
 ## 3) 애플리케이션(Application)
-- [ ] `CurrentScopeResolver`가 요청 컨텍스트(`X-Scope-Type`, `X-Scope-Id`)를 읽어 올바른 `scopes.id`를 반환
-- [ ] 유효하지 않은 스코프 시 403 또는 명시적 예외 처리 정책이 적용됨
+- [x] `ScopeContextService` 구현 (세션 기반 스코프 관리)
+- [x] `setScope()` 호출 시 자동으로 `setPermissionsTeamId()` 실행
+- [x] `clearScope()` 호출 시 자동으로 `setPermissionsTeamId(null)` 실행
+- [x] 헬퍼 함수 구현 (`scopeContext()`, `currentScopeTeamId()`)
 - [ ] `SetScopeContext` 미들웨어가 등록되어 컨텍스트 주입/검증 흐름을 보장
+- [ ] 유효하지 않은 스코프 시 403 또는 명시적 예외 처리 정책이 적용됨
 - [ ] 컨텍스트 미설정 시의 기본 동작 정의(예: 글로벌 team=null 허용 여부) 문서화
 
 ## 4) 시딩(Seeding)

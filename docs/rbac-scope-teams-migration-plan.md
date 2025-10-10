@@ -7,18 +7,20 @@
 - **핵심 결정(Architecture Decision)**
   - Spatie `teams = true` 활성화.
   - 단일 `scopes` 테이블을 생성하여 team_id의 실체를 다형 스코프로 정규화.
-  - `team_resolver`를 커스텀 구현하여 요청 컨텍스트(Org/Brand/Store + id) → `scopes.id`를 반환.
+  - Spatie 공식 방식 채택: `setPermissionsTeamId()` 글로벌 헬퍼 사용 (커스텀 team_resolver 불필요).
+  - `ScopeContextService`에서 스코프 설정 시 자동으로 `setPermissionsTeamId()` 호출.
   - 컨텍스트 미들웨어로 사용자 요청에 스코프를 주입 및 유효성 검증.
 
 - **영향 범위(Data/Config/Code)**
   - 데이터베이스:
     - Spatie 권한 테이블 5종을 teams 활성 상태로 재생성(`roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions`).
     - 신규 `scopes` 테이블 추가.
+    - 신규 `Scope` 모델 추가.
   - 설정:
-    - `config/permission.php` → `'teams' => true`, `team_resolver`에 커스텀 리졸버 지정.
+    - `config/permission.php` → `'teams' => true`, `team_resolver`는 기본값(`DefaultTeamResolver`) 사용.
   - 애플리케이션:
-    - `app/Permissions/CurrentScopeResolver`(예시 경로) 구현.
-    - `app/Http/Middleware/SetScopeContext` 구현(헤더/세션/쿼리에서 스코프 수신, 검증, 컨텍스트 바인딩).
+    - `app/Services/ScopeContextService` 구현 (세션 기반 스코프 관리, `setPermissionsTeamId()` 호출).
+    - `app/Http/Middleware/SetScopeContext` 구현 (스코프 검증 및 컨텍스트 설정).
     - 시더에서 팀(스코프) 단위 롤/권한 생성 정책 반영.
 
 ---
@@ -46,7 +48,8 @@
 - **[Step 1] 설정 변경**
   - `config/permission.php`
     - `'teams' => true`
-    - `'team_resolver' => App\Permissions\CurrentScopeResolver::class` 지정
+    - `'team_resolver'`는 기본값(`DefaultTeamResolver`) 사용
+  - `ScopeContextService` 구현 (세션 기반 스코프 관리)
   - 캐시 초기화 계획 수립(`config:clear`, `cache:clear`)
 
 - **[Step 2] 마이그레이션 준비**
@@ -57,13 +60,13 @@
   - `database/migrations/xxxx_xx_xx_xxxxxx_create_scopes_table.php`
     - 위 설계의 `scopes` 테이블 생성
 
-- **[Step 4] 리졸버/미들웨어 골격 추가**
-  - `app/Permissions/CurrentScopeResolver.php`
-    - 요청 컨텍스트에서 `X-Scope-Type`, `X-Scope-Id` 추출 → `scopes` 조회 → 해당 `id` 반환
-    - 유효하지 않으면 null 또는 예외 정책 정의(권장: 명시적 403)
+- **[Step 4] 미들웨어 구현**
   - `app/Http/Middleware/SetScopeContext.php`
-    - 사용자 멤버십 검증 위치(추후 `Membership`/조직 모델 추가 시 연결)
-    - 컨텍스트를 리퀘스트 컨테이너/서비스로 바인딩하여 어디서든 참조 가능하게 함
+    - 세션에서 스코프 정보 조회
+    - `ScopeContextService`를 통해 스코프 유효성 검증
+    - 스코프 미설정 시 온보딩/선택 화면으로 리다이렉트
+    - 권한 상실 시 컨텍스트 초기화 및 재선택 유도
+  - `ScopeContextService::setScope()` 호출 시 자동으로 `setPermissionsTeamId()` 실행
 
 - **[Step 5] 시드 전략 반영**
   - 글로벌 공용 롤(예: `admin`, `customer`)이 필요하면 `team_id = null`로 생성
