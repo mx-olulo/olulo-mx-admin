@@ -2,7 +2,7 @@
 
 ## 개요
 
-스코프 타입(Organization/Brand/Store)별로 독립적인 Filament Panel을 구성하여, 각 관리 영역에 맞는 UI/UX와 권한 분리를 제공합니다.
+스코프 타입(Platform/System/Organization/Brand/Store)별로 독립적인 Filament Panel을 구성하여, 각 관리 영역에 맞는 UI/UX와 권한 분리를 제공합니다.
 
 ---
 
@@ -10,6 +10,8 @@
 
 ### 1. 스코프 타입별 Panel 분리
 
+- **Platform Panel**: 플랫폼 운영사 (고객사 관리, 정산, 통계, 모니터링)
+- **System Panel**: 시스템 관리자 (서버 설정, 사용자 관리, 로그 조회, 배포)
 - **Organization Panel**: 조직 전체 관리 (조직 정보, 소속 브랜드 관리, 조직 사용자 관리)
 - **Brand Panel**: 브랜드 관리 (브랜드 정보, 소속 매장 관리, 브랜드 상품 관리)
 - **Store Panel**: 매장 운영 (매장 정보, 재고 관리, 주문 처리, 매출 관리)
@@ -18,6 +20,8 @@
 
 각 Panel은 명확한 URL 경로를 가집니다:
 
+- Platform: `/platform/{platform_id}/dashboard`
+- System: `/system/{system_id}/dashboard`
 - Organization: `/organization/{organization_id}/dashboard`
 - Brand: `/brand/{brand_id}/dashboard`
 - Store: `/store/{store_id}/dashboard`
@@ -33,6 +37,14 @@
 
 ```
 app/Filament/
+├── Platform/
+│   ├── Resources/     (고객사 관리, 정산)
+│   ├── Pages/         (플랫폼 대시보드)
+│   └── Widgets/       (플랫폼 통계 위젯)
+├── System/
+│   ├── Resources/     (시스템 설정, 사용자)
+│   ├── Pages/         (시스템 대시보드)
+│   └── Widgets/       (시스템 모니터링 위젯)
 ├── Organization/
 │   ├── Resources/     (조직 관련 리소스)
 │   ├── Pages/         (조직 대시보드/설정)
@@ -54,6 +66,18 @@ app/Filament/
 ### 1. Panel Provider
 
 각 스코프 타입마다 독립적인 PanelProvider를 생성합니다:
+
+- **PlatformPanelProvider**: 플랫폼 Panel 설정
+  - Panel ID: `platform`
+  - 경로: `/platform`
+  - 테넌트 라우트 프리픽스: `platform`
+  - 리소스 디렉터리: `app/Filament/Platform`
+
+- **SystemPanelProvider**: 시스템 Panel 설정
+  - Panel ID: `system`
+  - 경로: `/system`
+  - 테넌트 라우트 프리픽스: `system`
+  - 리소스 디렉터리: `app/Filament/System`
 
 - **OrganizationPanelProvider**: 조직 Panel 설정
   - Panel ID: `organization`
@@ -77,6 +101,8 @@ app/Filament/
 
 각 Panel에는 해당 스코프 타입만 접근 가능하도록 검증 미들웨어를 추가합니다:
 
+- **EnsurePlatformScope**: Platform Panel 접근 시 Role의 `scope_type`이 `PLATFORM`인지 확인
+- **EnsureSystemScope**: System Panel 접근 시 Role의 `scope_type`이 `SYSTEM`인지 확인
 - **EnsureOrganizationScope**: Organization Panel 접근 시 Role의 `scope_type`이 `ORG`인지 확인
 - **EnsureBrandScope**: Brand Panel 접근 시 Role의 `scope_type`이 `BRAND`인지 확인
 - **EnsureStoreScope**: Store Panel 접근 시 Role의 `scope_type`이 `STORE`인지 확인
@@ -87,6 +113,8 @@ app/Filament/
 
 `User::getTenants()` 메서드는 Panel별로 필터링된 Role 목록을 반환합니다:
 
+- Platform Panel 요청 시: `scope_type = 'PLATFORM'`인 Role만 반환
+- System Panel 요청 시: `scope_type = 'SYSTEM'`인 Role만 반환
 - Organization Panel 요청 시: `scope_type = 'ORG'`인 Role만 반환
 - Brand Panel 요청 시: `scope_type = 'BRAND'`인 Role만 반환
 - Store Panel 요청 시: `scope_type = 'STORE'`인 Role만 반환
@@ -105,6 +133,38 @@ app/Filament/
 ---
 
 ## 권한 계층 구조
+
+### 0. 플랫폼(Platform) 레벨
+
+**관리 범위**:
+- 고객사(Organization) 전체 관리
+- 정산 및 결제 관리
+- 플랫폼 통계 및 모니터링
+- 비즈니스 정책 설정
+
+**접근 경로**: `/platform/{platform_id}`
+
+**주요 리소스**:
+- OrganizationResource: 고객사 관리
+- BillingResource: 정산 관리
+- PlatformReportResource: 플랫폼 통계
+- PolicyResource: 비즈니스 정책
+
+### 0-1. 시스템(System) 레벨
+
+**관리 범위**:
+- 시스템 설정 및 구성
+- 사용자 계정 관리
+- 로그 및 감사 추적
+- 서버 및 배포 관리
+
+**접근 경로**: `/system/{system_id}`
+
+**주요 리소스**:
+- UserResource: 사용자 관리
+- SystemConfigResource: 시스템 설정
+- AuditLogResource: 감사 로그
+- DeploymentResource: 배포 관리
 
 ### 1. 조직(Organization) 레벨
 
@@ -182,6 +242,40 @@ app/Filament/
 
 ## 사용자 시나리오
 
+### 시나리오 0: Platform Admin
+
+**역할**: Platform Admin (team_id=1, scope_type='PLATFORM', scope_ref_id=1)
+
+**접근 가능 Panel**:
+- Platform Panel: `/platform/1/dashboard`
+
+**수행 가능 작업**:
+- 모든 고객사(Organization) 관리
+- 정산 및 결제 관리
+- 플랫폼 통계 조회
+- 비즈니스 정책 설정
+
+**접근 불가**:
+- System Panel (시스템 관리자 권한 없음)
+- Organization/Brand/Store Panel (고객사 역할 없음)
+
+### 시나리오 0-1: System Admin
+
+**역할**: System Admin (team_id=2, scope_type='SYSTEM', scope_ref_id=1)
+
+**접근 가능 Panel**:
+- System Panel: `/system/2/dashboard`
+
+**수행 가능 작업**:
+- 시스템 설정 및 구성
+- 모든 사용자 계정 관리
+- 로그 및 감사 추적
+- 서버 및 배포 관리
+
+**접근 불가**:
+- Platform Panel (플랫폼 운영 권한 없음)
+- Organization/Brand/Store Panel (고객사 역할 없음)
+
 ### 시나리오 1: 조직 관리자
 
 **역할**: Organization Admin (team_id=100, scope_type='ORG', scope_ref_id=1)
@@ -252,20 +346,24 @@ app/Filament/
 
 ## 구현 단계
 
-### Phase 1: 기본 구조 (현재)
+### Phase 1: 기본 구조 (완료)
 
 - [x] 단일 Admin Panel 구현
 - [x] Role = Tenant 아키텍처
 - [x] SetSpatieTeamId 미들웨어
+- [x] PLATFORM/SYSTEM 스코프 타입 추가
+- [x] Platform/System Admin 역할 시드
 
-### Phase 2: 다중 Panel 전환
+### Phase 2: 다중 Panel 전환 (설계 확정)
 
+- [ ] PlatformPanelProvider 생성
+- [ ] SystemPanelProvider 생성
 - [ ] OrganizationPanelProvider 생성
 - [ ] BrandPanelProvider 생성
 - [ ] StorePanelProvider 생성
-- [ ] 스코프 검증 미들웨어 구현 (EnsureOrganizationScope, EnsureBrandScope, EnsureStoreScope)
+- [ ] 스코프 검증 미들웨어 구현 (EnsurePlatformScope, EnsureSystemScope, EnsureOrganizationScope, EnsureBrandScope, EnsureStoreScope)
 - [ ] User::getTenants() Panel별 필터링 구현
-- [ ] 기존 Admin Panel 제거 또는 Super Admin 전용으로 전환
+- [ ] 기존 Admin Panel 제거
 
 ### Phase 3: 리소스 분리
 
