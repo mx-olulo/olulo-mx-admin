@@ -212,7 +212,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> */
         $roles = $this->roles()
             ->whereNotNull('team_id')
-            ->when($scopeType, fn ($query) => $query->where('scope_type', $scopeType->value))
+            ->when(
+                $scopeType,
+                fn ($query, \App\Enums\ScopeType $type) => $query->where('scope_type', $type->value)
+            )
             ->get()
             ->unique('team_id')
             ->values();
