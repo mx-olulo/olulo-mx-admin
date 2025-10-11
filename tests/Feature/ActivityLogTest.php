@@ -2,20 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature;
-
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
-use Tests\TestCase;
 
-class ActivityLogTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    public function test_organization_creation_is_logged(): void
-    {
+describe('Organization Activity Logging', function () {
+    test('organization creation is logged', function () {
         $organization = Organization::create([
             'name' => 'Test Organization',
             'description' => 'Test Description',
@@ -35,13 +30,12 @@ class ActivityLogTest extends TestCase
             ->where('subject_type', 'ORG')
             ->first();
 
-        $this->assertNotNull($activity);
-        $this->assertEquals('created', $activity->description);
-        $this->assertArrayHasKey('attributes', $activity->properties->toArray());
-    }
+        expect($activity)->not->toBeNull();
+        expect($activity->description)->toBe('created');
+        expect($activity->properties->toArray())->toHaveKey('attributes');
+    })->group('activity-log', 'organization');
 
-    public function test_organization_update_is_logged(): void
-    {
+    test('organization update is logged', function () {
         $organization = Organization::create([
             'name' => 'Original Name',
             'description' => 'Original Description',
@@ -58,13 +52,12 @@ class ActivityLogTest extends TestCase
             ->where('description', 'updated')
             ->first();
 
-        $this->assertNotNull($activity);
-        $this->assertEquals('Updated Name', $activity->properties['attributes']['name']);
-        $this->assertEquals('Original Name', $activity->properties['old']['name']);
-    }
+        expect($activity)->not->toBeNull();
+        expect($activity->properties['attributes']['name'])->toBe('Updated Name');
+        expect($activity->properties['old']['name'])->toBe('Original Name');
+    })->group('activity-log', 'organization');
 
-    public function test_only_dirty_attributes_are_logged(): void
-    {
+    test('only dirty attributes are logged', function () {
         $organization = Organization::create([
             'name' => 'Test Organization',
             'description' => 'Test Description',
@@ -84,13 +77,14 @@ class ActivityLogTest extends TestCase
             ->where('description', 'updated')
             ->first();
 
-        $this->assertNotNull($activity);
-        $this->assertArrayHasKey('name', $activity->properties['attributes']);
-        $this->assertArrayNotHasKey('description', $activity->properties['attributes']);
-    }
+        expect($activity)->not->toBeNull();
+        expect($activity->properties['attributes'])->toHaveKey('name');
+        expect($activity->properties['attributes'])->not->toHaveKey('description');
+    })->group('activity-log', 'organization');
+});
 
-    public function test_user_changes_are_logged(): void
-    {
+describe('User Activity Logging', function () {
+    test('user changes are logged', function () {
         $user = User::factory()->create([
             'name' => 'John Doe',
             'email' => 'john@example.com',
@@ -105,13 +99,12 @@ class ActivityLogTest extends TestCase
             ->where('description', 'updated')
             ->first();
 
-        $this->assertNotNull($activity);
-        $this->assertEquals('Jane Doe', $activity->properties['attributes']['name']);
-        $this->assertEquals('John Doe', $activity->properties['old']['name']);
-    }
+        expect($activity)->not->toBeNull();
+        expect($activity->properties['attributes']['name'])->toBe('Jane Doe');
+        expect($activity->properties['old']['name'])->toBe('John Doe');
+    })->group('activity-log', 'user');
 
-    public function test_activity_has_causer_when_authenticated(): void
-    {
+    test('activity has causer when authenticated', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -124,7 +117,7 @@ class ActivityLogTest extends TestCase
             ->where('subject_type', 'ORG')
             ->first();
 
-        $this->assertNotNull($activity->causer);
-        $this->assertEquals($user->id, $activity->causer_id);
-    }
-}
+        expect($activity->causer)->not->toBeNull();
+        expect($activity->causer_id)->toBe($user->id);
+    })->group('activity-log', 'causer');
+});
