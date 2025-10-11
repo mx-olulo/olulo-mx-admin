@@ -33,6 +33,9 @@ class ListOrganizationActivities extends Page implements HasTable
         if (! $this->record instanceof \App\Models\Organization) {
             abort(404);
         }
+
+        // 권한 검증: 멀티테넌시 격리
+        $this->authorize('viewActivities', $this->record);
     }
 
     public function table(Table $table): Table
@@ -44,6 +47,7 @@ class ListOrganizationActivities extends Page implements HasTable
         return $table
             ->query(
                 Activity::query()
+                    ->with('causer') // N+1 쿼리 방지: causer eager loading
                     ->where('subject_type', $this->record::class)
                     ->where('subject_id', $this->record->id)
                     ->orderBy('created_at', 'desc')
