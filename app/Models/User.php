@@ -216,13 +216,13 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->get()
             ->unique('team_id')
             ->values();
-        
+
         return $roles;
     }
 
     /**
      * Filament Tenancy: 사용자가 특정 테넌트에 접근 가능한지 확인
-{{ ... }}
+     */
     public function canAccessTenant(Model $tenant): bool
     {
         // $tenant는 Role 인스턴스
