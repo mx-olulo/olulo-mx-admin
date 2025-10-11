@@ -15,12 +15,16 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         // Platform Admin 역할 (플랫폼 운영사)
+        // TODO: Platform 엔터티 생성 후 scope_ref_id를 실제 Platform ID로 업데이트
+        // 현재는 가상 ID(1) 사용, 동작에는 문제없음 (Role 자체가 Tenant)
         $platformAdminRole = Role::firstOrCreate(
             ['name' => 'platform_admin', 'guard_name' => 'web', 'team_id' => 1],
             ['scope_type' => Role::TYPE_PLATFORM, 'scope_ref_id' => 1]
         );
 
         // System Admin 역할 (시스템 관리자)
+        // TODO: System 엔터티 생성 후 scope_ref_id를 실제 System ID로 업데이트
+        // 현재는 가상 ID(1) 사용, 동작에는 문제없음 (Role 자체가 Tenant)
         $systemAdminRole = Role::firstOrCreate(
             ['name' => 'system_admin', 'guard_name' => 'web', 'team_id' => 2],
             ['scope_type' => Role::TYPE_SYSTEM, 'scope_ref_id' => 1]
