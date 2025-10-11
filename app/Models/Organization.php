@@ -23,7 +23,7 @@ class Organization extends Model
     /**
      * 소속 브랜드
      *
-     * @return HasMany<Brand>
+     * @return HasMany<Brand, $this>
      */
     public function brands(): HasMany
     {
@@ -33,7 +33,7 @@ class Organization extends Model
     /**
      * 직접 소속 매장 (브랜드 없이)
      *
-     * @return HasMany<Store>
+     * @return HasMany<Store, $this>
      */
     public function stores(): HasMany
     {
@@ -43,7 +43,7 @@ class Organization extends Model
     /**
      * 다형 관계: Organization 스코프를 가진 Role들
      *
-     * @return MorphMany<Role>
+     * @return MorphMany<Role, $this>
      */
     public function roles(): MorphMany
     {

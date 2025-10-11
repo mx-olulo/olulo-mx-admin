@@ -20,7 +20,7 @@ class Platform extends Model
     /**
      * 다형 관계: Platform 스코프를 가진 Role들
      *
-     * @return MorphMany<Role>
+     * @return MorphMany<Role, $this>
      */
     public function roles(): MorphMany
     {

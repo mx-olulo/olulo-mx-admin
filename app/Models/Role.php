@@ -29,7 +29,7 @@ class Role extends SpatieRole
      *
      * Platform/System은 단일 인스턴스로 scope_ref_id=1 사용
      *
-     * @return MorphTo<\Illuminate\Database\Eloquent\Model, Role>
+     * @return MorphTo<\Illuminate\Database\Eloquent\Model, $this>
      */
     public function scopeable(): MorphTo
     {
