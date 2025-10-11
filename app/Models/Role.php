@@ -5,6 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Spatie\Permission\Models\Role as SpatieRole;
 
+/**
+ * @property int|null $team_id
+ * @property string|null $scope_type
+ * @property int|null $scope_ref_id
+ * @property-read \Illuminate\Database\Eloquent\Model|null $scopeable
+ */
 class Role extends SpatieRole
 {
     /**
@@ -62,20 +68,20 @@ class Role extends SpatieRole
     public function getTenantName(): string
     {
         // scopeable 관계를 통해 실제 엔터티 이름 가져오기
-        if ($this->scopeable) {
+        if ($this->scopeable && isset($this->scopeable->name)) {
             return $this->scopeable->name;
         }
 
         // fallback: ScopeType enum 사용
-        $scopeType = \App\Enums\ScopeType::tryFrom($this->scope_type);
+        $scopeType = $this->scope_type ? \App\Enums\ScopeType::tryFrom($this->scope_type) : null;
 
         if ($scopeType) {
             return match ($scopeType) {
                 \App\Enums\ScopeType::PLATFORM => 'Platform Admin',
                 \App\Enums\ScopeType::SYSTEM => 'System Admin',
-                \App\Enums\ScopeType::ORGANIZATION => "Organization #{$this->scope_ref_id}",
-                \App\Enums\ScopeType::BRAND => "Brand #{$this->scope_ref_id}",
-                \App\Enums\ScopeType::STORE => "Store #{$this->scope_ref_id}",
+                \App\Enums\ScopeType::ORGANIZATION,
+                \App\Enums\ScopeType::BRAND,
+                \App\Enums\ScopeType::STORE => ucfirst(strtolower($scopeType->value))." #{$this->scope_ref_id}",
             };
         }
 

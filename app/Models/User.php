@@ -201,15 +201,18 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      * Filament Tenancy: 사용자가 접근 가능한 테넌트 목록
      *
      * Panel별로 해당 scope_type의 Role만 반환
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role>
      */
     public function getTenants(Panel $panel): Collection
     {
         $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
 
         // 해당 Panel의 scope_type에 맞는 Role만 반환
-        return $this->roles
+        return $this->roles()
             ->whereNotNull('team_id')
-            ->when($scopeType, fn ($roles) => $roles->where('scope_type', $scopeType->value))
+            ->when($scopeType, fn ($query) => $query->where('scope_type', $scopeType->value))
+            ->get()
             ->unique('team_id')
             ->values();
     }
@@ -220,6 +223,6 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     public function canAccessTenant(Model $tenant): bool
     {
         // $tenant는 Role 인스턴스
-        return $this->roles->contains('id', $tenant->id);
+        return $tenant instanceof \App\Models\Role && $this->roles->contains('id', $tenant->id);
     }
 }

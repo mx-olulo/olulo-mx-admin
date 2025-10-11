@@ -46,6 +46,8 @@ enum ScopeType: string
 
     /**
      * 모든 scope type과 모델 클래스 매핑 반환 (morphMap용)
+     *
+     * @return array<string, class-string>
      */
     public static function getMorphMap(): array
     {
@@ -56,6 +58,8 @@ enum ScopeType: string
 
     /**
      * 모든 유효한 scope type 값 반환
+     *
+     * @return array<int, string>
      */
     public static function values(): array
     {
