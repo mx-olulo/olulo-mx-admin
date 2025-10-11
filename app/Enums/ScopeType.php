@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum ScopeType: string
@@ -27,7 +29,7 @@ enum ScopeType: string
         $upperPanelId = strtoupper($panelId);
 
         return collect(self::cases())
-            ->first(fn (self $case) => $case->value === $upperPanelId);
+            ->first(fn (self $case): bool => $case->value === $upperPanelId);
     }
 
     /**
@@ -52,7 +54,7 @@ enum ScopeType: string
     public static function getMorphMap(): array
     {
         return collect(self::cases())
-            ->mapWithKeys(fn (self $case) => [$case->value => $case->getModelClass()])
+            ->mapWithKeys(fn (self $case): array => [$case->value => $case->getModelClass()])
             ->toArray();
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Organization\Resources\Organizations\Pages;
 
 use App\Filament\Organization\Resources\Organizations\OrganizationResource;
@@ -28,14 +30,14 @@ class ListOrganizationActivities extends Page implements HasTable
     {
         $this->record = static::getResource()::resolveRecordRouteBinding($record);
 
-        if (! $this->record) {
+        if (! $this->record instanceof \App\Models\Organization) {
             abort(404);
         }
     }
 
     public function table(Table $table): Table
     {
-        if (! $this->record) {
+        if (! $this->record instanceof \App\Models\Organization) {
             abort(404);
         }
 
@@ -64,7 +66,7 @@ class ListOrganizationActivities extends Page implements HasTable
 
                 Tables\Columns\TextColumn::make('properties')
                     ->label('Changes')
-                    ->formatStateUsing(function ($state) {
+                    ->formatStateUsing(function ($state): string {
                         if (empty($state)) {
                             return '-';
                         }
@@ -80,7 +82,7 @@ class ListOrganizationActivities extends Page implements HasTable
                             }
                         }
 
-                        return $changes ? implode(', ', $changes) : 'Created';
+                        return $changes !== [] ? implode(', ', $changes) : 'Created';
                     })
                     ->wrap()
                     ->limit(100),

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -63,11 +65,9 @@ class Store extends Model
     public function getOwnerOrganization(): ?Organization
     {
         if ($this->brand_id && $this->brand) {
-            /** @var Organization|null */
             return $this->brand->organization;
         }
 
-        /** @var Organization|null */
         return $this->organization;
     }
 

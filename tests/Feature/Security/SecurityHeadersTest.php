@@ -20,13 +20,13 @@ class SecurityHeadersTest extends TestCase
     public function test_includes_basic_security_headers(): void
     {
         // Act: API 요청
-        $response = $this->get('/');
+        $testResponse = $this->get('/');
 
         // Assert: 기본 보안 헤더 확인
-        $response->assertHeader('X-Frame-Options', 'SAMEORIGIN');
-        $response->assertHeader('X-Content-Type-Options', 'nosniff');
-        $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
+        $testResponse->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+        $testResponse->assertHeader('X-Content-Type-Options', 'nosniff');
+        $testResponse->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $testResponse->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
     }
 
     /**
@@ -38,12 +38,12 @@ class SecurityHeadersTest extends TestCase
         config(['app.env' => 'production']);
 
         // Act: production 요청
-        $response = $this->get('/');
+        $testResponse = $this->get('/');
 
         // Assert: CSP 헤더 확인
-        $response->assertHeader('Content-Security-Policy');
+        $testResponse->assertHeader('Content-Security-Policy');
 
-        $csp = $response->headers->get('Content-Security-Policy');
+        $csp = $testResponse->headers->get('Content-Security-Policy');
         $this->assertStringContainsString("default-src 'self'", $csp);
     }
 
@@ -53,11 +53,11 @@ class SecurityHeadersTest extends TestCase
     public function test_hsts_header_only_on_https(): void
     {
         // Act: HTTP 요청 (HTTPS 아님)
-        $response = $this->get('/');
+        $testResponse = $this->get('/');
 
         // Assert: HSTS는 HTTPS에서만 적용되므로 HTTP에서는 없음
         $this->assertFalse(
-            $response->headers->has('Strict-Transport-Security'),
+            $testResponse->headers->has('Strict-Transport-Security'),
             'HSTS should not be present on HTTP requests'
         );
     }
@@ -71,12 +71,12 @@ class SecurityHeadersTest extends TestCase
         config(['app.env' => 'production']);
 
         // HTTPS 요청 시뮬레이션 (https:// 스킴 사용)
-        $response = $this->get('https://localhost/');
+        $testResponse = $this->get('https://localhost/');
 
         // Assert: HSTS 헤더 확인 (production + HTTPS)
-        $response->assertHeader('Strict-Transport-Security');
+        $testResponse->assertHeader('Strict-Transport-Security');
 
-        $hsts = $response->headers->get('Strict-Transport-Security');
+        $hsts = $testResponse->headers->get('Strict-Transport-Security');
         $this->assertStringContainsString('max-age=', $hsts);
         $this->assertStringContainsString('includeSubDomains', $hsts);
         $this->assertStringContainsString('preload', $hsts);
@@ -91,10 +91,10 @@ class SecurityHeadersTest extends TestCase
         config(['app.env' => 'production']);
 
         // Act: production 요청
-        $response = $this->get('/');
+        $testResponse = $this->get('/');
 
         // Assert: CSP 정책 확인
-        $csp = $response->headers->get('Content-Security-Policy');
+        $csp = $testResponse->headers->get('Content-Security-Policy');
 
         // production에서는 unsafe-inline/unsafe-eval 제한
         $this->assertStringContainsString("default-src 'self'", $csp);
@@ -139,11 +139,11 @@ class SecurityHeadersTest extends TestCase
     public function test_removes_x_powered_by_header(): void
     {
         // Act: API 요청
-        $response = $this->get('/');
+        $testResponse = $this->get('/');
 
         // Assert: X-Powered-By 헤더가 없어야 함 (정보 노출 방지)
         $this->assertFalse(
-            $response->headers->has('X-Powered-By'),
+            $testResponse->headers->has('X-Powered-By'),
             'X-Powered-By header should be removed for security'
         );
     }

@@ -58,12 +58,12 @@ class RateLimitingTest extends TestCase
     public function test_includes_rate_limit_headers(): void
     {
         // Act: API 요청
-        $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
+        $testResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
 
         // Assert: Rate Limit 관련 헤더 확인
-        $response->assertStatus(200);
-        $response->assertHeader('X-RateLimit-Limit');
-        $response->assertHeader('X-RateLimit-Remaining');
+        $testResponse->assertStatus(200);
+        $testResponse->assertHeader('X-RateLimit-Limit');
+        $testResponse->assertHeader('X-RateLimit-Remaining');
     }
 
     /**
@@ -77,13 +77,13 @@ class RateLimitingTest extends TestCase
         }
 
         // Act: 11번째 요청 (Rate Limit 초과)
-        $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
+        $testResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
 
         // Assert: 429 응답 및 Retry-After 헤더 확인
-        $response->assertStatus(429);
-        $response->assertHeader('Retry-After');
-        $response->assertHeader('X-RateLimit-Limit', '10');
-        $response->assertHeader('X-RateLimit-Remaining', '0');
+        $testResponse->assertStatus(429);
+        $testResponse->assertHeader('Retry-After');
+        $testResponse->assertHeader('X-RateLimit-Limit', '10');
+        $testResponse->assertHeader('X-RateLimit-Remaining', '0');
     }
 
     /**
@@ -97,8 +97,8 @@ class RateLimitingTest extends TestCase
         }
 
         // 11번째 요청 - 차단되어야 함
-        $response1 = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
-        $this->assertEquals(429, $response1->status());
+        $testResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
+        $this->assertEquals(429, $testResponse->status());
 
         // Act: 다른 IP에서 요청 (시뮬레이션)
         $response2 = $this->withServerVariables(['REMOTE_ADDR' => '192.168.1.100'])
@@ -120,9 +120,9 @@ class RateLimitingTest extends TestCase
 
         // 다른 인증 라우트도 같은 Rate Limit 적용 확인
         // 참고: firebase-login은 Mock이 필요하므로 locale만 테스트
-        $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'es-MX']));
+        $testResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'es-MX']));
 
-        $this->assertEquals(429, $response->status(), 'Rate limit should apply to all auth.* routes');
+        $this->assertEquals(429, $testResponse->status(), 'Rate limit should apply to all auth.* routes');
     }
 
     // =========================================================================
@@ -183,9 +183,9 @@ class RateLimitingTest extends TestCase
         }
 
         // 마지막 요청 후 remaining이 0이 되었는지 확인
-        $lastResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
-        $this->assertEquals(429, $lastResponse->status());
-        $lastResponse->assertHeader('X-RateLimit-Remaining', '0');
+        $testResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
+        $this->assertEquals(429, $testResponse->status());
+        $testResponse->assertHeader('X-RateLimit-Remaining', '0');
     }
 
     /**
@@ -199,13 +199,13 @@ class RateLimitingTest extends TestCase
         }
 
         // Act: Rate Limit 초과 요청
-        $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
+        $testResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
 
         // Assert: Retry-After 헤더 존재 및 값 확인 (초 단위)
-        $response->assertStatus(429);
-        $this->assertTrue($response->headers->has('Retry-After'));
+        $testResponse->assertStatus(429);
+        $this->assertTrue($testResponse->headers->has('Retry-After'));
 
-        $retryAfter = (int) $response->headers->get('Retry-After');
+        $retryAfter = (int) $testResponse->headers->get('Retry-After');
         $this->assertGreaterThan(0, $retryAfter, 'Retry-After should be greater than 0');
         $this->assertLessThanOrEqual(60, $retryAfter, 'Retry-After should not exceed 60 seconds for 1-minute window');
     }
@@ -245,16 +245,16 @@ class RateLimitingTest extends TestCase
         }
 
         // Act: Rate Limit 초과 요청
-        $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
+        $testResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
 
         // Assert: JSON 응답 형식 확인
-        $response->assertStatus(429);
-        $response->assertJsonStructure([
+        $testResponse->assertStatus(429);
+        $testResponse->assertJsonStructure([
             'message',
         ]);
 
         // 메시지 내용 확인
-        $json = $response->json();
+        $json = $testResponse->json();
         $this->assertStringContainsString('Too Many Attempts', $json['message'] ?? '');
     }
 
@@ -264,12 +264,12 @@ class RateLimitingTest extends TestCase
     public function test_rate_limit_headers_on_first_request(): void
     {
         // Act: 첫 번째 요청
-        $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
+        $testResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
 
         // Assert: 첫 요청 시 헤더 확인
-        $response->assertStatus(200);
-        $response->assertHeader('X-RateLimit-Limit', '10');
-        $response->assertHeader('X-RateLimit-Remaining', '9'); // 1회 사용 후 9회 남음
+        $testResponse->assertStatus(200);
+        $testResponse->assertHeader('X-RateLimit-Limit', '10');
+        $testResponse->assertHeader('X-RateLimit-Remaining', '9'); // 1회 사용 후 9회 남음
     }
 
     /**

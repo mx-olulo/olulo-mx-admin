@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Organization\Resources\Organizations\Tables;
 
 use App\Filament\Organization\Resources\Organizations\OrganizationResource;
@@ -44,7 +46,7 @@ class OrganizationsTable
                 EditAction::make(),
                 Action::make('activities')
                     ->icon('heroicon-o-clock')
-                    ->url(fn (Organization $record) => OrganizationResource::getUrl('activities', ['record' => $record]))
+                    ->url(fn (Organization $organization): string => OrganizationResource::getUrl('activities', ['record' => $organization]))
                     ->label('Activity Log'),
             ])
             ->toolbarActions([

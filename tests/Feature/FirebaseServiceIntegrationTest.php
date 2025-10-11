@@ -47,11 +47,11 @@ class FirebaseServiceIntegrationTest extends TestCase
         $this->assertTrue($this->app->bound(FirebaseService::class));
 
         // 동일한 인스턴스가 반환되는지 확인 (싱글톤)
-        $service1 = $this->app->make(FirebaseService::class);
+        $firebaseService = $this->app->make(FirebaseService::class);
         $service2 = $this->app->make(FirebaseService::class);
 
-        $this->assertSame($service1, $service2);
-        $this->assertInstanceOf(FirebaseService::class, $service1);
+        $this->assertSame($firebaseService, $service2);
+        $this->assertInstanceOf(FirebaseService::class, $firebaseService);
     }
 
     /**
@@ -69,10 +69,10 @@ class FirebaseServiceIntegrationTest extends TestCase
             'picture' => 'https://example.com/avatar.jpg',
         ];
 
-        $service = $this->app->make(FirebaseService::class);
+        $firebaseService = $this->app->make(FirebaseService::class);
 
         // 새 사용자 생성 시나리오
-        $user = $service->syncFirebaseUserWithLaravel($firebaseUserData);
+        $user = $firebaseService->syncFirebaseUserWithLaravel($firebaseUserData);
 
         $this->assertInstanceOf(User::class, $user);
         $this->assertEquals('firebase-test-uid-123', $user->firebase_uid);
@@ -92,7 +92,7 @@ class FirebaseServiceIntegrationTest extends TestCase
             'picture' => 'https://example.com/new-avatar.jpg',
         ];
 
-        $updatedUser = $service->syncFirebaseUserWithLaravel($updatedFirebaseData);
+        $updatedUser = $firebaseService->syncFirebaseUserWithLaravel($updatedFirebaseData);
 
         $this->assertEquals($user->id, $updatedUser->id); // 동일한 사용자
         $this->assertEquals('Updated Test User', $updatedUser->name);
@@ -115,8 +115,8 @@ class FirebaseServiceIntegrationTest extends TestCase
             'picture' => null,
         ];
 
-        $service = $this->app->make(FirebaseService::class);
-        $user = $service->syncFirebaseUserWithLaravel($firebaseUserData);
+        $firebaseService = $this->app->make(FirebaseService::class);
+        $user = $firebaseService->syncFirebaseUserWithLaravel($firebaseUserData);
 
         $this->assertInstanceOf(User::class, $user);
         $this->assertEquals('firebase-phone-only-123', $user->firebase_uid);
@@ -140,8 +140,8 @@ class FirebaseServiceIntegrationTest extends TestCase
             'picture' => null,
         ];
 
-        $service = $this->app->make(FirebaseService::class);
-        $user = $service->syncFirebaseUserWithLaravel($firebaseUserData);
+        $firebaseService = $this->app->make(FirebaseService::class);
+        $user = $firebaseService->syncFirebaseUserWithLaravel($firebaseUserData);
 
         $this->assertInstanceOf(User::class, $user);
         $this->assertEquals('John doe', $user->name); // 이메일에서 추출된 이름
@@ -161,12 +161,12 @@ class FirebaseServiceIntegrationTest extends TestCase
             'picture' => null,
         ];
 
-        $service = $this->app->make(FirebaseService::class);
+        $firebaseService = $this->app->make(FirebaseService::class);
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('이메일 또는 전화번호가 필요합니다.');
 
-        $service->syncFirebaseUserWithLaravel($firebaseUserData);
+        $firebaseService->syncFirebaseUserWithLaravel($firebaseUserData);
     }
 
     /**

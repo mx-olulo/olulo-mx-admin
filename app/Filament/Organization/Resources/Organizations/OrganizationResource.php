@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Organization\Resources\Organizations;
 
 use App\Filament\Organization\Resources\Organizations\Pages\CreateOrganization;

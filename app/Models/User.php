@@ -216,7 +216,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->whereNotNull('team_id')
             ->when(
                 $scopeType,
-                fn ($query, \App\Enums\ScopeType $type) => $query->where('scope_type', $type->value)
+                fn ($query, \App\Enums\ScopeType $scopeType) => $query->where('scope_type', $scopeType->value)
             )
             ->get()
             ->unique('team_id')

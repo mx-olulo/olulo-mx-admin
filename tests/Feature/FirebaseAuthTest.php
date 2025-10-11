@@ -95,21 +95,21 @@ class FirebaseAuthTest extends TestCase
     public function test_can_display_login_page(): void
     {
         // Act: 로그인 페이지 요청
-        $response = $this->get(route('auth.login', ['locale' => 'ko']));
+        $testResponse = $this->get(route('auth.login', ['locale' => 'ko']));
 
         // Assert: 페이지 표시 확인
-        $response->assertStatus(200);
-        $response->assertViewIs('auth.login');
-        $response->assertViewHas('firebaseConfig');
-        $response->assertViewHas('locale', 'ko');
-        $response->assertViewHas('theme', 'light');
-        $supportedLocales = $response->viewData('supportedLocales');
+        $testResponse->assertStatus(200);
+        $testResponse->assertViewIs('auth.login');
+        $testResponse->assertViewHas('firebaseConfig');
+        $testResponse->assertViewHas('locale', 'ko');
+        $testResponse->assertViewHas('theme', 'light');
+        $supportedLocales = $testResponse->viewData('supportedLocales');
         $this->assertIsArray($supportedLocales);
         $this->assertEqualsCanonicalizing(['ko', 'en', 'es-MX'], $supportedLocales);
-        $response->assertViewHas('callbackUrl');
+        $testResponse->assertViewHas('callbackUrl');
 
         // Firebase 설정 확인
-        $firebaseConfig = $response->viewData('firebaseConfig');
+        $firebaseConfig = $testResponse->viewData('firebaseConfig');
         $this->assertArrayHasKey('apiKey', $firebaseConfig);
         $this->assertArrayHasKey('authDomain', $firebaseConfig);
         $this->assertArrayHasKey('projectId', $firebaseConfig);
@@ -122,11 +122,11 @@ class FirebaseAuthTest extends TestCase
     public function test_stores_intended_url_in_session(): void
     {
         // Act: intended URL과 함께 로그인 페이지 요청
-        $response = $this->get(route('auth.login', ['intended' => '/admin/dashboard']));
+        $testResponse = $this->get(route('auth.login', ['intended' => '/admin/dashboard']));
 
         // Assert: 세션에 intended URL 저장 확인
-        $response->assertStatus(200);
-        $response->assertSessionHas('auth.intended_url', '/admin/dashboard');
+        $testResponse->assertStatus(200);
+        $testResponse->assertSessionHas('auth.intended_url', '/admin/dashboard');
     }
 
     /**
@@ -157,13 +157,13 @@ class FirebaseAuthTest extends TestCase
             ]));
 
         // Act: Firebase 콜백 요청
-        $response = $this->post(route('auth.firebase.callback'), [
+        $testResponse = $this->post(route('auth.firebase.callback'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 로그인 성공 및 리다이렉트 확인
-        $response->assertRedirect('/admin');
-        $response->assertSessionHas('auth.success');
+        $testResponse->assertRedirect('/admin');
+        $testResponse->assertSessionHas('auth.success');
         $this->assertAuthenticated();
 
         // 로그인된 사용자 정보 확인
@@ -203,13 +203,13 @@ class FirebaseAuthTest extends TestCase
             ]));
 
         // Act: Firebase 콜백 요청
-        $response = $this->withSession(['auth.intended_url' => $intendedUrl])
+        $testResponse = $this->withSession(['auth.intended_url' => $intendedUrl])
             ->post(route('auth.firebase.callback'), [
                 'idToken' => $idToken,
             ]);
 
         // Assert: intended URL로 리다이렉트 확인
-        $response->assertRedirect($intendedUrl);
+        $testResponse->assertRedirect($intendedUrl);
         $this->assertAuthenticated();
     }
 
@@ -230,13 +230,13 @@ class FirebaseAuthTest extends TestCase
             ->andThrow(new FailedToVerifyToken('Invalid token'));
 
         // Act: Firebase 콜백 요청
-        $response = $this->post(route('auth.firebase.callback'), [
+        $testResponse = $this->post(route('auth.firebase.callback'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 검증 실패 응답 확인
-        $response->assertStatus(302);
-        $response->assertSessionHasErrors(['idToken']);
+        $testResponse->assertStatus(302);
+        $testResponse->assertSessionHasErrors(['idToken']);
         $this->assertGuest();
     }
 
@@ -247,11 +247,11 @@ class FirebaseAuthTest extends TestCase
     public function test_firebase_callback_without_token_fails(): void
     {
         // Act: 토큰 없이 Firebase 콜백 요청
-        $response = $this->post(route('auth.firebase.callback'));
+        $testResponse = $this->post(route('auth.firebase.callback'));
 
         // Assert: 검증 실패 확인
-        $response->assertStatus(302);
-        $response->assertSessionHasErrors(['idToken']);
+        $testResponse->assertStatus(302);
+        $testResponse->assertSessionHasErrors(['idToken']);
         $this->assertGuest();
     }
 
@@ -279,13 +279,13 @@ class FirebaseAuthTest extends TestCase
             ->andThrow(new \Exception('Database error'));
 
         // Act: Firebase 콜백 요청
-        $response = $this->post(route('auth.firebase.callback'), [
+        $testResponse = $this->post(route('auth.firebase.callback'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 오류 처리 확인
-        $response->assertRedirect(route('auth.login'));
-        $response->assertSessionHasErrors();
+        $testResponse->assertRedirect(route('auth.login'));
+        $testResponse->assertSessionHasErrors();
         $this->assertGuest();
     }
 
@@ -300,11 +300,11 @@ class FirebaseAuthTest extends TestCase
         $this->actingAs($user);
 
         // Act: 로그아웃 요청
-        $response = $this->post(route('auth.logout'));
+        $testResponse = $this->post(route('auth.logout'));
 
         // Assert: 로그아웃 및 리다이렉트 확인
-        $response->assertRedirect(route('auth.login'));
-        $response->assertSessionHas('auth.success');
+        $testResponse->assertRedirect(route('auth.login'));
+        $testResponse->assertSessionHas('auth.success');
         $this->assertGuest();
     }
 
@@ -322,14 +322,14 @@ class FirebaseAuthTest extends TestCase
 
         // Act: 로그인 후 API 로그아웃 요청
         $this->actingAs($user, 'web');
-        $response = $this->withHeaders([
+        $testResponse = $this->withHeaders([
             'Accept' => 'application/json',
             'Referer' => config('app.url'),
         ])->post(route('api.auth.logout'));
 
         // Assert: JSON 응답 확인
-        $response->assertStatus(200);
-        $response->assertJson([
+        $testResponse->assertStatus(200);
+        $testResponse->assertJson([
             'success' => true,
             'message' => __('auth.logout_success'),
         ]);
@@ -342,11 +342,11 @@ class FirebaseAuthTest extends TestCase
     public function test_can_change_locale(): void
     {
         // Act: 로그인 페이지에 locale 쿼리 파라미터로 전달
-        $response = $this->get(route('auth.login', ['locale' => 'en']));
+        $testResponse = $this->get(route('auth.login', ['locale' => 'en']));
 
         // Assert: 뷰에 전달된 locale 값 확인
-        $response->assertStatus(200);
-        $response->assertViewHas('locale', 'en');
+        $testResponse->assertStatus(200);
+        $testResponse->assertViewHas('locale', 'en');
     }
 
     /**
@@ -356,11 +356,11 @@ class FirebaseAuthTest extends TestCase
     public function test_unsupported_locale_uses_default(): void
     {
         // Act: 지원하지 않는 언어로 로그인 페이지 요청
-        $response = $this->get(route('auth.login', ['locale' => 'fr']));
+        $testResponse = $this->get(route('auth.login', ['locale' => 'fr']));
 
         // Assert: 기본 언어(config('app.locale')) 반영
-        $response->assertStatus(200);
-        $response->assertViewHas('locale', config('app.locale', 'ko'));
+        $testResponse->assertStatus(200);
+        $testResponse->assertViewHas('locale', config('app.locale', 'ko'));
     }
 
     /**
@@ -370,11 +370,11 @@ class FirebaseAuthTest extends TestCase
     public function test_api_locale_change_returns_json(): void
     {
         // Act: API 언어 변경 요청
-        $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'es-MX']));
+        $testResponse = $this->postJson(route('api.auth.locale.change', ['locale' => 'es-MX']));
 
         // Assert: JSON 응답 확인
-        $response->assertStatus(200);
-        $response->assertJson([
+        $testResponse->assertStatus(200);
+        $testResponse->assertJson([
             'success' => true,
             'message' => __('auth.locale_changed'),
             'locale' => 'es-MX',
@@ -414,13 +414,13 @@ class FirebaseAuthTest extends TestCase
             ->andReturn($user);
 
         // Act: API Firebase 로그인 요청
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: JSON 응답 및 인증 확인
-        $response->assertStatus(200);
-        $response->assertJson([
+        $testResponse->assertStatus(200);
+        $testResponse->assertJson([
             'success' => true,
             'message' => __('auth.login_success'),
             'user' => [
@@ -452,13 +452,13 @@ class FirebaseAuthTest extends TestCase
             ->andThrow(new FailedToVerifyToken('Invalid token'));
 
         // Act: API Firebase 로그인 요청
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 오류 응답 확인
-        $response->assertStatus(422);
-        $response->assertJson([
+        $testResponse->assertStatus(422);
+        $testResponse->assertJson([
             'success' => false,
             'message' => __('auth.invalid_firebase_token'),
             'errors' => [
@@ -492,13 +492,13 @@ class FirebaseAuthTest extends TestCase
             ->andThrow(new \Exception('Server error'));
 
         // Act: API Firebase 로그인 요청
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 서버 오류 응답 확인
-        $response->assertStatus(500);
-        $response->assertJson([
+        $testResponse->assertStatus(500);
+        $testResponse->assertJson([
             'success' => false,
             'message' => __('auth.login_failed'),
         ]);
@@ -512,10 +512,10 @@ class FirebaseAuthTest extends TestCase
     public function test_protected_routes_require_authentication(): void
     {
         // Act: 인증 없이 보호된 라우트 접근 시도
-        $response = $this->post(route('auth.logout'));
+        $testResponse = $this->post(route('auth.logout'));
 
         // Assert: 인증 리다이렉트 확인
-        $response->assertRedirect(route('login'));
+        $testResponse->assertRedirect(route('login'));
         $this->assertGuest();
     }
 
@@ -530,10 +530,10 @@ class FirebaseAuthTest extends TestCase
         $this->actingAs($user);
 
         // Act: 로그인 페이지 접근 시도
-        $response = $this->get(route('auth.login'));
+        $testResponse = $this->get(route('auth.login'));
 
         // Assert: 리다이렉트 확인
-        $response->assertRedirect('/dashboard');
+        $testResponse->assertRedirect('/dashboard');
     }
 
     /**
@@ -558,25 +558,23 @@ class FirebaseAuthTest extends TestCase
             ->shouldReceive('syncFirebaseUserWithLaravel')
             ->once()
             ->with($tokenData)
-            ->andReturnUsing(function ($data) {
-                return User::create([
-                    'firebase_uid' => $data['uid'],
-                    'email' => $data['email'],
-                    'name' => $data['name'],
-                    'email_verified_at' => $data['email_verified'] ? now() : null,
-                    'phone_number' => $data['phone_number'],
-                    'avatar_url' => $data['picture'],
-                    'password' => bcrypt(\Illuminate\Support\Str::random(32)),
-                ]);
-            });
+            ->andReturnUsing(fn ($data) => User::create([
+                'firebase_uid' => $data['uid'],
+                'email' => $data['email'],
+                'name' => $data['name'],
+                'email_verified_at' => $data['email_verified'] ? now() : null,
+                'phone_number' => $data['phone_number'],
+                'avatar_url' => $data['picture'],
+                'password' => bcrypt(\Illuminate\Support\Str::random(32)),
+            ]));
 
         // Act: Firebase 콜백 요청
-        $response = $this->post(route('auth.firebase.callback'), [
+        $testResponse = $this->post(route('auth.firebase.callback'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 사용자 생성 및 로그인 확인
-        $response->assertRedirect('/admin');
+        $testResponse->assertRedirect('/admin');
         $this->assertAuthenticated();
 
         $this->assertDatabaseHas('users', [
@@ -623,7 +621,7 @@ class FirebaseAuthTest extends TestCase
             ->shouldReceive('syncFirebaseUserWithLaravel')
             ->once()
             ->with($tokenData)
-            ->andReturnUsing(function ($data) use ($existingUser) {
+            ->andReturnUsing(function (array $data) use ($existingUser) {
                 $existingUser->update([
                     'name' => $data['name'],
                     'phone_number' => $data['phone_number'],
@@ -635,12 +633,12 @@ class FirebaseAuthTest extends TestCase
             });
 
         // Act: Firebase 콜백 요청
-        $response = $this->post(route('auth.firebase.callback'), [
+        $testResponse = $this->post(route('auth.firebase.callback'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 사용자 업데이트 확인
-        $response->assertRedirect('/admin');
+        $testResponse->assertRedirect('/admin');
         $this->assertAuthenticated();
 
         $updatedUser = User::find($existingUser->id);
@@ -679,9 +677,9 @@ class FirebaseAuthTest extends TestCase
             ->shouldReceive('syncFirebaseUserWithLaravel')
             ->once()
             ->with($tokenData)
-            ->andReturnUsing(function ($data) {
+            ->andReturnUsing(function (array $data) {
                 // 전화번호로 이메일 생성
-                $cleanPhoneNumber = preg_replace('/[^0-9]/', '', $data['phone_number']);
+                $cleanPhoneNumber = preg_replace('/[^0-9]/', '', (string) $data['phone_number']);
                 $email = $cleanPhoneNumber . '@olulo.com.mx';
 
                 return User::create([
@@ -694,12 +692,12 @@ class FirebaseAuthTest extends TestCase
             });
 
         // Act: Firebase 콜백 요청
-        $response = $this->post(route('auth.firebase.callback'), [
+        $testResponse = $this->post(route('auth.firebase.callback'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 사용자 생성 확인
-        $response->assertRedirect('/admin');
+        $testResponse->assertRedirect('/admin');
         $this->assertAuthenticated();
 
         $this->assertDatabaseHas('users', [
@@ -742,13 +740,13 @@ class FirebaseAuthTest extends TestCase
             ->andReturn($user);
 
         // Act: CSRF 토큰 없이 API 로그인 요청 (JSON)
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 정상 처리 확인
-        $response->assertStatus(200);
-        $response->assertJson(['success' => true]);
+        $testResponse->assertStatus(200);
+        $testResponse->assertJson(['success' => true]);
     }
 
     /**
@@ -758,12 +756,12 @@ class FirebaseAuthTest extends TestCase
     public function test_web_callback_requires_csrf_token(): void
     {
         // Act: CSRF 토큰 없이 웹 콜백 요청
-        $response = $this->post(route('auth.firebase.callback'), [
+        $testResponse = $this->post(route('auth.firebase.callback'), [
             'idToken' => 'test-token',
         ]);
 
         // Assert: 현재 구현에서는 302 리다이렉트 발생
-        $response->assertStatus(302);
+        $testResponse->assertStatus(302);
     }
 
     // =========================================================================
@@ -777,13 +775,13 @@ class FirebaseAuthTest extends TestCase
     public function test_rejects_empty_string_token(): void
     {
         // Act: 빈 문자열 토큰으로 로그인 시도
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => '',
         ]);
 
         // Assert: 검증 실패
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['idToken']);
+        $testResponse->assertStatus(422);
+        $testResponse->assertJsonValidationErrors(['idToken']);
     }
 
     /**
@@ -793,13 +791,13 @@ class FirebaseAuthTest extends TestCase
     public function test_rejects_null_token(): void
     {
         // Act: null 토큰으로 로그인 시도
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => null,
         ]);
 
         // Assert: 검증 실패
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['idToken']);
+        $testResponse->assertStatus(422);
+        $testResponse->assertJsonValidationErrors(['idToken']);
     }
 
     /**
@@ -818,13 +816,13 @@ class FirebaseAuthTest extends TestCase
             ->andThrow(new FailedToVerifyToken('Malformed token'));
 
         // Act: 잘못된 형식의 토큰으로 로그인 시도
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 422 응답 및 에러 메시지 확인
-        $response->assertStatus(422);
-        $response->assertJson([
+        $testResponse->assertStatus(422);
+        $testResponse->assertJson([
             'success' => false,
             'message' => __('auth.invalid_firebase_token'),
         ]);
@@ -846,13 +844,13 @@ class FirebaseAuthTest extends TestCase
             ->andThrow(new FailedToVerifyToken('Token expired'));
 
         // Act: 만료된 토큰으로 로그인 시도
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 422 응답 및 토큰 만료 에러 확인
-        $response->assertStatus(422);
-        $response->assertJson([
+        $testResponse->assertStatus(422);
+        $testResponse->assertJson([
             'success' => false,
             'message' => __('auth.invalid_firebase_token'),
             'errors' => [
@@ -878,13 +876,13 @@ class FirebaseAuthTest extends TestCase
             ->andThrow(new FailedToVerifyToken('Invalid signature'));
 
         // Act: 서명이 잘못된 토큰으로 로그인 시도
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 422 응답 및 서명 검증 실패 확인
-        $response->assertStatus(422);
-        $response->assertJson([
+        $testResponse->assertStatus(422);
+        $testResponse->assertJson([
             'success' => false,
             'errors' => [
                 'idToken' => [__('auth.invalid_firebase_token')],
@@ -909,13 +907,13 @@ class FirebaseAuthTest extends TestCase
             ->andThrow(new FailedToVerifyToken('Token audience mismatch'));
 
         // Act: 다른 프로젝트의 토큰으로 로그인 시도
-        $response = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 422 응답 및 프로젝트 불일치 확인
-        $response->assertStatus(422);
-        $response->assertJson([
+        $testResponse->assertStatus(422);
+        $testResponse->assertJson([
             'success' => false,
             'message' => __('auth.invalid_firebase_token'),
         ]);
@@ -951,7 +949,7 @@ class FirebaseAuthTest extends TestCase
             ->andReturn($user);
 
         // Act: 첫 번째 로그인
-        $response1 = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
 
@@ -961,7 +959,7 @@ class FirebaseAuthTest extends TestCase
         ]);
 
         // Assert: 두 로그인 모두 성공
-        $response1->assertStatus(200);
+        $testResponse->assertStatus(200);
         $response2->assertStatus(200);
         $this->assertAuthenticated();
 
@@ -992,8 +990,8 @@ class FirebaseAuthTest extends TestCase
         $this->assertGuest();
 
         // 보호된 리소스 접근 시도
-        $response = $this->get('/admin');
-        $response->assertRedirect(route('filament.admin.auth.login'));
+        $testResponse = $this->get('/admin');
+        $testResponse->assertRedirect(route('filament.admin.auth.login'));
     }
 
     /**
@@ -1021,7 +1019,7 @@ class FirebaseAuthTest extends TestCase
             ->andReturn($user);
 
         // Act: 첫 번째 디바이스에서 로그인
-        $response1 = $this->postJson(route('api.auth.firebase.login'), [
+        $testResponse = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => $idToken,
         ]);
         $session1 = Session::getId();
@@ -1037,7 +1035,7 @@ class FirebaseAuthTest extends TestCase
         $session2 = Session::getId();
 
         // Assert: 두 세션 모두 성공, 세션 ID는 다름
-        $response1->assertStatus(200);
+        $testResponse->assertStatus(200);
         $response2->assertStatus(200);
         $this->assertNotEquals($session1, $session2);
     }

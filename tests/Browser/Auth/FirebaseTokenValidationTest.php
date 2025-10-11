@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Browser\Auth;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -64,7 +66,7 @@ class FirebaseTokenValidationTest extends DuskTestCase
      */
     public function test_invalid_firebase_token_is_rejected(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             // CSRF 토큰 획득
             $browser->visit('/sanctum/csrf-cookie');
 
@@ -117,14 +119,14 @@ class FirebaseTokenValidationTest extends DuskTestCase
      */
     public function test_missing_token_returns_validation_error(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             // CSRF 토큰 획득
             $browser->visit('/sanctum/csrf-cookie');
 
             // 토큰 없이 로그인 시도
             $result = $browser->visit('/')
                 ->script(
-                    <<<'JS'
+                    <<<'JS_WRAP'
                         return fetch('/api/auth/firebase-login', {
                             method: 'POST',
                             headers: {
@@ -142,7 +144,7 @@ class FirebaseTokenValidationTest extends DuskTestCase
                             ok: response.ok,
                             status: response.status
                         }));
-                    JS
+                    JS_WRAP
                 )[0];
 
             // 검증 실패 확인 (422)
@@ -168,7 +170,7 @@ class FirebaseTokenValidationTest extends DuskTestCase
      */
     public function test_empty_token_is_rejected(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             // CSRF 토큰 획득
             $browser->visit('/sanctum/csrf-cookie');
 
@@ -221,7 +223,7 @@ class FirebaseTokenValidationTest extends DuskTestCase
      */
     public function test_malformed_token_is_rejected(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             // CSRF 토큰 획득
             $browser->visit('/sanctum/csrf-cookie');
 
