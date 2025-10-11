@@ -28,8 +28,7 @@ class StorePanelProvider extends PanelProvider
             ->path(\App\Enums\PanelType::STORE->value)
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
-                \App\Http\Middleware\SetSpatieTeamId::class,
-                \App\Http\Middleware\EnsureTenantScope::class . ':STORE',
+                \App\Http\Middleware\SetSpatieTeamId::class . ':STORE',
             ], isPersistent: true)
             ->colors([
                 'primary' => Color::Amber,

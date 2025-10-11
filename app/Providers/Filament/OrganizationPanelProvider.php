@@ -28,8 +28,7 @@ class OrganizationPanelProvider extends PanelProvider
             ->path(\App\Enums\PanelType::ORGANIZATION->value)
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
-                \App\Http\Middleware\SetSpatieTeamId::class,
-                \App\Http\Middleware\EnsureTenantScope::class . ':ORG',
+                \App\Http\Middleware\SetSpatieTeamId::class . ':ORG',
             ], isPersistent: true)
             ->colors([
                 'primary' => Color::Amber,

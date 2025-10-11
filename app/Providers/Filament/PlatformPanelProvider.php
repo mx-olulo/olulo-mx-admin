@@ -28,8 +28,7 @@ class PlatformPanelProvider extends PanelProvider
             ->path(\App\Enums\PanelType::PLATFORM->value)
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
-                \App\Http\Middleware\SetSpatieTeamId::class,
-                \App\Http\Middleware\EnsureTenantScope::class . ':PLATFORM',
+                \App\Http\Middleware\SetSpatieTeamId::class . ':PLATFORM',
             ], isPersistent: true)
             ->colors([
                 'primary' => Color::Amber,
