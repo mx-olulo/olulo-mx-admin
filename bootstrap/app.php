@@ -3,12 +3,9 @@
 declare(strict_types=1);
 
 use App\Constants\RateLimit;
-use App\Models\Organization;
-use App\Policies\OrganizationPolicy;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Support\Facades\Gate;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -56,9 +53,5 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })
-    ->booted(function (): void {
-        // Policy 명시적 등록
-        Gate::policy(Organization::class, OrganizationPolicy::class);
     })
     ->create();

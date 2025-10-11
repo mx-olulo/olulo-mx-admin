@@ -18,6 +18,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class OrganizationResource extends Resource
 {
@@ -56,5 +57,61 @@ class OrganizationResource extends Resource
             'edit' => EditOrganization::route('/{record}/edit'),
             'activities' => ListOrganizationActivities::route('/{record}/activities'),
         ];
+    }
+
+    /**
+     * Organization 목록 조회 권한 확인
+     */
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view-organizations') ?? false;
+    }
+
+    /**
+     * Organization 생성 권한 확인
+     */
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create-organizations') ?? false;
+    }
+
+    /**
+     * 특정 Organization 조회 권한 확인
+     */
+    public static function canView(Model $record): bool
+    {
+        return auth()->user()?->can('view-organizations') ?? false;
+    }
+
+    /**
+     * 특정 Organization 수정 권한 확인
+     */
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()?->can('update-organizations') ?? false;
+    }
+
+    /**
+     * 특정 Organization 삭제 권한 확인
+     */
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()?->can('delete-organizations') ?? false;
+    }
+
+    /**
+     * 특정 Organization 복원 권한 확인
+     */
+    public static function canRestore(Model $record): bool
+    {
+        return auth()->user()?->can('restore-organizations') ?? false;
+    }
+
+    /**
+     * 특정 Organization 영구 삭제 권한 확인
+     */
+    public static function canForceDelete(Model $record): bool
+    {
+        return auth()->user()?->can('force-delete-organizations') ?? false;
     }
 }
