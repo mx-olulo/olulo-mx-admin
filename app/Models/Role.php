@@ -85,7 +85,12 @@ class Role extends SpatieRole
      */
     public function getTenantName(): string
     {
-        // TODO: 실제 엔터티 이름 가져오기
+        // scopeable 관계를 통해 실제 엔터티 이름 가져오기
+        if ($this->scopeable) {
+            return $this->scopeable->name;
+        }
+
+        // fallback
         return match ($this->scope_type) {
             self::TYPE_PLATFORM => 'Platform Admin',
             self::TYPE_SYSTEM => 'System Admin',

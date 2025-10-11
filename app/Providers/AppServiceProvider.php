@@ -12,8 +12,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // ScopeContextService를 싱글톤으로 등록
-        $this->app->singleton(\App\Services\ScopeContextService::class);
+        //
     }
 
     /**
@@ -21,12 +20,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // 다형 관계 타입 매핑 (짧은 키 사용)
-        // TODO: Organization, Brand, Store 모델 생성 후 활성화
-        // Relation::morphMap([
-        //     'ORG' => \App\Models\Organization::class,
-        //     'BRAND' => \App\Models\Brand::class,
-        //     'STORE' => \App\Models\Store::class,
-        // ]);
+        // 다형 관계 타입 매핑 (Role scopeable 관계용)
+        Relation::morphMap([
+            'PLATFORM' => \App\Models\Platform::class,
+            'SYSTEM' => \App\Models\System::class,
+            'ORG' => \App\Models\Organization::class,
+            'BRAND' => \App\Models\Brand::class,
+            'STORE' => \App\Models\Store::class,
+        ]);
     }
 }
