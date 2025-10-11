@@ -216,7 +216,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->get()
             ->unique('team_id')
             ->values();
-        
+
         return $roles;
     }
 
