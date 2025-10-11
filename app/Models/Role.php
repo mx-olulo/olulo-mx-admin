@@ -27,8 +27,9 @@ class Role extends SpatieRole
     /**
      * 다형 관계: 실제 스코프 엔터티 (Platform/System/Organization/Brand/Store)
      *
-     * TODO: Organization, Brand, Store 모델 생성 후 활성화
      * Platform/System은 단일 인스턴스로 scope_ref_id=1 사용
+     *
+     * @return MorphTo<\Illuminate\Database\Eloquent\Model, Role>
      */
     public function scopeable(): MorphTo
     {

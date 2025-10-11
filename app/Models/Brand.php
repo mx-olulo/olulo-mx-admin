@@ -22,6 +22,8 @@ class Brand extends Model
 
     /**
      * 소속 조직
+     *
+     * @return BelongsTo<Organization, Brand>
      */
     public function organization(): BelongsTo
     {
@@ -30,6 +32,8 @@ class Brand extends Model
 
     /**
      * 소속 매장
+     *
+     * @return HasMany<Store>
      */
     public function stores(): HasMany
     {
@@ -38,6 +42,8 @@ class Brand extends Model
 
     /**
      * 다형 관계: Brand 스코프를 가진 Role들
+     *
+     * @return MorphMany<Role>
      */
     public function roles(): MorphMany
     {

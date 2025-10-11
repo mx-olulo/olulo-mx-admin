@@ -24,6 +24,8 @@ class Store extends Model
 
     /**
      * 소속 브랜드 (nullable)
+     *
+     * @return BelongsTo<Brand, Store>
      */
     public function brand(): BelongsTo
     {
@@ -32,6 +34,8 @@ class Store extends Model
 
     /**
      * 소속 조직 (nullable, 브랜드 없이 직접 소속)
+     *
+     * @return BelongsTo<Organization, Store>
      */
     public function organization(): BelongsTo
     {
@@ -40,6 +44,8 @@ class Store extends Model
 
     /**
      * 다형 관계: Store 스코프를 가진 Role들
+     *
+     * @return MorphMany<Role>
      */
     public function roles(): MorphMany
     {
