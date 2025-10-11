@@ -13,9 +13,11 @@
     ↓
 ScopeContextService::setScope()
     ↓
-세션 저장 (scope_type, scope_id, team_id)
+세션 저장 (scope_type, scope_id)
     ↓
-setPermissionsTeamId(team_id) 호출 (Spatie 공식 방식)
+사용자의 roles에서 team_id 조회 (Spatie 캐싱 활용)
+    ↓
+setPermissionsTeamId(team_id) 호출
     ↓
 권한 체크 (hasRole/can)
 ```
@@ -31,11 +33,11 @@ $service = scopeContext();
 // 현재 스코프 정보 조회
 $scopeType = scopeContext()->getCurrentScopeType(); // 'ORG'|'BRAND'|'STORE'|null
 $scopeId = scopeContext()->getCurrentScopeId();     // 실제 엔터티 PK
-$teamId = scopeContext()->getCurrentTeamId();       // scopes.id (Spatie team_id)
+$teamId = scopeContext()->getCurrentTeamId();       // roles.team_id (Spatie team_id)
 
 // 또는 한 번에
 $scope = scopeContext()->getCurrentScope();
-// ['type' => 'STORE', 'id' => 123, 'team_id' => 456]
+// ['type' => 'STORE', 'id' => 123, 'team_id' => 100]
 
 // 컨텍스트 존재 여부 확인
 if (scopeContext()->hasScope()) {
@@ -236,11 +238,11 @@ event(new ScopeChanged($scopeType, $scopeId));
 ## 관련 파일
 
 - `app/Services/ScopeContextService.php` - 핵심 서비스
-- `app/Models/Scope.php` - 스코프 모델
+- `app/Models/Role.php` - 확장된 Role 모델 (scope_type, scope_ref_id 포함)
 - `app/Support/helpers.php` - 헬퍼 함수
 - `app/Providers/AppServiceProvider.php` - 서비스 등록
-- `config/permission.php` - Spatie 설정
-- `database/migrations/*_create_scopes_table.php` - scopes 테이블 마이그레이션
+- `config/permission.php` - Spatie 설정 (Role 모델 등록)
+- `database/migrations/*_add_scope_fields_to_roles_table.php` - roles 테이블에 scope 필드 추가
 
 ## Spatie 통합 방식
 

@@ -17,22 +17,24 @@ if (! function_exists('csp_nonce')) {
     }
 }
 
-if (! function_exists('scopeContext')) {
+if (! function_exists('currentTenant')) {
     /**
-     * 스코프 컨텍스트 서비스 인스턴스 반환
+     * 현재 Filament 테넌트 반환
      */
-    function scopeContext(): \App\Services\ScopeContextService
+    function currentTenant(): ?\App\Models\Team
     {
-        return app(\App\Services\ScopeContextService::class);
+        return \Filament\Facades\Filament::getTenant();
     }
 }
 
-if (! function_exists('currentScopeTeamId')) {
+if (! function_exists('currentTeamId')) {
     /**
-     * 현재 활성 스코프의 team_id 반환 (Spatie Permission용)
+     * 현재 테넌트의 team_id 반환 (Spatie Permission용)
      */
-    function currentScopeTeamId(): ?int
+    function currentTeamId(): ?int
     {
-        return scopeContext()->getCurrentTeamId();
+        $tenant = currentTenant();
+
+        return $tenant?->id;
     }
 }
