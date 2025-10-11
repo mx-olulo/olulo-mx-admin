@@ -198,12 +198,18 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
     /**
      * Filament Tenancy: 사용자가 접근 가능한 테넌트 목록
+     * 
+     * Panel별로 해당 scope_type의 Role만 반환
      */
     public function getTenants(Panel $panel): Collection
     {
-        // 사용자의 roles 중 team_id가 있는 것만 (스코프 역할)
+        $panelType = \App\Enums\PanelType::fromPanelId($panel->getId());
+        $scopeType = $panelType?->getScopeType();
+
+        // 해당 Panel의 scope_type에 맞는 Role만 반환
         return $this->roles
             ->whereNotNull('team_id')
+            ->when($scopeType, fn ($roles) => $roles->where('scope_type', $scopeType))
             ->unique('team_id')
             ->values();
     }

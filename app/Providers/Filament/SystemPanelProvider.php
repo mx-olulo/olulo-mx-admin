@@ -24,8 +24,8 @@ class SystemPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('system')
-            ->path('system')
+            ->id(\App\Enums\PanelType::SYSTEM->value)
+            ->path(\App\Enums\PanelType::SYSTEM->value)
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
                 \App\Http\Middleware\SetSpatieTeamId::class,

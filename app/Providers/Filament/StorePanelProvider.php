@@ -24,8 +24,8 @@ class StorePanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('store')
-            ->path('store')
+            ->id(\App\Enums\PanelType::STORE->value)
+            ->path(\App\Enums\PanelType::STORE->value)
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
                 \App\Http\Middleware\SetSpatieTeamId::class,

@@ -24,8 +24,8 @@ class BrandPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('brand')
-            ->path('brand')
+            ->id(\App\Enums\PanelType::BRAND->value)
+            ->path(\App\Enums\PanelType::BRAND->value)
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
                 \App\Http\Middleware\SetSpatieTeamId::class,
