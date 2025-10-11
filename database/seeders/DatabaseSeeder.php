@@ -15,24 +15,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1) Create default roles from enum
-        foreach (UserRole::toArray() as $roleName) {
-            Role::findOrCreate($roleName);
-        }
-
-        // 2) Create a sample admin user only in local environment
+        // RBAC with Tenancy: team_id 필수
+        // UserRole enum 기반 역할은 RoleSeeder에서 team_id와 함께 생성
+        
+        // Local environment only
         if (app()->environment('local')) {
-            $user = User::firstOrCreate(
-                ['email' => 'test@example.com'],
-                [
-                    'name' => 'Test User',
-                    // Local-only default password
-                    'password' => bcrypt('password'),
-                ]
-            );
-
-            // 3) Assign admin role to the sample user
-            $user->syncRoles([UserRole::ADMIN->value]);
+            // Seed RBAC roles with team_id and scopes
+            $this->call(RoleSeeder::class);
         }
     }
 }

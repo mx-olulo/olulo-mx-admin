@@ -10,6 +10,10 @@ class Role extends SpatieRole
     /**
      * 스코프 타입 상수
      */
+    public const TYPE_PLATFORM = 'PLATFORM';  // 플랫폼 운영사 (고객사 관리, 정산 등)
+
+    public const TYPE_SYSTEM = 'SYSTEM';      // 시스템 관리자 (서버, DB, 배포 등)
+
     public const TYPE_ORG = 'ORG';
 
     public const TYPE_BRAND = 'BRAND';
@@ -20,6 +24,8 @@ class Role extends SpatieRole
      * 유효한 스코프 타입 목록
      */
     public const VALID_TYPES = [
+        self::TYPE_PLATFORM,
+        self::TYPE_SYSTEM,
         self::TYPE_ORG,
         self::TYPE_BRAND,
         self::TYPE_STORE,
@@ -37,9 +43,10 @@ class Role extends SpatieRole
     ];
 
     /**
-     * 다형 관계: 실제 스코프 엔터티 (Organization/Brand/Store)
+     * 다형 관계: 실제 스코프 엔터티 (Platform/System/Organization/Brand/Store)
      *
      * TODO: Organization, Brand, Store 모델 생성 후 활성화
+     * Platform/System은 단일 인스턴스로 scope_ref_id=1 사용
      */
     public function scopeable(): MorphTo
     {
@@ -80,6 +87,8 @@ class Role extends SpatieRole
     {
         // TODO: 실제 엔터티 이름 가져오기
         return match ($this->scope_type) {
+            self::TYPE_PLATFORM => "Platform Admin",
+            self::TYPE_SYSTEM => "System Admin",
             self::TYPE_ORG => "Organization #{$this->scope_ref_id}",
             self::TYPE_BRAND => "Brand #{$this->scope_ref_id}",
             self::TYPE_STORE => "Store #{$this->scope_ref_id}",
