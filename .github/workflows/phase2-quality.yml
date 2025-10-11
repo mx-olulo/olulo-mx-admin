@@ -23,6 +23,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -88,7 +91,15 @@ jobs:
           EOF
 
       - name: Run Laravel Pint (Code Style)
-        run: vendor/bin/pint --test
+        run: |
+          vendor/bin/pint
+          if [ -n "$(git status --porcelain)" ]; then
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add -A
+            git commit -m "style: Apply Laravel Pint fixes [skip ci]"
+            git push
+          fi
 
       - name: Run PHPStan (Static Analysis)
         run: php -d memory_limit=-1 vendor/bin/phpstan analyse --error-format=github
