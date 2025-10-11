@@ -13,12 +13,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasTenants
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasFactory, HasRoles, LogsActivity, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -230,5 +232,17 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         // $tenant는 Role 인스턴스
         return $tenant instanceof \App\Models\Role && $this->roles->contains('id', $tenant->id);
+    }
+
+    /**
+     * Activity Log 설정
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'phone_number', 'locale', 'email_verified_at'])
+            ->logOnlyDirty()
+            ->dontLogIfAttributesChangedOnly(['last_login_at', 'remember_token'])
+            ->useLogName('user');
     }
 }

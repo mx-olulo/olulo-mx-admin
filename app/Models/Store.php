@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Store extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'brand_id',
         'organization_id',
@@ -65,5 +68,16 @@ class Store extends Model
 
         /** @var Organization|null */
         return $this->organization;
+    }
+
+    /**
+     * Activity Log 설정
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['brand_id', 'organization_id', 'name', 'description', 'address', 'phone', 'is_active'])
+            ->logOnlyDirty()
+            ->useLogName('store');
     }
 }

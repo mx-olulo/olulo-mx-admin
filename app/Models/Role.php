@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
@@ -13,6 +15,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  */
 class Role extends SpatieRole
 {
+    use LogsActivity;
     /**
      * The attributes that are mass assignable.
      */
@@ -95,5 +98,16 @@ class Role extends SpatieRole
     public function getSlug(): string
     {
         return strtolower("{$this->scope_type}-{$this->scope_ref_id}");
+    }
+
+    /**
+     * Activity Log 설정
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'guard_name', 'team_id', 'scope_type', 'scope_ref_id'])
+            ->logOnlyDirty()
+            ->useLogName('role');
     }
 }

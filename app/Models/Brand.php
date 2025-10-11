@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Brand extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'organization_id',
         'name',
@@ -48,5 +51,16 @@ class Brand extends Model
     public function roles(): MorphMany
     {
         return $this->morphMany(Role::class, 'scopeable', 'scope_type', 'scope_ref_id');
+    }
+
+    /**
+     * Activity Log 설정
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['organization_id', 'name', 'description', 'is_active'])
+            ->logOnlyDirty()
+            ->useLogName('brand');
     }
 }
