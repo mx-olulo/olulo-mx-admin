@@ -81,7 +81,7 @@ class Role extends SpatieRole
                 \App\Enums\ScopeType::SYSTEM => 'System Admin',
                 \App\Enums\ScopeType::ORGANIZATION,
                 \App\Enums\ScopeType::BRAND,
-                \App\Enums\ScopeType::STORE => ucfirst(strtolower($scopeType->value))." #{$this->scope_ref_id}",
+                \App\Enums\ScopeType::STORE => ucfirst(strtolower($scopeType->value)) . " #{$this->scope_ref_id}",
             };
         }
 
