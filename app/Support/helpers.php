@@ -19,9 +19,9 @@ if (! function_exists('csp_nonce')) {
 
 if (! function_exists('currentTenant')) {
     /**
-     * 현재 Filament 테넌트 반환
+     * 현재 Filament 테넌트(Role) 반환
      */
-    function currentTenant(): ?\App\Models\Team
+    function currentTenant(): ?\App\Models\Role
     {
         return \Filament\Facades\Filament::getTenant();
     }
@@ -35,6 +35,6 @@ if (! function_exists('currentTeamId')) {
     {
         $tenant = currentTenant();
 
-        return $tenant?->id;
+        return $tenant?->team_id;
     }
 }

@@ -18,9 +18,9 @@ Filament v4의 내장 Tenancy 기능과 Spatie Permission을 통합하여 스코
 - **기능**: `hasRole()`, `can()`, `team_id` 컨텍스트
 
 ### 3. 통합 방식
-- Filament가 테넌트 관리
+- **Role 모델을 Filament Tenant로 직접 사용**
+- Filament가 Role 선택 관리
 - 미들웨어가 Spatie에 `team_id` 전달
-- Role 모델에 `scope_type`, `scope_ref_id` 추가
 
 ---
 
@@ -41,24 +41,29 @@ CREATE TABLE roles (
 );
 ```
 
-### Team 모델 (가상)
+### Role 모델 (Filament Tenant)
 
 ```php
-// app/Models/Team.php
-class Team extends Model
+// app/Models/Role.php
+class Role extends SpatieRole
 {
-    // 테이블 없음 (가상 모델)
-    protected $table = null;
+    protected $fillable = [
+        'name',
+        'guard_name',
+        'team_id',
+        'scope_type',
+        'scope_ref_id',
+    ];
     
-    // Role에서 동적 생성
-    public static function fromRole(Role $role): self
+    // Filament Tenancy용 메서드
+    public function getTenantName(): string
     {
-        $team = new self();
-        $team->id = $role->team_id;
-        $team->name = "Organization #{$role->scope_ref_id}";
-        $team->scope_type = $role->scope_type;
-        $team->scope_ref_id = $role->scope_ref_id;
-        return $team;
+        return match ($this->scope_type) {
+            'ORG' => "Organization #{$this->scope_ref_id}",
+            'BRAND' => "Brand #{$this->scope_ref_id}",
+            'STORE' => "Store #{$this->scope_ref_id}",
+            default => "Team #{$this->team_id}",
+        };
     }
 }
 ```
@@ -74,7 +79,7 @@ class Team extends Model
 public function panel(Panel $panel): Panel
 {
     return $panel
-        ->tenant(\App\Models\Team::class)
+        ->tenant(\App\Models\Role::class)
         ->tenantMiddleware([
             \App\Http\Middleware\SetSpatieTeamId::class,
         ], isPersistent: true);
@@ -82,7 +87,7 @@ public function panel(Panel $panel): Panel
 ```
 
 **설명**:
-- `->tenant(Team::class)`: Filament Tenancy 활성화
+- `->tenant(Role::class)`: Role을 Filament Tenant로 사용
 - `->tenantMiddleware()`: Spatie 통합 미들웨어 등록
 - `isPersistent: true`: 세션 유지
 
@@ -97,14 +102,13 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     use HasRoles;
     
     /**
-     * Filament: 사용자가 접근 가능한 테넌트 목록
+     * Filament: 사용자가 접근 가능한 테넌트(Role) 목록
      */
     public function getTenants(Panel $panel): Collection
     {
         return $this->roles
             ->whereNotNull('team_id')
             ->unique('team_id')
-            ->map(fn (Role $role) => Team::fromRole($role))
             ->values();
     }
     
@@ -113,7 +117,8 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        return $this->roles->contains('team_id', $tenant->id);
+        // $tenant는 Role 인스턴스
+        return $this->roles->contains('id', $tenant->id);
     }
 }
 ```
@@ -132,12 +137,13 @@ class SetSpatieTeamId
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Filament가 관리하는 현재 테넌트
+        // Filament가 관리하는 현재 테넌트(Role)
         $tenant = Filament::getTenant();
         
         if ($tenant) {
             // Spatie Permission에 team_id 설정
-            setPermissionsTeamId($tenant->id);
+            // $tenant는 Role 인스턴스
+            setPermissionsTeamId($tenant->team_id);
         }
         
         return $next($request);
@@ -146,8 +152,8 @@ class SetSpatieTeamId
 ```
 
 **설명**:
-- Filament가 자동으로 테넌트 관리
-- 미들웨어는 단순히 Spatie에 전달만 함
+- Filament가 자동으로 Role(테넌트) 관리
+- 미들웨어는 Role의 team_id를 Spatie에 전달
 
 ---
 
@@ -200,14 +206,15 @@ $user->assignRole($role);
 
 ```php
 // Filament 헬퍼
-$tenant = Filament::getTenant();
-echo $tenant->id;          // 100
-echo $tenant->scope_type;  // 'ORG'
-echo $tenant->scope_ref_id; // 1
+$tenant = Filament::getTenant();  // Role 인스턴스
+echo $tenant->team_id;        // 100
+echo $tenant->scope_type;     // 'ORG'
+echo $tenant->scope_ref_id;   // 1
+echo $tenant->getTenantName(); // "Organization #1"
 
 // 또는 글로벌 헬퍼
-$tenant = currentTenant();
-$teamId = currentTeamId();
+$tenant = currentTenant();    // Role 인스턴스
+$teamId = currentTeamId();    // 100
 ```
 
 ### 4. 권한 체크
@@ -274,8 +281,7 @@ class ProductResource extends Resource
 ```
 app/
 ├── Models/
-│   ├── Role.php                    # Spatie Role 확장
-│   ├── Team.php                    # 가상 테넌트 모델
+│   ├── Role.php                    # Spatie Role 확장 + Filament Tenant
 │   └── User.php                    # HasTenants 구현
 ├── Http/Middleware/
 │   └── SetSpatieTeamId.php         # Spatie 통합 미들웨어
@@ -315,11 +321,11 @@ php artisan db:seed --class=RoleSeeder
 
 ## 주의사항
 
-### 1. Team 모델은 가상 모델
+### 1. Role이 Filament Tenant
 
-- 실제 테이블 없음
-- Role 데이터를 동적으로 변환
-- `save()` 호출 시 아무 동작 안 함
+- Role 모델이 Filament Tenant로 직접 사용됨
+- 별도의 Team 모델 불필요
+- `getTenantName()` 메서드로 UI 표시 이름 제공
 
 ### 2. 테넌트 전환 시
 
@@ -344,4 +350,9 @@ Filament Tenancy와 Spatie Permission의 완벽한 통합으로:
 - ✅ 자동 보안 검증
 - ✅ 표준 준수
 
-**핵심**: Filament가 테넌트를 관리하고, 우리는 Spatie 통합만 추가하면 됩니다!
+**핵심**: Role을 Filament Tenant로 직접 사용하여 별도 모델 불필요!
+
+**혁신적 단순화**:
+- ❌ Team 모델 불필요
+- ❌ 가상 모델 불필요
+- ✅ Role 하나로 모든 것 해결

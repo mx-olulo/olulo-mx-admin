@@ -201,11 +201,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function getTenants(Panel $panel): Collection
     {
-        // 사용자의 roles에서 고유한 team_id 추출
+        // 사용자의 roles 중 team_id가 있는 것만 (스코프 역할)
         return $this->roles
             ->whereNotNull('team_id')
             ->unique('team_id')
-            ->map(fn (Role $role) => Team::fromRole($role))
             ->values();
     }
 
@@ -214,6 +213,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        return $this->roles->contains('team_id', $tenant->id);
+        // $tenant는 Role 인스턴스
+        return $this->roles->contains('id', $tenant->id);
     }
 }

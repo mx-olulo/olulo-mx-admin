@@ -72,4 +72,26 @@ class Role extends SpatieRole
     {
         return $this->scope_type !== null && $this->scope_ref_id !== null;
     }
+
+    /**
+     * Filament Tenancy: 테넌트 이름 (UI 표시용)
+     */
+    public function getTenantName(): string
+    {
+        // TODO: 실제 엔터티 이름 가져오기
+        return match ($this->scope_type) {
+            self::TYPE_ORG => "Organization #{$this->scope_ref_id}",
+            self::TYPE_BRAND => "Brand #{$this->scope_ref_id}",
+            self::TYPE_STORE => "Store #{$this->scope_ref_id}",
+            default => "Team #{$this->team_id}",
+        };
+    }
+
+    /**
+     * Filament Tenancy: 테넌트 slug
+     */
+    public function getSlug(): string
+    {
+        return strtolower("{$this->scope_type}-{$this->scope_ref_id}");
+    }
 }

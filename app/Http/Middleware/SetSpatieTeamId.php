@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
  * SetSpatieTeamId Middleware
  *
  * Filament Tenancy와 Spatie Permission을 통합합니다.
- * Filament가 관리하는 현재 테넌트의 ID를 Spatie Permission의 team_id로 설정합니다.
+ * Filament가 관리하는 현재 테넌트(Role)의 team_id를 Spatie Permission에 설정합니다.
  */
 class SetSpatieTeamId
 {
@@ -20,12 +20,13 @@ class SetSpatieTeamId
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Filament가 관리하는 현재 테넌트 가져오기
+        // Filament가 관리하는 현재 테넌트(Role) 가져오기
         $tenant = Filament::getTenant();
 
         if ($tenant) {
             // Spatie Permission에 team_id 설정
-            setPermissionsTeamId($tenant->id);
+            // $tenant는 Role 인스턴스이므로 team_id 속성 사용
+            setPermissionsTeamId($tenant->team_id);
         }
 
         return $next($request);
