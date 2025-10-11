@@ -19,52 +19,26 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class AdminPanelProvider extends PanelProvider
+class BrandPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
-            ->login(fn () => route('auth.login'))
-            ->authGuard('web')
+            ->id(\App\Enums\ScopeType::BRAND->getPanelId())
+            ->path(\App\Enums\ScopeType::BRAND->getPanelId())
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
-                \App\Http\Middleware\SetSpatieTeamId::class,
+                \App\Http\Middleware\SetSpatieTeamId::class . ':BRAND',
             ], isPersistent: true)
             ->colors([
-                'primary' => [
-                    50 => '#E6FDF2',
-                    100 => '#C3FADA',
-                    200 => '#90F2B5',
-                    300 => '#4DE68A',
-                    400 => '#03D67B', // Primary Brand Color
-                    500 => '#00B96F', // Primary Variant
-                    600 => '#009B5E',
-                    700 => '#007C4D',
-                    800 => '#00663F',
-                    900 => '#005435',
-                ],
-                'secondary' => [
-                    50 => '#F4F0FF',
-                    100 => '#E6D9FF',
-                    200 => '#D1B8FF',
-                    300 => '#B694FF',
-                    400 => '#9870FF',
-                    500 => '#7A4FFC', // Secondary Brand Color
-                    600 => '#663DCC',
-                    700 => '#522CC6', // Secondary Variant
-                    800 => '#442399',
-                    900 => '#391F7D',
-                ],
+                'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverResources(in: app_path('Filament/Brand/Resources'), for: 'App\Filament\Brand\Resources')
+            ->discoverPages(in: app_path('Filament/Brand/Pages'), for: 'App\Filament\Brand\Pages')
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Brand/Widgets'), for: 'App\Filament\Brand\Widgets')
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,

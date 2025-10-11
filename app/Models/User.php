@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasTenants
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, HasRoles, Notifiable;
@@ -111,13 +113,15 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Filament 패널 접근 권한 확인
      *
+     * ScopeType 기반 Role(team_id가 있는 Role)이 하나라도 있으면 접근 가능
+     *
      * @param  Panel  $panel  Filament 패널 인스턴스
      * @return bool 접근 가능 여부
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // Allow only staff+ roles to access Filament
-        return $this->hasRole(UserRole::panelAccess());
+        // team_id가 있는 Role(스코프 역할)이 하나라도 있으면 접근 가능
+        return $this->roles()->whereNotNull('team_id')->exists();
     }
 
     /**
@@ -191,5 +195,40 @@ class User extends Authenticatable implements FilamentUser
         if (! empty($updateData)) {
             $this->update($updateData);
         }
+    }
+
+    /**
+     * Filament Tenancy: 사용자가 접근 가능한 테넌트 목록
+     *
+     * Panel별로 해당 scope_type의 Role만 반환
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role>
+     */
+    public function getTenants(Panel $panel): Collection
+    {
+        $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
+
+        // 해당 Panel의 scope_type에 맞는 Role만 반환
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> */
+        $roles = $this->roles()
+            ->whereNotNull('team_id')
+            ->when(
+                $scopeType,
+                fn ($query, \App\Enums\ScopeType $type) => $query->where('scope_type', $type->value)
+            )
+            ->get()
+            ->unique('team_id')
+            ->values();
+
+        return $roles;
+    }
+
+    /**
+     * Filament Tenancy: 사용자가 특정 테넌트에 접근 가능한지 확인
+     */
+    public function canAccessTenant(Model $tenant): bool
+    {
+        // $tenant는 Role 인스턴스
+        return $tenant instanceof \App\Models\Role && $this->roles->contains('id', $tenant->id);
     }
 }
