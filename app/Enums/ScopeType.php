@@ -49,13 +49,9 @@ enum ScopeType: string
      */
     public static function getMorphMap(): array
     {
-        return [
-            self::PLATFORM->value => \App\Models\Platform::class,
-            self::SYSTEM->value => \App\Models\System::class,
-            self::ORGANIZATION->value => \App\Models\Organization::class,
-            self::BRAND->value => \App\Models\Brand::class,
-            self::STORE->value => \App\Models\Store::class,
-        ];
+        return collect(self::cases())
+            ->mapWithKeys(fn (self $case) => [$case->value => $case->getModelClass()])
+            ->toArray();
     }
 
     /**

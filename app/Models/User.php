@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
@@ -114,13 +113,15 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament 패널 접근 권한 확인
      *
+     * ScopeType 기반 Role(team_id가 있는 Role)이 하나라도 있으면 접근 가능
+     *
      * @param  Panel  $panel  Filament 패널 인스턴스
      * @return bool 접근 가능 여부
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // Allow only staff+ roles to access Filament
-        return $this->hasRole(UserRole::panelAccess());
+        // team_id가 있는 Role(스코프 역할)이 하나라도 있으면 접근 가능
+        return $this->roles()->whereNotNull('team_id')->exists();
     }
 
     /**
