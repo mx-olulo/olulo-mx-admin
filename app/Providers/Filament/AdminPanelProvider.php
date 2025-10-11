@@ -29,6 +29,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(fn () => route('auth.login'))
             ->authGuard('web')
+            ->tenant(\App\Models\Role::class)
+            ->tenantMiddleware([
+                \App\Http\Middleware\SetSpatieTeamId::class,
+            ], isPersistent: true)
             ->colors([
                 'primary' => [
                     50 => '#E6FDF2',
