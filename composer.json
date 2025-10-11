@@ -47,6 +47,8 @@
         "laravel/telescope": "^5.2",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
+        "pestphp/pest": "^3.8",
+        "pestphp/pest-plugin-laravel": "^3.2",
         "phpunit/phpunit": "^11.5.3",
         "rector/rector": "^2.2"
     },
@@ -111,6 +113,15 @@
         ],
         "phpstan": [
             "php -d memory_limit=-1 vendor/bin/phpstan analyse"
+        ],
+        "pest": [
+            "vendor/bin/pest"
+        ],
+        "pest:parallel": [
+            "vendor/bin/pest --parallel"
+        ],
+        "pest:coverage": [
+            "vendor/bin/pest --coverage"
         ]
     },
     "extra": {
