@@ -1,5 +1,9 @@
 # 스코프 컨텍스트 사용 가이드
 
+> ⚠️ Deprecated: 이 문서는 레거시 설계를 설명합니다. 현재 구현은 Filament Tenancy + Spatie 통합으로 전환되었으며, `ScopeContextService`/`scopes` 테이블을 사용하지 않습니다. 최신 문서는 `docs/rbac-filament-tenancy-integration.md`를 참고하세요.
+
+---
+
 ## 개요
 
 `ScopeContextService`는 세션 기반으로 현재 사용자의 활성 스코프(Organization/Brand/Store)를 일원화하여 관리합니다.

@@ -174,7 +174,7 @@ class SetSpatieTeamId
    canAccessTenant() 호출
    ↓
 6. SetSpatieTeamId 미들웨어 실행
-   setPermissionsTeamId($tenant->id)
+   setPermissionsTeamId($tenant->team_id)
    ↓
 7. 권한 체크
    $user->hasRole('admin')  // team_id 컨텍스트 자동 적용

@@ -1,5 +1,32 @@
 # Spatie Permission Teams 기반 스코프형 RBAC 전환 실행 계획
 
+> 이 문서는 최신 구현(“Role = Tenant”, Filament Tenancy + Spatie 통합)을 우선 설명합니다. 아래 "Legacy (보관)" 섹션은 과거 설계를 보관용으로 남겨둔 것입니다.
+
+## 현재 전환 계획 (Role = Tenant)
+
+- **핵심 결정**
+  - Spatie `teams = true` 유지, `team_id`는 bigint 그대로 사용
+  - `roles` 테이블에 `scope_type`, `scope_ref_id` 필드 추가 (인덱스 포함)
+  - Role 모델을 Filament Tenant로 직접 사용 (`->tenant(\App\Models\Role::class)`)
+  - 미들웨어 `SetSpatieTeamId`에서 `setPermissionsTeamId($tenant->team_id)` 호출
+  - User는 `HasTenants` 구현: `getTenants()`는 `roles` 중 `team_id` 보유 Role 반환, `canAccessTenant()`는 Role id 확인
+
+- **수행 순서**
+  1) `database/migrations/*_add_scope_fields_to_roles_table.php` 적용 (scope 필드 추가)
+  2) `config/permission.php`의 `models.role` → `App\\Models\\Role::class`
+  3) `app/Providers/Filament/AdminPanelProvider.php`에 `->tenant(Role::class)` 및 `->tenantMiddleware([SetSpatieTeamId::class], isPersistent: true)`
+  4) `app/Models/User.php`에 `HasTenants` 구현 (`getTenants()`, `canAccessTenant()`)
+  5) (선택) `app/Support/helpers.php`에 `currentTenant()`, `currentTeamId()` 추가. 미사용 시 머지 전 제거
+  6) Seed: team별 Role 생성(`team_id`, `scope_type`, `scope_ref_id`) 및 사용자에 Role 할당
+  7) 검증: Filament에서 테넌트 선택 후 `hasRole/can`이 team 컨텍스트에서 동작하는지 테스트
+
+- **데이터 이전(해당 시)**
+  - 기존 `scopes` 테이블을 사용하지 않음. 과거에 있었다면 `roles.team_id`에 대응하는 `scope_type/scope_ref_id`를 채우고 `scopes` 제거
+
+---
+
+## Legacy (보관)
+
 - **목표**
   - `Organization/Brand/Store` 단위의 스코프 기반 RBAC를 Spatie Permission v6의 Teams 기능으로 구현한다.
   - 운영 데이터 없음 가정. 마이그레이션 리프레시 가능.
