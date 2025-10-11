@@ -5,32 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Spatie\Permission\Models\Role as SpatieRole;
 
+/**
+ * @property int|null $team_id
+ * @property string|null $scope_type
+ * @property int|null $scope_ref_id
+ * @property-read \Illuminate\Database\Eloquent\Model|null $scopeable
+ */
 class Role extends SpatieRole
 {
-    /**
-     * 스코프 타입 상수
-     */
-    public const TYPE_PLATFORM = 'PLATFORM';  // 플랫폼 운영사 (고객사 관리, 정산 등)
-
-    public const TYPE_SYSTEM = 'SYSTEM';      // 시스템 관리자 (서버, DB, 배포 등)
-
-    public const TYPE_ORG = 'ORG';
-
-    public const TYPE_BRAND = 'BRAND';
-
-    public const TYPE_STORE = 'STORE';
-
-    /**
-     * 유효한 스코프 타입 목록
-     */
-    public const VALID_TYPES = [
-        self::TYPE_PLATFORM,
-        self::TYPE_SYSTEM,
-        self::TYPE_ORG,
-        self::TYPE_BRAND,
-        self::TYPE_STORE,
-    ];
-
     /**
      * The attributes that are mass assignable.
      */
@@ -45,8 +27,9 @@ class Role extends SpatieRole
     /**
      * 다형 관계: 실제 스코프 엔터티 (Platform/System/Organization/Brand/Store)
      *
-     * TODO: Organization, Brand, Store 모델 생성 후 활성화
      * Platform/System은 단일 인스턴스로 scope_ref_id=1 사용
+     *
+     * @return MorphTo<\Illuminate\Database\Eloquent\Model, $this>
      */
     public function scopeable(): MorphTo
     {
@@ -85,15 +68,25 @@ class Role extends SpatieRole
      */
     public function getTenantName(): string
     {
-        // TODO: 실제 엔터티 이름 가져오기
-        return match ($this->scope_type) {
-            self::TYPE_PLATFORM => 'Platform Admin',
-            self::TYPE_SYSTEM => 'System Admin',
-            self::TYPE_ORG => "Organization #{$this->scope_ref_id}",
-            self::TYPE_BRAND => "Brand #{$this->scope_ref_id}",
-            self::TYPE_STORE => "Store #{$this->scope_ref_id}",
-            default => "Team #{$this->team_id}",
-        };
+        // scopeable 관계를 통해 실제 엔터티 이름 가져오기
+        if ($this->scopeable && isset($this->scopeable->name)) {
+            return $this->scopeable->name;
+        }
+
+        // fallback: ScopeType enum 사용
+        $scopeType = $this->scope_type ? \App\Enums\ScopeType::tryFrom($this->scope_type) : null;
+
+        if ($scopeType) {
+            return match ($scopeType) {
+                \App\Enums\ScopeType::PLATFORM => 'Platform Admin',
+                \App\Enums\ScopeType::SYSTEM => 'System Admin',
+                \App\Enums\ScopeType::ORGANIZATION,
+                \App\Enums\ScopeType::BRAND,
+                \App\Enums\ScopeType::STORE => ucfirst(strtolower($scopeType->value)) . " #{$this->scope_ref_id}",
+            };
+        }
+
+        return "Team #{$this->team_id}";
     }
 
     /**

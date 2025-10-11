@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
@@ -114,13 +113,15 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament 패널 접근 권한 확인
      *
+     * ScopeType 기반 Role(team_id가 있는 Role)이 하나라도 있으면 접근 가능
+     *
      * @param  Panel  $panel  Filament 패널 인스턴스
      * @return bool 접근 가능 여부
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // Allow only staff+ roles to access Filament
-        return $this->hasRole(UserRole::panelAccess());
+        // team_id가 있는 Role(스코프 역할)이 하나라도 있으면 접근 가능
+        return $this->roles()->whereNotNull('team_id')->exists();
     }
 
     /**
@@ -198,14 +199,28 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
     /**
      * Filament Tenancy: 사용자가 접근 가능한 테넌트 목록
+     *
+     * Panel별로 해당 scope_type의 Role만 반환
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role>
      */
     public function getTenants(Panel $panel): Collection
     {
-        // 사용자의 roles 중 team_id가 있는 것만 (스코프 역할)
-        return $this->roles
+        $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
+
+        // 해당 Panel의 scope_type에 맞는 Role만 반환
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> */
+        $roles = $this->roles()
             ->whereNotNull('team_id')
+            ->when(
+                $scopeType,
+                fn ($query, \App\Enums\ScopeType $type) => $query->where('scope_type', $type->value)
+            )
+            ->get()
             ->unique('team_id')
             ->values();
+
+        return $roles;
     }
 
     /**
@@ -214,6 +229,6 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     public function canAccessTenant(Model $tenant): bool
     {
         // $tenant는 Role 인스턴스
-        return $this->roles->contains('id', $tenant->id);
+        return $tenant instanceof \App\Models\Role && $this->roles->contains('id', $tenant->id);
     }
 }
