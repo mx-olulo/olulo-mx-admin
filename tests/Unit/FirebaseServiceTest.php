@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Config;
  * Firebase 통합 서비스의 핵심 기능을 테스트합니다.
  * 실제 Firebase API는 모킹하여 독립적인 테스트를 수행합니다.
  */
-
 beforeEach(function () {
     // Firebase 설정을 테스트용으로 모킹
     Config::set('services.firebase', [
