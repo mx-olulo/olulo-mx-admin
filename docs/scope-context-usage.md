@@ -173,7 +173,6 @@ public function store(Request $request)
 // 세션에 저장되는 키
 'current_scope_type'    => 'STORE'  // 스코프 타입
 'current_scope_id'      => 123      // 실제 엔터티 PK
-'current_scope_team_id' => 456      // scopes.id (캐시)
 ```
 
 ## 주의사항
@@ -182,9 +181,10 @@ public function store(Request $request)
 - Filament와 같은 전통적인 Laravel 앱에 최적화
 - API 전용 앱은 토큰 기반 컨텍스트 전달 고려 필요
 
-### 2. team_id 캐싱
-- `getCurrentTeamId()`는 세션에 캐시하여 DB 조회 최소화
-- 스코프 변경 시 자동으로 캐시 무효화
+### 2. team_id 조회
+- `getCurrentTeamId()`는 매번 `scopes` 테이블을 조회합니다
+- `scopes` 테이블은 작고 인덱스가 있어 성능 영향 미미
+- Spatie Permission은 자체적으로 역할/권한을 메모리에 캐싱 (v4.4.0+)
 
 ### 3. 권한 검증 시점
 - 스코프 설정 시: `userCanAccessScope()`로 사전 검증

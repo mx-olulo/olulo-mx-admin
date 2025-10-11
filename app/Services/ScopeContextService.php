@@ -25,8 +25,6 @@ class ScopeContextService
 
     private const SESSION_SCOPE_ID = 'current_scope_id';
 
-    private const SESSION_SCOPE_TEAM_ID = 'current_scope_team_id'; // 캐시용
-
     /**
      * 현재 활성 스코프 타입 반환
      *
@@ -47,7 +45,6 @@ class ScopeContextService
 
     /**
      * 현재 활성 스코프의 team_id 반환 (scopes.id)
-     * 캐시된 값이 있으면 반환, 없으면 DB 조회 후 캐시.
      */
     public function getCurrentTeamId(): ?int
     {
@@ -58,25 +55,12 @@ class ScopeContextService
             return null;
         }
 
-        // 세션에 캐시된 team_id가 있으면 반환
-        $cachedTeamId = Session::get(self::SESSION_SCOPE_TEAM_ID);
-        if ($cachedTeamId) {
-            return $cachedTeamId;
-        }
-
         // scopes 테이블 조회
         $scope = \App\Models\Scope::where('scope_type', $scopeType)
             ->where('scope_ref_id', $scopeId)
             ->first();
 
-        if ($scope) {
-            // 세션에 캐시
-            Session::put(self::SESSION_SCOPE_TEAM_ID, $scope->id);
-
-            return $scope->id;
-        }
-
-        return null;
+        return $scope?->id;
     }
 
     /**
@@ -100,20 +84,10 @@ class ScopeContextService
             self::SESSION_SCOPE_ID => $scopeId,
         ]);
 
-        // team_id가 제공되면 캐시
-        if ($teamId !== null) {
-            Session::put(self::SESSION_SCOPE_TEAM_ID, $teamId);
-            // Spatie Permission에 team_id 설정
-            setPermissionsTeamId($teamId);
-        } else {
-            // team_id 캐시 무효화 (다음 조회 시 재계산)
-            Session::forget(self::SESSION_SCOPE_TEAM_ID);
-
-            // team_id 조회 후 Spatie에 설정
-            $resolvedTeamId = $this->getCurrentTeamId();
-            if ($resolvedTeamId !== null) {
-                setPermissionsTeamId($resolvedTeamId);
-            }
+        // team_id 조회 후 Spatie에 설정
+        $resolvedTeamId = $teamId ?? $this->getCurrentTeamId();
+        if ($resolvedTeamId !== null) {
+            setPermissionsTeamId($resolvedTeamId);
         }
     }
 
@@ -125,7 +99,6 @@ class ScopeContextService
         Session::forget([
             self::SESSION_SCOPE_TYPE,
             self::SESSION_SCOPE_ID,
-            self::SESSION_SCOPE_TEAM_ID,
         ]);
 
         // Spatie Permission team_id 초기화
