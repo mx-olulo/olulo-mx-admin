@@ -24,8 +24,8 @@ class PlatformPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id(\App\Enums\PanelType::PLATFORM->value)
-            ->path(\App\Enums\PanelType::PLATFORM->value)
+            ->id(\App\Enums\ScopeType::PLATFORM->getPanelId())
+            ->path(\App\Enums\ScopeType::PLATFORM->getPanelId())
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
                 \App\Http\Middleware\SetSpatieTeamId::class . ':PLATFORM',

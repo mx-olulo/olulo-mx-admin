@@ -24,8 +24,8 @@ class OrganizationPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id(\App\Enums\PanelType::ORGANIZATION->value)
-            ->path(\App\Enums\PanelType::ORGANIZATION->value)
+            ->id(\App\Enums\ScopeType::ORGANIZATION->getPanelId())
+            ->path(\App\Enums\ScopeType::ORGANIZATION->getPanelId())
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
                 \App\Http\Middleware\SetSpatieTeamId::class . ':ORG',

@@ -33,13 +33,13 @@ class RoleSeeder extends Seeder
         // 3. Platform Admin 역할
         $platformAdminRole = Role::firstOrCreate(
             ['name' => 'platform_admin', 'guard_name' => 'web', 'team_id' => $platform->id],
-            ['scope_type' => Role::TYPE_PLATFORM, 'scope_ref_id' => $platform->id]
+            ['scope_type' => \App\Enums\ScopeType::PLATFORM->value, 'scope_ref_id' => $platform->id]
         );
 
         // 4. System Admin 역할
         $systemAdminRole = Role::firstOrCreate(
             ['name' => 'system_admin', 'guard_name' => 'web', 'team_id' => $system->id + 1000],
-            ['scope_type' => Role::TYPE_SYSTEM, 'scope_ref_id' => $system->id]
+            ['scope_type' => \App\Enums\ScopeType::SYSTEM->value, 'scope_ref_id' => $system->id]
         );
 
         // 5. 샘플 Organization, Brand, Store 생성 (local 환경만)

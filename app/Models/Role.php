@@ -8,30 +8,6 @@ use Spatie\Permission\Models\Role as SpatieRole;
 class Role extends SpatieRole
 {
     /**
-     * 스코프 타입 상수
-     */
-    public const TYPE_PLATFORM = 'PLATFORM';  // 플랫폼 운영사 (고객사 관리, 정산 등)
-
-    public const TYPE_SYSTEM = 'SYSTEM';      // 시스템 관리자 (서버, DB, 배포 등)
-
-    public const TYPE_ORG = 'ORG';
-
-    public const TYPE_BRAND = 'BRAND';
-
-    public const TYPE_STORE = 'STORE';
-
-    /**
-     * 유효한 스코프 타입 목록
-     */
-    public const VALID_TYPES = [
-        self::TYPE_PLATFORM,
-        self::TYPE_SYSTEM,
-        self::TYPE_ORG,
-        self::TYPE_BRAND,
-        self::TYPE_STORE,
-    ];
-
-    /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
@@ -90,15 +66,20 @@ class Role extends SpatieRole
             return $this->scopeable->name;
         }
 
-        // fallback
-        return match ($this->scope_type) {
-            self::TYPE_PLATFORM => 'Platform Admin',
-            self::TYPE_SYSTEM => 'System Admin',
-            self::TYPE_ORG => "Organization #{$this->scope_ref_id}",
-            self::TYPE_BRAND => "Brand #{$this->scope_ref_id}",
-            self::TYPE_STORE => "Store #{$this->scope_ref_id}",
-            default => "Team #{$this->team_id}",
-        };
+        // fallback: ScopeType enum 사용
+        $scopeType = \App\Enums\ScopeType::tryFrom($this->scope_type);
+
+        if ($scopeType) {
+            return match ($scopeType) {
+                \App\Enums\ScopeType::PLATFORM => 'Platform Admin',
+                \App\Enums\ScopeType::SYSTEM => 'System Admin',
+                \App\Enums\ScopeType::ORGANIZATION => "Organization #{$this->scope_ref_id}",
+                \App\Enums\ScopeType::BRAND => "Brand #{$this->scope_ref_id}",
+                \App\Enums\ScopeType::STORE => "Store #{$this->scope_ref_id}",
+            };
+        }
+
+        return "Team #{$this->team_id}";
     }
 
     /**

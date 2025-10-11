@@ -21,12 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // 다형 관계 타입 매핑 (Role scopeable 관계용)
-        Relation::morphMap([
-            'PLATFORM' => \App\Models\Platform::class,
-            'SYSTEM' => \App\Models\System::class,
-            'ORG' => \App\Models\Organization::class,
-            'BRAND' => \App\Models\Brand::class,
-            'STORE' => \App\Models\Store::class,
-        ]);
+        // ScopeType enum에서 중앙 관리
+        Relation::morphMap(\App\Enums\ScopeType::getMorphMap());
     }
 }

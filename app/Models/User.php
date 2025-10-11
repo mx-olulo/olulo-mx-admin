@@ -203,13 +203,12 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function getTenants(Panel $panel): Collection
     {
-        $panelType = \App\Enums\PanelType::fromPanelId($panel->getId());
-        $scopeType = $panelType?->getScopeType();
+        $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
 
         // 해당 Panel의 scope_type에 맞는 Role만 반환
         return $this->roles
             ->whereNotNull('team_id')
-            ->when($scopeType, fn ($roles) => $roles->where('scope_type', $scopeType))
+            ->when($scopeType, fn ($roles) => $roles->where('scope_type', $scopeType->value))
             ->unique('team_id')
             ->values();
     }
