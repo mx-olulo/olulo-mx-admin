@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers\Filament;
 
 use Filament\Http\Middleware\Authenticate;
@@ -27,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(fn () => route('auth.login'))
+            ->login(fn (): string => route('auth.login'))
             ->authGuard('web')
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([

@@ -26,16 +26,16 @@ use Kreait\Firebase\Exception\FirebaseException;
  */
 class FirebaseAuthService
 {
-    private Auth $auth;
+    private readonly Auth $auth;
 
     /**
      * Firebase 인증 서비스 초기화
      *
-     * @param  FirebaseClientFactory  $clientFactory  Firebase 클라이언트 팩토리
+     * @param  FirebaseClientFactory  $firebaseClientFactory  Firebase 클라이언트 팩토리
      */
-    public function __construct(private readonly FirebaseClientFactory $clientFactory)
+    public function __construct(private readonly FirebaseClientFactory $firebaseClientFactory)
     {
-        $this->auth = $this->clientFactory->createAuth();
+        $this->auth = $this->firebaseClientFactory->createAuth();
     }
 
     /**
@@ -51,22 +51,18 @@ class FirebaseAuthService
      */
     public function verifyIdToken(string $idToken): array
     {
-        try {
-            $verifiedIdToken = $this->auth->verifyIdToken($idToken);
+        $unencryptedToken = $this->auth->verifyIdToken($idToken);
 
-            // Kreait SDK의 타입 정의 불완전성으로 인해 명시적 타입 변환 필요
-            return [
-                'uid' => (string) $verifiedIdToken->claims()->get('sub'),
-                'email' => $verifiedIdToken->claims()->get('email'),
-                'email_verified' => $verifiedIdToken->claims()->get('email_verified', false),
-                'phone_number' => $verifiedIdToken->claims()->get('phone_number'),
-                'name' => $verifiedIdToken->claims()->get('name'),
-                'picture' => $verifiedIdToken->claims()->get('picture'),
-                'provider_id' => $this->extractFirebaseSignInProvider($verifiedIdToken->claims()->get('firebase')),
-            ];
-        } catch (FailedToVerifyToken $e) {
-            throw $e;
-        }
+        // Kreait SDK의 타입 정의 불완전성으로 인해 명시적 타입 변환 필요
+        return [
+            'uid' => (string) $unencryptedToken->claims()->get('sub'),
+            'email' => $unencryptedToken->claims()->get('email'),
+            'email_verified' => $unencryptedToken->claims()->get('email_verified', false),
+            'phone_number' => $unencryptedToken->claims()->get('phone_number'),
+            'name' => $unencryptedToken->claims()->get('name'),
+            'picture' => $unencryptedToken->claims()->get('picture'),
+            'provider_id' => $this->extractFirebaseSignInProvider($unencryptedToken->claims()->get('firebase')),
+        ];
     }
 
     /**
@@ -147,15 +143,13 @@ class FirebaseAuthService
                 'disabled' => $userRecord->disabled,
                 'created_at' => $userRecord->metadata->createdAt,
                 'last_sign_in_at' => $userRecord->metadata->lastSignInTime ?? null, // @phpstan-ignore-line
-                'provider_data' => array_map(function ($provider) {
-                    return [
-                        'provider_id' => $provider->providerId,
-                        'uid' => $provider->uid,
-                        'email' => $provider->email,
-                        'display_name' => $provider->displayName,
-                        'photo_url' => $provider->photoUrl,
-                    ];
-                }, $userRecord->providerData),
+                'provider_data' => array_map(fn (\Kreait\Firebase\Auth\UserInfo $userInfo): array => [
+                    'provider_id' => $userInfo->providerId,
+                    'uid' => $userInfo->uid,
+                    'email' => $userInfo->email,
+                    'display_name' => $userInfo->displayName,
+                    'photo_url' => $userInfo->photoUrl,
+                ], $userRecord->providerData),
             ];
         } catch (FirebaseException $e) {
             Log::warning('Firebase 사용자 조회 실패', [
@@ -186,7 +180,7 @@ class FirebaseAuthService
 
         // 이메일이 없는 경우 전화번호로 자동 생성
         if (empty($email) && ! empty($phoneNumber)) {
-            $cleanPhoneNumber = preg_replace('/[^0-9]/', '', $phoneNumber);
+            $cleanPhoneNumber = preg_replace('/[^0-9]/', '', (string) $phoneNumber);
             $email = $cleanPhoneNumber . '@olulo.com.mx';
         }
 
@@ -280,6 +274,7 @@ class FirebaseAuthService
                 'error' => $e->getMessage(),
                 'user_data' => $userData,
             ]);
+
             throw $e;
         }
     }

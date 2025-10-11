@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Browser;
 
 use Laravel\Dusk\Browser;
@@ -12,7 +14,7 @@ class ExampleTest extends DuskTestCase
      */
     public function test_basic_example(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->visit('/')
                 ->assertSee('Laravel');
         });

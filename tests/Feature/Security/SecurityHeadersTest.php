@@ -2,23 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Security;
-
-use Tests\TestCase;
-
 /**
  * Security Headers 테스트
  *
  * SecurityHeaders 미들웨어의 보안 헤더 적용을 검증합니다.
  * X-Frame-Options, CSP, HSTS 등 주요 보안 헤더를 확인합니다.
  */
-class SecurityHeadersTest extends TestCase
-{
+describe('Basic Security Headers', function () {
     /**
      * 테스트: 기본 보안 헤더 존재 확인
      */
-    public function test_includes_basic_security_headers(): void
-    {
+    test('includes basic security headers', function () {
         // Act: API 요청
         $response = $this->get('/');
 
@@ -27,13 +21,25 @@ class SecurityHeadersTest extends TestCase
         $response->assertHeader('X-Content-Type-Options', 'nosniff');
         $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
-    }
+    })->group('security', 'headers', 'basic');
 
+    /**
+     * 테스트: X-Powered-By 헤더 제거 확인
+     */
+    test('removes x powered by header', function () {
+        // Act: API 요청
+        $response = $this->get('/');
+
+        // Assert: X-Powered-By 헤더가 없어야 함 (정보 노출 방지)
+        expect($response->headers->has('X-Powered-By'))->toBeFalse('X-Powered-By header should be removed for security');
+    })->group('security', 'headers', 'basic');
+});
+
+describe('Content Security Policy', function () {
     /**
      * 테스트: Content-Security-Policy 헤더는 production에서만 존재
      */
-    public function test_includes_content_security_policy_in_production(): void
-    {
+    test('includes content security policy in production', function () {
         // Arrange: production 환경
         config(['app.env' => 'production']);
 
@@ -44,49 +50,13 @@ class SecurityHeadersTest extends TestCase
         $response->assertHeader('Content-Security-Policy');
 
         $csp = $response->headers->get('Content-Security-Policy');
-        $this->assertStringContainsString("default-src 'self'", $csp);
-    }
-
-    /**
-     * 테스트: HSTS 헤더는 HTTPS에서만 적용
-     */
-    public function test_hsts_header_only_on_https(): void
-    {
-        // Act: HTTP 요청 (HTTPS 아님)
-        $response = $this->get('/');
-
-        // Assert: HSTS는 HTTPS에서만 적용되므로 HTTP에서는 없음
-        $this->assertFalse(
-            $response->headers->has('Strict-Transport-Security'),
-            'HSTS should not be present on HTTP requests'
-        );
-    }
-
-    /**
-     * 테스트: HSTS 헤더는 production 환경에서 활성화
-     */
-    public function test_hsts_header_in_production_with_https(): void
-    {
-        // Arrange: production 환경 시뮬레이션
-        config(['app.env' => 'production']);
-
-        // HTTPS 요청 시뮬레이션 (https:// 스킴 사용)
-        $response = $this->get('https://localhost/');
-
-        // Assert: HSTS 헤더 확인 (production + HTTPS)
-        $response->assertHeader('Strict-Transport-Security');
-
-        $hsts = $response->headers->get('Strict-Transport-Security');
-        $this->assertStringContainsString('max-age=', $hsts);
-        $this->assertStringContainsString('includeSubDomains', $hsts);
-        $this->assertStringContainsString('preload', $hsts);
-    }
+        expect($csp)->toContain("default-src 'self'");
+    })->group('security', 'headers', 'csp');
 
     /**
      * 테스트: CSP는 production에서 더 엄격
      */
-    public function test_csp_stricter_in_production(): void
-    {
+    test('csp stricter in production', function () {
         // Arrange: production 환경
         config(['app.env' => 'production']);
 
@@ -97,16 +67,49 @@ class SecurityHeadersTest extends TestCase
         $csp = $response->headers->get('Content-Security-Policy');
 
         // production에서는 unsafe-inline/unsafe-eval 제한
-        $this->assertStringContainsString("default-src 'self'", $csp);
-        $this->assertStringContainsString('script-src', $csp);
-        $this->assertStringContainsString('style-src', $csp);
-    }
+        expect($csp)->toContain("default-src 'self'");
+        expect($csp)->toContain('script-src');
+        expect($csp)->toContain('style-src');
+    })->group('security', 'headers', 'csp');
+});
 
+describe('HSTS Headers', function () {
+    /**
+     * 테스트: HSTS 헤더는 HTTPS에서만 적용
+     */
+    test('hsts header only on https', function () {
+        // Act: HTTP 요청 (HTTPS 아님)
+        $response = $this->get('/');
+
+        // Assert: HSTS는 HTTPS에서만 적용되므로 HTTP에서는 없음
+        expect($response->headers->has('Strict-Transport-Security'))->toBeFalse('HSTS should not be present on HTTP requests');
+    })->group('security', 'headers', 'hsts');
+
+    /**
+     * 테스트: HSTS 헤더는 production 환경에서 활성화
+     */
+    test('hsts header in production with https', function () {
+        // Arrange: production 환경 시뮬레이션
+        config(['app.env' => 'production']);
+
+        // HTTPS 요청 시뮬레이션 (https:// 스킴 사용)
+        $response = $this->get('https://localhost/');
+
+        // Assert: HSTS 헤더 확인 (production + HTTPS)
+        $response->assertHeader('Strict-Transport-Security');
+
+        $hsts = $response->headers->get('Strict-Transport-Security');
+        expect($hsts)->toContain('max-age=');
+        expect($hsts)->toContain('includeSubDomains');
+        expect($hsts)->toContain('preload');
+    })->group('security', 'headers', 'hsts');
+});
+
+describe('Security Headers Across Routes', function () {
     /**
      * 테스트: 모든 라우트에 기본 보안 헤더 적용
      */
-    public function test_security_headers_apply_to_all_routes(): void
-    {
+    test('security headers apply to all routes', function () {
         // Act: 여러 경로 요청
         $routes = [
             '/',
@@ -118,33 +121,9 @@ class SecurityHeadersTest extends TestCase
             $response = $this->get($route);
 
             // Assert: 각 경로마다 기본 보안 헤더 확인
-            $this->assertTrue(
-                $response->headers->has('X-Frame-Options'),
-                "X-Frame-Options missing on {$route}"
-            );
-            $this->assertTrue(
-                $response->headers->has('X-Content-Type-Options'),
-                "X-Content-Type-Options missing on {$route}"
-            );
-            $this->assertTrue(
-                $response->headers->has('Referrer-Policy'),
-                "Referrer-Policy missing on {$route}"
-            );
+            expect($response->headers->has('X-Frame-Options'))->toBeTrue("X-Frame-Options missing on {$route}");
+            expect($response->headers->has('X-Content-Type-Options'))->toBeTrue("X-Content-Type-Options missing on {$route}");
+            expect($response->headers->has('Referrer-Policy'))->toBeTrue("Referrer-Policy missing on {$route}");
         }
-    }
-
-    /**
-     * 테스트: X-Powered-By 헤더 제거 확인
-     */
-    public function test_removes_x_powered_by_header(): void
-    {
-        // Act: API 요청
-        $response = $this->get('/');
-
-        // Assert: X-Powered-By 헤더가 없어야 함 (정보 노출 방지)
-        $this->assertFalse(
-            $response->headers->has('X-Powered-By'),
-            'X-Powered-By header should be removed for security'
-        );
-    }
-}
+    })->group('security', 'headers', 'all-routes');
+});

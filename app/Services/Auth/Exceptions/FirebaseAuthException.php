@@ -19,7 +19,7 @@ class FirebaseAuthException extends Exception
     public static function invalidToken(string $reason = ''): self
     {
         $message = '유효하지 않은 Firebase ID 토큰입니다.';
-        if ($reason) {
+        if ($reason !== '' && $reason !== '0') {
             $message .= ' 사유: ' . $reason;
         }
 

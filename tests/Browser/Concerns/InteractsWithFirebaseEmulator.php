@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Browser\Concerns;
 
 use Illuminate\Support\Facades\Http;
@@ -48,7 +50,7 @@ trait InteractsWithFirebaseEmulator
             $response = Http::timeout(2)->get($this->firebaseEmulatorUrl);
 
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return false;
         }
     }
@@ -67,7 +69,7 @@ trait InteractsWithFirebaseEmulator
      */
     protected function createFirebaseTestUser(): array
     {
-        $projectId = config('services.firebase.project_id', 'demo-project');
+        config('services.firebase.project_id', 'demo-project');
 
         // Firebase Auth Emulator REST API를 통한 사용자 생성
         $response = Http::post(

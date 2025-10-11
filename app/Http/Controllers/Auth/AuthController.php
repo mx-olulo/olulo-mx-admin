@@ -133,7 +133,7 @@ class AuthController extends Controller
             $redirect = redirect($intendedUrl);
 
             return $redirect->with('auth.success', __('auth.login_success'));
-        } catch (FailedToVerifyToken $e) {
+        } catch (FailedToVerifyToken) {
             Log::warning('Firebase ID Token 검증 실패', [
                 'ip' => $request->ip(),
             ]);
@@ -205,7 +205,7 @@ class AuthController extends Controller
                     'phone_number' => $user->phone_number,
                 ],
             ], 200);
-        } catch (FailedToVerifyToken $e) {
+        } catch (FailedToVerifyToken) {
             Log::warning('Firebase API 토큰 검증 실패', [
                 'ip' => $request->ip(),
             ]);
@@ -257,10 +257,10 @@ class AuthController extends Controller
         }
 
         // 웹 요청인 경우 로그인 페이지로 리다이렉트
-        /** @var RedirectResponse $redirect */
-        $redirect = redirect()->route('auth.login');
+        /** @var RedirectResponse $redirectResponse */
+        $redirectResponse = redirect()->route('auth.login');
 
-        return $redirect->with('auth.success', __('auth.logout_success'));
+        return $redirectResponse->with('auth.success', __('auth.logout_success'));
     }
 
     /**
@@ -296,9 +296,9 @@ class AuthController extends Controller
         }
 
         // 웹 요청인 경우 이전 페이지로 리다이렉트
-        /** @var RedirectResponse $redirect */
-        $redirect = redirect()->back();
+        /** @var RedirectResponse $redirectResponse */
+        $redirectResponse = redirect()->back();
 
-        return $redirect->with('auth.success', __('auth.locale_changed'));
+        return $redirectResponse->with('auth.success', __('auth.locale_changed'));
     }
 }

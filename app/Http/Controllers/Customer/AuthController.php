@@ -186,7 +186,7 @@ class AuthController extends Controller
         // Firebase UID로 기존 사용자 조회
         $user = User::findByFirebaseUid($firebaseData['firebase_uid']);
 
-        if ($user) {
+        if ($user instanceof \App\Models\User) {
             // 기존 사용자 정보 업데이트
             $user->updateFromFirebase([
                 'name' => $firebaseData['name'],

@@ -44,7 +44,7 @@ class FirebaseClientFactory
      */
     public function createAuth(): Auth
     {
-        if ($this->auth === null) {
+        if (! $this->auth instanceof \Kreait\Firebase\Contract\Auth) {
             $this->auth = $this->getFactory()->createAuth();
         }
 
@@ -60,7 +60,7 @@ class FirebaseClientFactory
      */
     public function createDatabase(): Database
     {
-        if ($this->database === null) {
+        if (! $this->database instanceof \Kreait\Firebase\Contract\Database) {
             $this->database = $this->getFactory()->createDatabase();
         }
 
@@ -76,7 +76,7 @@ class FirebaseClientFactory
      */
     public function createMessaging(): Messaging
     {
-        if ($this->messaging === null) {
+        if (! $this->messaging instanceof \Kreait\Firebase\Contract\Messaging) {
             $this->messaging = $this->getFactory()->createMessaging();
         }
 
@@ -94,7 +94,7 @@ class FirebaseClientFactory
      */
     private function getFactory(): Factory
     {
-        if ($this->factory === null) {
+        if (! $this->factory instanceof \Kreait\Firebase\Factory) {
             $this->factory = $this->initializeFactory();
         }
 
@@ -136,7 +136,8 @@ class FirebaseClientFactory
             return $factory;
         } catch (Exception $e) {
             Log::error('Firebase Factory 초기화 실패: ' . $e->getMessage());
-            throw new Exception('Firebase 서비스 초기화에 실패했습니다: ' . $e->getMessage());
+
+            throw new Exception('Firebase 서비스 초기화에 실패했습니다: ' . $e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -171,7 +172,7 @@ class FirebaseClientFactory
             'auth_provider_x509_cert_url' => 'https://www.googleapis.com/oauth2/v1/certs',
             'client_x509_cert_url' => sprintf(
                 'https://www.googleapis.com/robot/v1/metadata/x509/%s',
-                urlencode(Config::get('firebase.client_email'))
+                urlencode((string) Config::get('firebase.client_email'))
             ),
         ];
     }
