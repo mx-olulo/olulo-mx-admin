@@ -4,7 +4,7 @@
 - [x] `config/permission.php` → `'role' => App\\Models\\Role::class`
 - [x] Filament Panel → `->tenant(\App\Models\Role::class)`
 - [x] Filament Panel → `->tenantMiddleware([SetSpatieTeamId::class], isPersistent: true)`
-- [ ] 다중 Panel 아키텍처 전환 (Organization/Brand/Store 별도 Panel)
+- [ ] 다중 Panel 아키텍처 전환 (Platform/System/Organization/Brand/Store 별도 Panel)
 - [ ] 구성/캐시 초기화 절차 문서화(`config:clear`, `cache:clear` 실행 순서 포함)
 
 ## 2) 데이터베이스(Database)
@@ -25,10 +25,11 @@
 - [ ] 유효하지 않은 테넌트 접근 시 403 또는 명시적 예외 처리 정책 적용
 
 ## 4) 시딩(Seeding)
-- [ ] 글로벌 롤/권한이 필요한 경우(team_id=null)로 생성 정책 정의 및 반영
-- [ ] 스코프 전용 롤(예: org_admin, brand_manager, store_staff) 시드 정책 정의
-- [ ] 샘플 스코프(Org/Brand/Store) 레코드와 사용자-롤 매핑 시드 준비
-- [ ] Role 생성 시 `team_id`, `scope_type`, `scope_ref_id` 일관성 보장
+- [x] Platform/System Admin 역할 시드 (team_id=1, 2)
+- [ ] 스코프 전용 롤(예: org_admin, brand_manager, store_staff) 시드는 각 기능 개발 시 추가
+- [ ] 샘플 스코프(Org/Brand/Store) 레코드와 사용자-롤 매핑 시드는 엔터티 구현 후 진행
+- [x] Role 생성 시 `team_id`, `scope_type`, `scope_ref_id` 일관성 보장
+- [x] 모든 역할이 team_id를 가지도록 통일 (team_id=null 불허)
 
 ## 5) 권한/정책(Authorization)
 - [x] `hasRole()` / `can()`은 Filament가 설정한 현재 테넌트(Role)의 `team_id` 컨텍스트에서 동작
@@ -55,7 +56,7 @@
 - [x] 레거시 문서 Deprecated 처리 완료
 - [x] `docs/rbac-scope-teams-migration-plan.md` 최신 상태 반영
 - [x] `docs/rbac-scope-teams-checklist.md` 현재 아키텍처 반영
-- [x] `docs/rbac-multi-panel-architecture.md` 다중 Panel 아키텍처 문서 작성
+- [x] `docs/rbac-multi-panel-architecture.md` 다중 Panel 아키텍처 문서 작성 (Platform/System 추가)
 - [ ] `docs/roles-and-permissions.md`에 Teams + Scopes 전환 내용 추가
 
 ## 9) 최초 로그인 온보딩(무소속 사용자)
@@ -66,8 +67,9 @@
 - [ ] 온보딩 중 보호 라우트 접근 제한/리다이렉트 규칙 문서화
 
 ## 10) 브랜치/PR 운영
-- [x] 메인 기능 브랜치 `feature/rbac-teams-scopes-migrations` 생성
-- [ ] 서브 브랜치 전략 수립 및 문서화 (`seeding`, `onboarding`, `tests`, `docs`)
+- [x] 메인 기능 브랜치 `feature/rbac-teams-scopes-migrations` 생성 및 머지 (PR#43)
+- [x] 서브 브랜치 `feature/rbac-store-scope-seed-and-tests` 생성
+- [ ] 서브 브랜치 전략 수립 및 문서화 (`onboarding`, `tests`, `docs`)
 - [ ] 서브 PR 단위 리뷰/수정 후 메인 기능 브랜치로 머지하는 프로세스 준수
 
 ## 수락 기준(Acceptance Criteria)
