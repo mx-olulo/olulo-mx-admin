@@ -3,12 +3,12 @@
 namespace App\Filament\Organization\Resources\Organizations\Pages;
 
 use App\Filament\Organization\Resources\Organizations\OrganizationResource;
+use App\Models\Organization;
 use Filament\Resources\Pages\Page;
 use Filament\Tables;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 
 class ListOrganizationActivities extends Page implements HasTable
@@ -17,11 +17,14 @@ class ListOrganizationActivities extends Page implements HasTable
 
     protected static string $resource = OrganizationResource::class;
 
-    protected static string $view = 'filament.pages.list-activities';
+    public ?Organization $record = null;
 
-    public ?Model $record = null;
+    public function getView(): string
+    {
+        return 'filament.pages.list-activities';
+    }
 
-    public function mount(int | string $record): void
+    public function mount(int|string $record): void
     {
         $this->record = static::getResource()::resolveRecordRouteBinding($record);
 
@@ -32,6 +35,10 @@ class ListOrganizationActivities extends Page implements HasTable
 
     public function table(Table $table): Table
     {
+        if (! $this->record) {
+            abort(404);
+        }
+
         return $table
             ->query(
                 Activity::query()
@@ -63,7 +70,7 @@ class ListOrganizationActivities extends Page implements HasTable
                         }
 
                         $changes = [];
-                        
+
                         if (isset($state['attributes'])) {
                             foreach ($state['attributes'] as $key => $value) {
                                 $old = $state['old'][$key] ?? null;

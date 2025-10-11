@@ -12,6 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Brand extends Model
 {
     use LogsActivity;
+
     protected $fillable = [
         'organization_id',
         'name',

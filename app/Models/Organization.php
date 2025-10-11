@@ -11,6 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Organization extends Model
 {
     use LogsActivity;
+
     protected $fillable = [
         'name',
         'description',
