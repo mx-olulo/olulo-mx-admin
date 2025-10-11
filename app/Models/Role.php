@@ -87,8 +87,8 @@ class Role extends SpatieRole
     {
         // TODO: 실제 엔터티 이름 가져오기
         return match ($this->scope_type) {
-            self::TYPE_PLATFORM => "Platform Admin",
-            self::TYPE_SYSTEM => "System Admin",
+            self::TYPE_PLATFORM => 'Platform Admin',
+            self::TYPE_SYSTEM => 'System Admin',
             self::TYPE_ORG => "Organization #{$this->scope_ref_id}",
             self::TYPE_BRAND => "Brand #{$this->scope_ref_id}",
             self::TYPE_STORE => "Store #{$this->scope_ref_id}",
