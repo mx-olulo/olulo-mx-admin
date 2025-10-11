@@ -198,7 +198,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
     /**
      * Filament Tenancy: 사용자가 접근 가능한 테넌트 목록
-     * 
+     *
      * Panel별로 해당 scope_type의 Role만 반환
      */
     public function getTenants(Panel $panel): Collection

@@ -29,7 +29,7 @@ class BrandPanelProvider extends PanelProvider
             ->tenant(\App\Models\Role::class)
             ->tenantMiddleware([
                 \App\Http\Middleware\SetSpatieTeamId::class,
-                \App\Http\Middleware\EnsureTenantScope::class.':BRAND',
+                \App\Http\Middleware\EnsureTenantScope::class . ':BRAND',
             ], isPersistent: true)
             ->colors([
                 'primary' => Color::Amber,
