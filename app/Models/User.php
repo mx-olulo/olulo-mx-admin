@@ -209,12 +209,15 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
 
         // 해당 Panel의 scope_type에 맞는 Role만 반환
-        return $this->roles()
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> */
+        $roles = $this->roles()
             ->whereNotNull('team_id')
             ->when($scopeType, fn ($query) => $query->where('scope_type', $scopeType->value))
             ->get()
             ->unique('team_id')
             ->values();
+        
+        return $roles;
     }
 
     /**

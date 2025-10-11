@@ -52,10 +52,12 @@ class Store extends Model
      */
     public function getOwnerOrganization(): ?Organization
     {
-        if ($this->brand_id) {
+        if ($this->brand_id && $this->brand) {
+            /** @var Organization|null */
             return $this->brand->organization;
         }
 
+        /** @var Organization|null */
         return $this->organization;
     }
 }

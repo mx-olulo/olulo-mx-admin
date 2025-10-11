@@ -47,7 +47,7 @@ enum ScopeType: string
     /**
      * 모든 scope type과 모델 클래스 매핑 반환 (morphMap용)
      *
-     * @return array<string, class-string>
+     * @return array<string, class-string<\Illuminate\Database\Eloquent\Model>>
      */
     public static function getMorphMap(): array
     {

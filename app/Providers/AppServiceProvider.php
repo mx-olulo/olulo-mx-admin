@@ -22,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // 다형 관계 타입 매핑 (Role scopeable 관계용)
         // ScopeType enum에서 중앙 관리
-        Relation::morphMap(\App\Enums\ScopeType::getMorphMap());
+        /** @var array<string, class-string<\Illuminate\Database\Eloquent\Model>> */
+        $morphMap = \App\Enums\ScopeType::getMorphMap();
+        Relation::morphMap($morphMap);
     }
 }
