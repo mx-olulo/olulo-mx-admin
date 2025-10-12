@@ -31,9 +31,13 @@ Olulo MX는 3-layer 권한 체계를 사용하여 멀티테넌시 환경에서 �
 
 ```php
 Gate::before(function (User $user, string $ability) {
-    // PLATFORM/SYSTEM 스코프 사용자는 모든 권한 자동 허용
-    if ($user->hasGlobalScopeRole()) {
-        return true;
+    // 관리자 패널(Filament/Nova)에서만 글로벌 스코프 체크
+    // 고객 앱 요청은 이 체크를 건너뛰어 성능 최적화
+    if ($this->isAdminPanel()) {
+        // PLATFORM/SYSTEM 스코프 사용자는 모든 권한 자동 허용
+        if ($user->hasGlobalScopeRole()) {
+            return true;
+        }
     }
 
     return null; // 다음 레이어로 전달
@@ -44,10 +48,15 @@ Gate::before(function (User $user, string $ability) {
 - 모든 Gate 체크보다 먼저 실행
 - `true` 반환 시 즉시 허용, `null` 반환 시 다음 레이어로 전달
 - PLATFORM/SYSTEM 스코프의 슈퍼 유저 역할 구현
+- **성능 최적화**: 관리자 패널에서만 작동, 고객 앱에서는 DB 쿼리 건너뜀
 
 **적용 대상**:
-- Platform 관리자 (전체 시스템 관리)
-- System 관리자 (시스템 설정 관리)
+- Platform 관리자 (전체 시스템 관리) - Filament/Nova 패널에서만
+- System 관리자 (시스템 설정 관리) - Filament/Nova 패널에서만
+
+**성능 고려사항**:
+- 고객 앱(PWA)에서는 `isAdminPanel()` 체크가 `false`를 반환하여 `hasGlobalScopeRole()` DB 쿼리를 건너뜀
+- 관리자 패널에서만 필요한 체크이므로 프론트엔드 성능에 영향 없음
 
 ### Layer 2: Spatie Permission (세밀한 권한 체크)
 
