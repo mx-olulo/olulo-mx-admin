@@ -35,13 +35,13 @@ class RoleSeeder extends Seeder
 
         // 3. Platform Admin 역할
         $platformAdminRole = Role::firstOrCreate(
-            ['name' => 'platform_admin', 'guard_name' => 'web', 'team_id' => $platform->id],
+            ['name' => 'platform_admin', 'guard_name' => 'web', 'team_id' => null],
             ['scope_type' => \App\Enums\ScopeType::PLATFORM->value, 'scope_ref_id' => $platform->id]
         );
 
         // 4. System Admin 역할
         $systemAdminRole = Role::firstOrCreate(
-            ['name' => 'system_admin', 'guard_name' => 'web', 'team_id' => $system->id + 1000],
+            ['name' => 'system_admin', 'guard_name' => 'web', 'team_id' => null],
             ['scope_type' => \App\Enums\ScopeType::SYSTEM->value, 'scope_ref_id' => $system->id]
         );
 
@@ -88,7 +88,7 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'organization_manager',
                 'guard_name' => 'web',
-                'team_id' => $org1->id * 10, // 간단한 team_id 생성
+                'team_id' => $org1->id,
             ],
             [
                 'scope_type' => \App\Enums\ScopeType::ORGANIZATION->value,
@@ -109,7 +109,8 @@ class RoleSeeder extends Seeder
             ['email' => 'platform@example.com'],
             ['name' => 'Platform Admin', 'password' => bcrypt('password')]
         );
-        setPermissionsTeamId($platformAdminRole->team_id);
+        // 글로벌 역할은 팀 컨텍스트 없음 (TeamResolver가 null 반환)
+        setPermissionsTeamId(null);
         $platformAdmin->assignRole($platformAdminRole);
 
         // System Admin
@@ -117,7 +118,8 @@ class RoleSeeder extends Seeder
             ['email' => 'system@example.com'],
             ['name' => 'System Admin', 'password' => bcrypt('password')]
         );
-        setPermissionsTeamId($systemAdminRole->team_id);
+        // 글로벌 역할은 팀 컨텍스트 없음
+        setPermissionsTeamId(null);
         $systemAdmin->assignRole($systemAdminRole);
 
         // Organization Manager
@@ -125,6 +127,7 @@ class RoleSeeder extends Seeder
             ['email' => 'org@example.com'],
             ['name' => 'Organization Manager', 'password' => bcrypt('password')]
         );
+        // 테넌트 역할 컨텍스트 설정 (TeamResolver와 동일 스키마: team_id = tenant id)
         setPermissionsTeamId($orgManagerRole->team_id);
         $orgUser->assignRole($orgManagerRole);
 

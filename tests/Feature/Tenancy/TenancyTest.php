@@ -67,7 +67,7 @@ class TenancyTest extends TestCase
         $this->orgRole = Role::create([
             'name' => 'org_manager',
             'guard_name' => 'web',
-            'team_id' => $this->org->id * 10,
+            'team_id' => $this->org->id,
             'scope_type' => 'ORG', // morphMap 사용
             'scope_ref_id' => $this->org->id,
         ]);
@@ -133,7 +133,7 @@ class TenancyTest extends TestCase
         $brandRole = Role::create([
             'name' => 'brand_manager',
             'guard_name' => 'web',
-            'team_id' => $this->brand->id * 10,
+            'team_id' => $this->brand->id,
             'scope_type' => 'BRAND', // morphMap 사용
             'scope_ref_id' => $this->brand->id,
         ]);
