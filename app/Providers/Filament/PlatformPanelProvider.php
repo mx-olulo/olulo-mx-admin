@@ -4,60 +4,26 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
-use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\AuthenticateSession;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
+use App\Enums\ScopeType;
+use App\Providers\Filament\Concerns\ConfiguresFilamentPanel;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class PlatformPanelProvider extends PanelProvider
 {
+    use ConfiguresFilamentPanel;
+
     public function panel(Panel $panel): Panel
     {
+        $scopeType = ScopeType::PLATFORM;
+
+        $panel = $this->applyCommonConfiguration($panel, $scopeType);
+
         return $panel
-            ->id(\App\Enums\ScopeType::PLATFORM->getPanelId())
-            ->path(\App\Enums\ScopeType::PLATFORM->getPanelId())
-            ->tenant(\App\Models\Role::class)
-            ->tenantMiddleware([
-                \App\Http\Middleware\SetSpatieTeamId::class . ':PLATFORM',
-            ], isPersistent: true)
-            ->colors([
-                'primary' => Color::Amber,
-            ])
+            ->id($scopeType->getPanelId())
+            ->path($scopeType->getPanelId())
             ->discoverResources(in: app_path('Filament/Platform/Resources'), for: 'App\Filament\Platform\Resources')
             ->discoverPages(in: app_path('Filament/Platform/Pages'), for: 'App\Filament\Platform\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
-            ->discoverWidgets(in: app_path('Filament/Platform/Widgets'), for: 'App\Filament\Platform\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
-            ->middleware([
-                EncryptCookies::class,
-                AddQueuedCookiesToResponse::class,
-                StartSession::class,
-                AuthenticateSession::class,
-                ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
-                SubstituteBindings::class,
-                DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
-            ]);
+            ->discoverWidgets(in: app_path('Filament/Platform/Widgets'), for: 'App\Filament\Platform\Widgets');
     }
 }
