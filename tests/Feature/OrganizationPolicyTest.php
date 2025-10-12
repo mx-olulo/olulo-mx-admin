@@ -98,7 +98,7 @@ describe('Organization Permission', function () {
         setPermissionsTeamId($role->team_id);
         $user->assignRole($role);
 
-        if (!empty($permissions)) {
+        if (! empty($permissions)) {
             foreach ($permissions as $permissionName) {
                 $permission = Permission::firstOrCreate([
                     'name' => $permissionName,
