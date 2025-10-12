@@ -33,7 +33,14 @@ class SetSpatieTeamId
             // 1. Spatie Permission에 team_id 설정
             setPermissionsTeamId($tenant->team_id);
 
-            // 2. scope_type 검증 (파라미터가 제공된 경우)
+            // 2. 캐시된 관계 초기화 (Spatie 공식 권장)
+            // 팀 전환 시 이전 팀의 roles/permissions 캐시를 제거하여
+            // 새로운 팀의 권한이 올바르게 로드되도록 보장
+            if ($user = $request->user()) {
+                $user->unsetRelation('roles')->unsetRelation('permissions');
+            }
+
+            // 3. scope_type 검증 (파라미터가 제공된 경우)
             if ($scopeType && $tenant->scope_type !== $scopeType) {
                 abort(403, "This panel requires {$scopeType} scope, but your role has {$tenant->scope_type} scope.");
             }

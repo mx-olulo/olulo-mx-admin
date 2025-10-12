@@ -115,15 +115,20 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament 패널 접근 권한 확인
      *
-     * ScopeType 기반 Role(team_id가 있는 Role)이 하나라도 있으면 접근 가능
+     * getTenants()가 반환하는 테넌트(Role)가 하나라도 있으면 접근 가능
+     * 실제 테넌트 검증은 canAccessTenant()에서 수행
+     *
+     * Spatie Permission의 Teams 기능과 호환되도록
+     * getTenants()를 통해 간접적으로 확인
      *
      * @param  Panel  $panel  Filament 패널 인스턴스
      * @return bool 접근 가능 여부
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // team_id가 있는 Role(스코프 역할)이 하나라도 있으면 접근 가능
-        return $this->roles()->whereNotNull('roles.team_id')->exists();
+        // Filament Tenancy를 활용한 단순화된 접근 권한 체크
+        // getTenants()가 Panel별 scope_type 필터링을 이미 수행
+        return $this->getTenants($panel)->isNotEmpty();
     }
 
     /**
