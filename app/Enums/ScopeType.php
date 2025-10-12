@@ -67,15 +67,4 @@ enum ScopeType: string
     {
         return array_column(self::cases(), 'value');
     }
-
-    /**
-     * 모델 클래스로 ScopeType 찾기 (역방향 매핑)
-     *
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
-     */
-    public static function fromModelClass(string $modelClass): ?self
-    {
-        return collect(self::cases())
-            ->first(fn (self $case): bool => $case->getModelClass() === $modelClass);
-    }
 }
