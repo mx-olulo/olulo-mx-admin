@@ -123,7 +123,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     public function canAccessPanel(Panel $panel): bool
     {
         // team_id가 있는 Role(스코프 역할)이 하나라도 있으면 접근 가능
-        return $this->roles()->whereNotNull('team_id')->exists();
+        return $this->roles()->whereNotNull('roles.team_id')->exists();
     }
 
     /**
@@ -219,7 +219,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         // 해당 Panel의 scope_type에 맞는 Role만 반환
         /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> */
         $roles = $this->roles()
-            ->whereNotNull('team_id')
+            ->whereNotNull('roles.team_id')
             ->when(
                 $scopeType,
                 fn ($query, \App\Enums\ScopeType $scopeType) => $query->where('scope_type', $scopeType->value)
