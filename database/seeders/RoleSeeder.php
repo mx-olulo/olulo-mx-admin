@@ -12,11 +12,15 @@ use App\Models\Store;
 use App\Models\System;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder
 {
     public function run(): void
     {
+        // Spatie Permission 캐시 초기화 (권장)
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         // 1. Platform 생성
         $platform = Platform::firstOrCreate(
             ['name' => 'Olulo Platform'],
@@ -45,6 +49,9 @@ class RoleSeeder extends Seeder
         if (app()->environment('local')) {
             $this->createSampleData($platformAdminRole, $systemAdminRole);
         }
+
+        // 롤/권한 변경 후 캐시 재무효화
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
     private function createSampleData(Role $platformAdminRole, Role $systemAdminRole): void
