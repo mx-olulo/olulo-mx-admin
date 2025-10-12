@@ -220,9 +220,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament Tenancy: 사용자가 접근 가능한 테넌트 목록
      *
-     * Panel별로 해당 scope_type의 Role만 반환
+     * Role의 scopeable MorphTo 관계를 통해 실제 테넌트 모델 반환
+     * morphMap 설정으로 'ORG' -> Organization::class 자동 매핑
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role>
+     * @return \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model>
      */
     public function getTenants(Panel $panel): Collection
     {
@@ -232,45 +233,28 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             return collect();
         }
 
-        // memberships를 통해 해당 스코프의 테넌트 모델 로드
-        $membershipQuery = \App\Models\TenantMembership::query()
-            ->where('user_id', $this->getKey())
-            ->where('scope_type', $scopeType->value);
-
-        // 테넌트 타입별로 그룹화하여 각각의 실제 모델 컬렉션 로드
-        $memberships = $membershipQuery->get(['tenant_type', 'tenant_id'])
-            ->groupBy('tenant_type');
-
-        $tenants = collect();
-
-        foreach ($memberships as $tenantType => $rows) {
-            $ids = $rows->pluck('tenant_id')->unique()->values();
-            if ($ids->isEmpty()) {
-                continue;
-            }
-
-            // 안전하게 클래스 존재 확인 후 조회
-            if (is_string($tenantType) && class_exists($tenantType)) {
-                /** @var \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Builder $model */
-                $model = new $tenantType;
-                $tenants = $tenants->merge($model->newQuery()->whereIn($model->getKeyName(), $ids)->get());
-            }
-        }
-
-        // Filament 기대 타입: Collection<Model>
-        return $tenants->values();
+        // morphMap으로 'ORG' -> Organization::class 자동 변환
+        return $this->roles()
+            ->where('scope_type', $scopeType->value)
+            ->with('scopeable')
+            ->get()
+            ->pluck('scopeable')
+            ->filter()
+            ->unique('id')
+            ->values();
     }
 
     /**
      * Filament Tenancy: 사용자가 특정 테넌트에 접근 가능한지 확인
+     *
+     * whereHasMorph로 scopeable 관계를 직접 쿼리
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        // memberships를 통해 액세스 가능 여부 확인
-        return \App\Models\TenantMembership::query()
-            ->where('user_id', $this->getKey())
-            ->where('tenant_type', get_class($tenant))
-            ->where('tenant_id', $tenant->getKey())
+        return $this->roles()
+            ->whereHasMorph('scopeable', get_class($tenant), function ($query) use ($tenant) {
+                $query->where($tenant->getKeyName(), $tenant->getKey());
+            })
             ->exists();
     }
 

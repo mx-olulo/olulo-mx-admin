@@ -6,9 +6,8 @@ namespace Tests\Feature\Tenancy;
 
 use App\Models\Brand;
 use App\Models\Organization;
+use App\Models\Role;
 use App\Models\Store;
-use App\Models\Team;
-use App\Models\TenantMembership;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,18 +17,10 @@ class TenancyTest extends TestCase
     use RefreshDatabase;
 
     protected User $orgUser;
-
     protected Organization $org;
-
     protected Brand $brand;
-
     protected Store $store;
-
-    protected Team $orgTeam;
-
-    protected Team $brandTeam;
-
-    protected Team $storeTeam;
+    protected Role $orgRole;
 
     protected function setUp(): void
     {
@@ -43,28 +34,12 @@ class TenancyTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Create organization team
-        $this->orgTeam = Team::create([
-            'tenant_type' => Organization::class,
-            'tenant_id' => $this->org->id,
-            'scope_type' => 'ORG',
-            'name' => $this->org->name,
-        ]);
-
         // Create brand
         $this->brand = Brand::create([
             'organization_id' => $this->org->id,
             'name' => 'Sample Brand 1-1',
             'description' => 'Test Brand',
             'is_active' => true,
-        ]);
-
-        // Create brand team
-        $this->brandTeam = Team::create([
-            'tenant_type' => Brand::class,
-            'tenant_id' => $this->brand->id,
-            'scope_type' => 'BRAND',
-            'name' => $this->brand->name,
         ]);
 
         // Create store
@@ -77,14 +52,6 @@ class TenancyTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Create store team
-        $this->storeTeam = Team::create([
-            'tenant_type' => Store::class,
-            'tenant_id' => $this->store->id,
-            'scope_type' => 'STORE',
-            'name' => $this->store->name,
-        ]);
-
         // Create user
         $this->orgUser = User::create([
             'name' => 'Organization User',
@@ -92,37 +59,31 @@ class TenancyTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        // Create organization membership
-        TenantMembership::create([
-            'user_id' => $this->orgUser->id,
-            'tenant_type' => Organization::class,
-            'tenant_id' => $this->org->id,
-            'team_id' => $this->orgTeam->id,
-            'scope_type' => 'ORG',
-            'is_owner' => true,
-            'status' => 'active',
+        // Create organization role
+        $this->orgRole = Role::create([
+            'name' => 'org_manager',
+            'guard_name' => 'web',
+            'team_id' => $this->org->id * 10,
+            'scope_type' => 'ORG', // morphMap 사용
+            'scope_ref_id' => $this->org->id,
         ]);
+
+        // Assign role to user
+        setPermissionsTeamId($this->orgRole->team_id);
+        $this->orgUser->assignRole($this->orgRole);
     }
 
-    public function test_organization_team_is_created_correctly(): void
+    public function test_organization_role_is_created_correctly(): void
     {
         $this->assertNotNull($this->org);
-        $this->assertNotNull($this->orgTeam);
-        $this->assertEquals('ORG', $this->orgTeam->scope_type);
-        $this->assertEquals($this->org->name, $this->orgTeam->name);
+        $this->assertNotNull($this->orgRole);
+        $this->assertEquals('ORG', $this->orgRole->scope_type);
+        $this->assertEquals($this->org->id, $this->orgRole->scope_ref_id);
     }
 
-    public function test_user_membership_is_created_correctly(): void
+    public function test_user_has_organization_role(): void
     {
-        $membership = TenantMembership::where('user_id', $this->orgUser->id)
-            ->where('tenant_type', Organization::class)
-            ->where('tenant_id', $this->org->id)
-            ->first();
-
-        $this->assertNotNull($membership);
-        $this->assertTrue($membership->is_owner);
-        $this->assertEquals('active', $membership->status);
-        $this->assertEquals('ORG', $membership->scope_type);
+        $this->assertTrue($this->orgUser->hasRole($this->orgRole));
     }
 
     public function test_user_can_access_tenant(): void
@@ -130,7 +91,7 @@ class TenancyTest extends TestCase
         $this->assertTrue($this->orgUser->canAccessTenant($this->org));
     }
 
-    public function test_user_cannot_access_tenant_without_membership(): void
+    public function test_user_cannot_access_tenant_without_role(): void
     {
         $otherOrg = Organization::create([
             'name' => 'Other Organization',
@@ -162,32 +123,19 @@ class TenancyTest extends TestCase
         $this->assertCount(0, $tenants);
     }
 
-    public function test_brand_team_and_membership_creation(): void
+    public function test_multiple_roles_for_user(): void
     {
-        $this->assertNotNull($this->brand);
-        $this->assertNotNull($this->brandTeam);
-        $this->assertEquals('BRAND', $this->brandTeam->scope_type);
-    }
-
-    public function test_store_team_and_membership_creation(): void
-    {
-        $this->assertNotNull($this->store);
-        $this->assertNotNull($this->storeTeam);
-        $this->assertEquals('STORE', $this->storeTeam->scope_type);
-    }
-
-    public function test_multiple_memberships_for_user(): void
-    {
-        // Add brand membership
-        TenantMembership::create([
-            'user_id' => $this->orgUser->id,
-            'tenant_type' => Brand::class,
-            'tenant_id' => $this->brand->id,
-            'team_id' => $this->brandTeam->id,
-            'scope_type' => 'BRAND',
-            'is_owner' => false,
-            'status' => 'active',
+        // Add brand role
+        $brandRole = Role::create([
+            'name' => 'brand_manager',
+            'guard_name' => 'web',
+            'team_id' => $this->brand->id * 10,
+            'scope_type' => 'BRAND', // morphMap 사용
+            'scope_ref_id' => $this->brand->id,
         ]);
+
+        setPermissionsTeamId($brandRole->team_id);
+        $this->orgUser->assignRole($brandRole);
 
         // Check organization access
         $orgPanel = \Filament\Facades\Filament::getPanel('org');
@@ -198,6 +146,7 @@ class TenancyTest extends TestCase
         // Check brand access
         $brandPanel = \Filament\Facades\Filament::getPanel('brand');
         $brandTenants = $this->orgUser->getTenants($brandPanel);
+        $this->assertCount(1, $brandTenants);
         $this->assertInstanceOf(Brand::class, $brandTenants->first());
     }
 
@@ -225,33 +174,10 @@ class TenancyTest extends TestCase
         $this->assertCount(0, $user2Tenants);
     }
 
-    public function test_team_context_middleware_creates_team_if_not_exists(): void
+    public function test_scopeable_relationship_works(): void
     {
-        // Create new organization without team
-        $newOrg = Organization::create([
-            'name' => 'New Organization',
-            'description' => 'Test',
-            'contact_email' => 'new@example.com',
-            'is_active' => true,
-        ]);
-
-        // Verify no team exists yet
-        $team = Team::where('tenant_type', Organization::class)
-            ->where('tenant_id', $newOrg->id)
-            ->first();
-        $this->assertNull($team);
-
-        // Simulate middleware creating team
-        $team = Team::firstOrCreate(
-            [
-                'tenant_type' => Organization::class,
-                'tenant_id' => $newOrg->id,
-                'scope_type' => 'ORG',
-            ],
-            ['name' => $newOrg->name]
-        );
-
-        $this->assertNotNull($team);
-        $this->assertEquals($newOrg->name, $team->name);
+        $this->assertNotNull($this->orgRole->scopeable);
+        $this->assertInstanceOf(Organization::class, $this->orgRole->scopeable);
+        $this->assertEquals($this->org->id, $this->orgRole->scopeable->id);
     }
 }
