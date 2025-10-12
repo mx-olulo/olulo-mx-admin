@@ -261,36 +261,26 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * 사용자가 글로벌 스코프(PLATFORM/SYSTEM) 역할을 보유하는지 확인
      *
-     * Eloquent의 relation 캐싱을 활용하여 중복 DB 쿼리 방지
-     * Gate::before()에서 권한 체크 최적화를 위해 사용
+     * whereHasMorph로 Platform/System scopeable 확인
+     * Eloquent relation 캐싱 활용으로 중복 쿼리 방지
      *
      * @return bool PLATFORM 또는 SYSTEM 스코프 역할 보유 여부
      */
     public function hasGlobalScopeRole(): bool
     {
-        // roles relation이 이미 로드되었으면 메모리에서 직접 확인 (쿼리 없음)
+        // roles relation이 이미 로드되었으면 메모리에서 확인 (쿼리 없음)
         if ($this->relationLoaded('roles')) {
-            /** @var \Illuminate\Database\Eloquent\Collection<int, Role> $roles */
-            $roles = $this->roles;
-
-            foreach ($roles as $role) {
-                if (in_array($role->scope_type, [
+            return $this->roles->contains(function (Role $role) {
+                return in_array($role->scope_type, [
                     \App\Enums\ScopeType::PLATFORM->value,
                     \App\Enums\ScopeType::SYSTEM->value,
-                ], true)) {
-                    return true;
-                }
-            }
-
-            return false;
+                ], true);
+            });
         }
 
         // roles가 로드되지 않았으면 쿼리 실행
         return $this->roles()
-            ->whereIn('scope_type', [
-                \App\Enums\ScopeType::PLATFORM->value,
-                \App\Enums\ScopeType::SYSTEM->value,
-            ])
+            ->whereHasMorph('scopeable', [\App\Models\Platform::class, \App\Models\System::class])
             ->exists();
     }
 
