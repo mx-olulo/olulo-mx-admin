@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Organization\Resources\Organizations\Pages;
 
-use App\Enums\ScopeType;
 use App\Filament\Organization\Resources\Organizations\OrganizationResource;
 use App\Models\Organization;
-use Filament\Facades\Filament;
 use Filament\Resources\Pages\Page;
 use Filament\Tables;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -36,22 +34,11 @@ class ListOrganizationActivities extends Page implements HasTable
             abort(404);
         }
 
-        // 권한 검증: view-activities 권한 체크
-        if (! auth()->user()?->can('view-activities')) {
-            abort(403, 'You do not have permission to view activity logs.');
-        }
-
-        // 멀티테넌시 격리: 현재 테넌트(Role)가 이 Organization에 접근 가능한지 확인
-        $tenant = Filament::getTenant();
-        if ($tenant instanceof \App\Models\Role) {
-            // PLATFORM/SYSTEM 스코프는 모든 Organization 접근 가능 (Gate::before에서 처리됨)
-            // ORGANIZATION 스코프는 자신의 Organization만 접근 가능
-            if ($tenant->scope_type === ScopeType::ORGANIZATION->value) {
-                if ($tenant->scope_ref_id !== $this->record->id) {
-                    abort(403, 'You can only access activity logs for your own organization.');
-                }
-            }
-        }
+        // Policy를 통한 권한 + 소유권 체크
+        // 1. Spatie Permission: view-activities 권한 체크
+        // 2. Filament Tenant: Organization 소유권 체크
+        // 3. Gate::before: PLATFORM/SYSTEM 자동 허용
+        $this->authorize('viewActivities', $this->record);
     }
 
     public function table(Table $table): Table
