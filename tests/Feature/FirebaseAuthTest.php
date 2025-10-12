@@ -902,8 +902,8 @@ describe('세션 관리', function () {
         expect(auth()->guest())->toBeTrue();
 
         // 보호된 리소스 접근 시도
-        $response = $this->get('/admin');
-        $response->assertRedirect(route('filament.admin.auth.login'));
+        $response = $this->get('/store');
+        $response->assertRedirect(route('filament.store.auth.login'));
     })->group('firebase', 'session', 'logout');
 
     /**
