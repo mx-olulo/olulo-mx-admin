@@ -147,7 +147,7 @@ class OrganizationPolicy
     /**
      * 사용자가 특정 Organization에 접근할 수 있는지 확인
      *
-     * Filament Tenant (Role)의 scope_type과 scope_ref_id로 소유권 체크
+     * 3-layer 권한 체계의 마지막 레이어: 리소스 소유권 체크
      *
      * @param  User  $user  인증된 사용자
      * @param  Organization  $organization  접근하려는 Organization
@@ -155,29 +155,27 @@ class OrganizationPolicy
      */
     protected function canAccessOrganization(User $user, Organization $organization): bool
     {
-        // Filament 테넌트(Role) 가져오기
+        // 1. PLATFORM/SYSTEM 스코프 사용자는 모든 Organization 접근 가능
+        //    Gate::before 로직을 Policy에서도 동일하게 적용
+        //    이유: API, 콘솔, 테스트 등 Filament 컨텍스트가 없는 환경 대응
+        if ($user->hasGlobalScopeRole()) {
+            return true;
+        }
+
+        // 2. Filament 컨텍스트: 테넌트(Role) 기반 소유권 체크
         $tenant = Filament::getTenant();
 
-        // 테넌트가 Role 인스턴스가 아니면 접근 불가
+        // Filament UI가 아닌 환경(API, 콘솔 등)에서는 기본 거부
         if (! $tenant instanceof \App\Models\Role) {
             return false;
         }
 
-        // PLATFORM/SYSTEM 스코프는 모든 Organization 접근 가능
-        // (Gate::before에서도 처리되지만, 명시적으로 체크)
-        if (in_array($tenant->scope_type, [
-            ScopeType::PLATFORM->value,
-            ScopeType::SYSTEM->value,
-        ])) {
-            return true;
-        }
-
-        // ORGANIZATION 스코프는 자신의 Organization만 접근 가능
+        // 3. ORGANIZATION 스코프는 자신의 Organization만 접근 가능
         if ($tenant->scope_type === ScopeType::ORGANIZATION->value) {
             return $tenant->scope_ref_id === $organization->id;
         }
 
-        // 그 외 스코프(BRAND, STORE 등)는 접근 불가
+        // 4. 그 외 스코프(BRAND, STORE 등)는 Organization 직접 접근 불가
         return false;
     }
 }

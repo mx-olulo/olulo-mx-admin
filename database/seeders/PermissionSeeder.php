@@ -62,6 +62,9 @@ class PermissionSeeder extends Seeder
     /**
      * 특정 스코프의 모든 역할에 권한 할당
      *
+     * syncPermissions()를 사용하여 멱등성(Idempotency) 보장
+     * 여러 번 실행해도 동일한 결과 유지
+     *
      * @param  ScopeType  $scopeType  권한을 부여할 스코프 타입
      * @param  array<int, string>  $permissions  부여할 권한 목록
      */
@@ -74,8 +77,9 @@ class PermissionSeeder extends Seeder
             // team_id 컨텍스트 설정 (Spatie Permission)
             setPermissionsTeamId($role->team_id);
 
-            // 권한 동기화 (기존 권한 유지하면서 추가)
-            $role->givePermissionTo($permissions);
+            // syncPermissions: 기존 권한을 제거하고 새 권한으로 대체
+            // 멱등성 보장: 중복 실행해도 예외 발생하지 않음
+            $role->syncPermissions($permissions);
         }
 
         // 컨텍스트 초기화

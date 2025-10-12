@@ -61,57 +61,85 @@ class OrganizationResource extends Resource
 
     /**
      * Organization 목록 조회 권한 확인
+     *
+     * Policy의 viewAny() 메서드로 위임
      */
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('view-organizations') ?? false;
+        $user = auth()->user();
+
+        return $user !== null && $user->can('viewAny', Organization::class);
     }
 
     /**
      * Organization 생성 권한 확인
+     *
+     * Policy의 create() 메서드로 위임
      */
     public static function canCreate(): bool
     {
-        return auth()->user()?->can('create-organizations') ?? false;
+        $user = auth()->user();
+
+        return $user !== null && $user->can('create', Organization::class);
     }
 
     /**
      * 특정 Organization 조회 권한 확인
+     *
+     * Policy의 view() 메서드로 위임 (권한 + 소유권 체크)
      */
     public static function canView(Model $record): bool
     {
-        return auth()->user()?->can('view-organizations') ?? false;
+        $user = auth()->user();
+
+        return $user !== null && $user->can('view', $record);
     }
 
     /**
      * 특정 Organization 수정 권한 확인
+     *
+     * Policy의 update() 메서드로 위임 (권한 + 소유권 체크)
      */
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()?->can('update-organizations') ?? false;
+        $user = auth()->user();
+
+        return $user !== null && $user->can('update', $record);
     }
 
     /**
      * 특정 Organization 삭제 권한 확인
+     *
+     * Policy의 delete() 메서드로 위임 (권한 + 소유권 체크)
      */
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()?->can('delete-organizations') ?? false;
+        $user = auth()->user();
+
+        return $user !== null && $user->can('delete', $record);
     }
 
     /**
      * 특정 Organization 복원 권한 확인
+     *
+     * Policy의 restore() 메서드로 위임 (권한 + 소유권 체크)
      */
     public static function canRestore(Model $record): bool
     {
-        return auth()->user()?->can('restore-organizations') ?? false;
+        $user = auth()->user();
+
+        return $user !== null && $user->can('restore', $record);
     }
 
     /**
      * 특정 Organization 영구 삭제 권한 확인
+     *
+     * Policy의 forceDelete() 메서드로 위임 (권한 + 소유권 체크)
      */
     public static function canForceDelete(Model $record): bool
     {
-        return auth()->user()?->can('force-delete-organizations') ?? false;
+        $user = auth()->user();
+
+        return $user !== null && $user->can('forceDelete', $record);
     }
 }

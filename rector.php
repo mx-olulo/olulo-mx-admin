@@ -48,10 +48,12 @@ return RectorConfig::configure()
             __DIR__ . '/database',
         ],
 
-        // Skip routes files from certain transformations (preserve Laravel route syntax)
-        \Rector\CodeQuality\Rector\Closure\StaticClosureRector::class => [
-            __DIR__ . '/routes',
-        ],
+        // Skip StaticClosureRector in routes (Laravel convention)
+        // Note: This rule may not exist in all Rector versions
+        // Keeping for documentation and future compatibility
+        // \Rector\CodeQuality\Rector\Closure\StaticClosureRector::class => [
+        //     __DIR__ . '/routes',
+        // ],
 
         // Preserve PHPDoc for IDE support and static analysis
         \Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector::class => [
