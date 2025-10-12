@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Enums\ScopeType;
+use App\Models\Store;
 use App\Providers\Filament\Concerns\ConfiguresFilamentPanel;
+use App\Http\Middleware\SetStoreContext;
 use Filament\Panel;
 use Filament\PanelProvider;
 
@@ -23,6 +25,10 @@ class StorePanelProvider extends PanelProvider
             ->default()
             ->id($scopeType->getPanelId())
             ->path($scopeType->getPanelId())
+            ->tenant(Store::class)
+            ->tenantMiddleware([
+                SetStoreContext::class,
+            ], isPersistent: true)
             ->discoverResources(in: app_path('Filament/Store/Resources'), for: 'App\Filament\Store\Resources')
             ->discoverPages(in: app_path('Filament/Store/Pages'), for: 'App\Filament\Store\Pages')
             ->discoverWidgets(in: app_path('Filament/Store/Widgets'), for: 'App\Filament\Store\Widgets');
