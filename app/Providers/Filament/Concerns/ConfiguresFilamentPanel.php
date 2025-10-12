@@ -42,10 +42,6 @@ trait ConfiguresFilamentPanel
     protected function applyCommonConfiguration(Panel $panel, ScopeType $scopeType): Panel
     {
         return $panel
-            ->tenant(Role::class)
-            ->tenantMiddleware([
-                \App\Http\Middleware\SetSpatieTeamId::class . ':' . $scopeType->value,
-            ], isPersistent: true)
             ->colors([
                 'primary' => Color::Amber,
             ])

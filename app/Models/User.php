@@ -221,19 +221,37 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
 
-        // 해당 Panel의 scope_type에 맞는 Role만 반환
-        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> */
-        $roles = $this->roles()
-            ->whereNotNull('roles.team_id')
-            ->when(
-                $scopeType,
-                fn ($query, \App\Enums\ScopeType $scopeType) => $query->where('scope_type', $scopeType->value)
-            )
-            ->get()
-            ->unique('team_id')
-            ->values();
+        if (! $scopeType) {
+            return collect();
+        }
 
-        return $roles;
+        // memberships를 통해 해당 스코프의 테넌트 모델 로드
+        $membershipQuery = \App\Models\TenantMembership::query()
+            ->where('user_id', $this->getKey())
+            ->where('scope_type', $scopeType->value);
+
+        // 테넌트 타입별로 그룹화하여 각각의 실제 모델 컬렉션 로드
+        $memberships = $membershipQuery->get(['tenant_type', 'tenant_id'])
+            ->groupBy('tenant_type');
+
+        $tenants = collect();
+
+        foreach ($memberships as $tenantType => $rows) {
+            $ids = $rows->pluck('tenant_id')->unique()->values();
+            if ($ids->isEmpty()) {
+                continue;
+            }
+
+            // 안전하게 클래스 존재 확인 후 조회
+            if (is_string($tenantType) && class_exists($tenantType)) {
+                /** @var \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Builder $model */
+                $model = new $tenantType();
+                $tenants = $tenants->merge($model->newQuery()->whereIn($model->getKeyName(), $ids)->get());
+            }
+        }
+
+        // Filament 기대 타입: Collection<Model>
+        return $tenants->values();
     }
 
     /**
@@ -241,8 +259,12 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        // $tenant는 Role 인스턴스
-        return $tenant instanceof \App\Models\Role && $this->roles->contains('id', $tenant->id);
+        // memberships를 통해 액세스 가능 여부 확인
+        return \App\Models\TenantMembership::query()
+            ->where('user_id', $this->getKey())
+            ->where('tenant_type', get_class($tenant))
+            ->where('tenant_id', $tenant->getKey())
+            ->exists();
     }
 
     /**
