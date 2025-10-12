@@ -26,6 +26,7 @@ class StorePanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->default()
             ->id(\App\Enums\ScopeType::STORE->getPanelId())
             ->path(\App\Enums\ScopeType::STORE->getPanelId())
             ->tenant(\App\Models\Role::class)
