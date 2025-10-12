@@ -131,7 +131,13 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function getLocaleAttribute(): string
     {
-        return $this->attributes['locale'] ?? config('app.locale', 'es-MX');
+        /** @var string $defaultLocale */
+        $defaultLocale = config('app.locale', 'es-MX');
+
+        /** @var string|null $locale */
+        $locale = $this->attributes['locale'] ?? null;
+
+        return $locale ?? $defaultLocale;
     }
 
     /**
@@ -232,6 +238,28 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         // $tenant는 Role 인스턴스
         return $tenant instanceof \App\Models\Role && $this->roles->contains('id', $tenant->id);
+    }
+
+    /**
+     * 사용자가 글로벌 스코프(PLATFORM/SYSTEM) 역할을 보유하는지 확인
+     *
+     * 요청 라이프사이클 동안 결과를 캐싱하여 중복 DB 쿼리 방지
+     * Gate::before()에서 권한 체크 최적화를 위해 사용
+     *
+     * @return bool PLATFORM 또는 SYSTEM 스코프 역할 보유 여부
+     */
+    public function hasGlobalScopeRole(): bool
+    {
+        // once() 헬퍼: 요청 라이프사이클 동안 클로저 결과를 캐싱 (Laravel 12)
+        // 동일 요청에서 여러 번 호출되어도 DB 쿼리는 1회만 실행
+        return once(function () {
+            return $this->roles()
+                ->whereIn('scope_type', [
+                    \App\Enums\ScopeType::PLATFORM->value,
+                    \App\Enums\ScopeType::SYSTEM->value,
+                ])
+                ->exists();
+        });
     }
 
     /**

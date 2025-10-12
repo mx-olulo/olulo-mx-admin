@@ -7,7 +7,6 @@ namespace App\Providers;
 use App\Enums\ScopeType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,21 +32,12 @@ class AppServiceProvider extends ServiceProvider
         Relation::morphMap($morphMap);
 
         // Gate: PLATFORM/SYSTEM 스코프 사용자는 모든 권한 부여
+        // User 모델의 hasGlobalScopeRole() 헬퍼 메서드 활용
+        // - Eloquent 관계 활용으로 가독성 향상
+        // - once() 헬퍼로 요청당 1회만 DB 쿼리 실행
         Gate::before(function (User $user, string $ability) {
-            // Spatie Permission의 team context와 무관하게 사용자의 모든 역할 확인
-            // DB 직접 쿼리로 team_id context 우회
-            $hasGlobalScope = DB::table('model_has_roles')
-                ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-                ->where('model_has_roles.model_type', User::class)
-                ->where('model_has_roles.model_id', $user->id)
-                ->whereIn('roles.scope_type', [
-                    ScopeType::PLATFORM->value,
-                    ScopeType::SYSTEM->value,
-                ])
-                ->exists();
-
-            // 글로벌 스코프가 있으면 모든 권한 허용
-            if ($hasGlobalScope) {
+            // 글로벌 스코프(PLATFORM/SYSTEM) 역할 보유 시 모든 권한 허용
+            if ($user->hasGlobalScopeRole()) {
                 return true;
             }
 
