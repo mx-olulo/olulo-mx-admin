@@ -17,7 +17,9 @@ class StoreTenancyTest extends DuskTestCase
     use DatabaseMigrations;
 
     protected User $storeUser;
+
     protected Store $store;
+
     protected Team $team;
 
     protected function setUp(): void

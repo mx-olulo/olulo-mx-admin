@@ -19,9 +19,13 @@ class TenancyIntegrationTest extends DuskTestCase
     use DatabaseMigrations;
 
     protected User $multiTenantUser;
+
     protected Organization $org1;
+
     protected Organization $org2;
+
     protected Brand $brand;
+
     protected Store $store;
 
     protected function setUp(): void
@@ -215,7 +219,7 @@ class TenancyIntegrationTest extends DuskTestCase
             'is_active' => true,
         ]);
 
-        $this->browse(function (Browser $browser) use ($otherOrg) {
+        $this->browse(function (Browser $browser) {
             $browser->loginAs($this->multiTenantUser)
                 ->visit('/org')
                 ->waitForText('Organization One', 10)

@@ -252,7 +252,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             // 안전하게 클래스 존재 확인 후 조회
             if (is_string($tenantType) && class_exists($tenantType)) {
                 /** @var \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Builder $model */
-                $model = new $tenantType();
+                $model = new $tenantType;
                 $tenants = $tenants->merge($model->newQuery()->whereIn($model->getKeyName(), $ids)->get());
             }
         }

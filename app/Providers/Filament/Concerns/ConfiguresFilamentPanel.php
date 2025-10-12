@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Providers\Filament\Concerns;
 
 use App\Enums\ScopeType;
-use App\Models\Role;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;

@@ -18,8 +18,11 @@ class BrandTenancyTest extends DuskTestCase
     use DatabaseMigrations;
 
     protected User $brandUser;
+
     protected Organization $organization;
+
     protected Brand $brand;
+
     protected Team $team;
 
     protected function setUp(): void

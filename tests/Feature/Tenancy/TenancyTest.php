@@ -18,11 +18,17 @@ class TenancyTest extends TestCase
     use RefreshDatabase;
 
     protected User $orgUser;
+
     protected Organization $org;
+
     protected Brand $brand;
+
     protected Store $store;
+
     protected Team $orgTeam;
+
     protected Team $brandTeam;
+
     protected Team $storeTeam;
 
     protected function setUp(): void

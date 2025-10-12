@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Enums\ScopeType;
+use App\Http\Middleware\SetStoreContext;
 use App\Models\Store;
 use App\Providers\Filament\Concerns\ConfiguresFilamentPanel;
-use App\Http\Middleware\SetStoreContext;
 use Filament\Panel;
 use Filament\PanelProvider;
 

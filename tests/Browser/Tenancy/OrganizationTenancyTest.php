@@ -17,7 +17,9 @@ class OrganizationTenancyTest extends DuskTestCase
     use DatabaseMigrations;
 
     protected User $orgUser;
+
     protected Organization $organization;
+
     protected Team $team;
 
     protected function setUp(): void
