@@ -8,7 +8,6 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -38,9 +37,6 @@ class StorePanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Store/Resources'), for: 'App\Filament\Store\Resources')
             ->discoverPages(in: app_path('Filament/Store/Pages'), for: 'App\Filament\Store\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
             ->discoverWidgets(in: app_path('Filament/Store/Widgets'), for: 'App\Filament\Store\Widgets')
             ->widgets([
                 AccountWidget::class,
