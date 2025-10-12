@@ -6,10 +6,8 @@ namespace Database\Seeders;
 
 use App\Models\Brand;
 use App\Models\Organization;
-use App\Models\Platform;
 use App\Models\Role;
 use App\Models\Store;
-use App\Models\System;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\PermissionRegistrar;
@@ -21,31 +19,19 @@ class RoleSeeder extends Seeder
         // Spatie Permission 캐시 초기화 (권장)
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // 1. Platform 생성
-        $platform = Platform::firstOrCreate(
-            ['name' => 'Olulo Platform'],
-            ['description' => 'Main Platform']
-        );
-
-        // 2. System 생성
-        $system = System::firstOrCreate(
-            ['name' => 'Olulo System'],
-            ['description' => 'System Management']
-        );
-
-        // 3. Platform Admin 역할
+        // 1. Platform Admin 역할 (글로벌 유일 스코프: 모델/테이블 없이 고정 ID 사용)
         $platformAdminRole = Role::firstOrCreate(
             ['name' => 'platform_admin', 'guard_name' => 'web', 'team_id' => null],
-            ['scope_type' => \App\Enums\ScopeType::PLATFORM->value, 'scope_ref_id' => $platform->id]
+            ['scope_type' => \App\Enums\ScopeType::PLATFORM->value, 'scope_ref_id' => 1]
         );
 
-        // 4. System Admin 역할
+        // 2. System Admin 역할 (글로벌 유일 스코프: 모델/테이블 없이 고정 ID 사용)
         $systemAdminRole = Role::firstOrCreate(
             ['name' => 'system_admin', 'guard_name' => 'web', 'team_id' => null],
-            ['scope_type' => \App\Enums\ScopeType::SYSTEM->value, 'scope_ref_id' => $system->id]
+            ['scope_type' => \App\Enums\ScopeType::SYSTEM->value, 'scope_ref_id' => 1]
         );
 
-        // 5. 샘플 데이터 (local 환경만)
+        // 3. 샘플 데이터 (local 환경만)
         if (app()->environment('local')) {
             $this->createSampleData($platformAdminRole, $systemAdminRole);
         }

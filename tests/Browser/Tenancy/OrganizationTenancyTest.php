@@ -66,7 +66,7 @@ class OrganizationTenancyTest extends DuskTestCase
      */
     public function test_user_can_access_organization_panel_with_membership(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->orgUser)
                 ->visit('/org')
                 ->waitForText('Test Organization', 10)
@@ -80,7 +80,7 @@ class OrganizationTenancyTest extends DuskTestCase
      */
     public function test_tenant_context_is_set_after_selection(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->orgUser)
                 ->visit('/org')
                 ->waitForText('Test Organization', 10)
@@ -102,7 +102,7 @@ class OrganizationTenancyTest extends DuskTestCase
             'password' => bcrypt('password'),
         ]);
 
-        $this->browse(function (Browser $browser) use ($otherUser) {
+        $this->browse(function (Browser $browser) use ($otherUser): void {
             $browser->loginAs($otherUser)
                 ->visit('/org')
                 ->waitFor('body', 10)
@@ -141,7 +141,7 @@ class OrganizationTenancyTest extends DuskTestCase
             'status' => 'active',
         ]);
 
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->orgUser)
                 ->visit('/org')
                 ->waitForText('Test Organization', 10)
@@ -156,7 +156,7 @@ class OrganizationTenancyTest extends DuskTestCase
      */
     public function test_spatie_team_context_is_set(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->orgUser)
                 ->visit('/org')
                 ->waitForText('Test Organization', 10)

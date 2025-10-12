@@ -26,7 +26,7 @@ use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
  */
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Firebase 서비스 모킹
     $this->firebaseServiceMock = \Mockery::mock(FirebaseService::class);
     $this->app->instance(FirebaseService::class, $this->firebaseServiceMock);
@@ -57,11 +57,11 @@ function createValidFirebaseTokenData(): array
     ];
 }
 
-describe('로그인 페이지', function () {
+describe('로그인 페이지', function (): void {
     /**
      * 테스트: 로그인 페이지 표시 확인
      */
-    test('로그인 페이지 표시', function () {
+    test('로그인 페이지 표시', function (): void {
         // Act: 로그인 페이지 요청
         $response = $this->get(route('auth.login', ['locale' => 'ko']));
 
@@ -87,7 +87,7 @@ describe('로그인 페이지', function () {
     /**
      * 테스트: intended URL 세션 저장
      */
-    test('intended URL을 세션에 저장', function () {
+    test('intended URL을 세션에 저장', function (): void {
         // Act: intended URL과 함께 로그인 페이지 요청
         $response = $this->get(route('auth.login', ['intended' => '/admin/dashboard']));
 
@@ -97,11 +97,11 @@ describe('로그인 페이지', function () {
     })->group('firebase', 'login-page');
 });
 
-describe('Firebase 토큰 로그인', function () {
+describe('Firebase 토큰 로그인', function (): void {
     /**
      * 테스트: 유효한 Firebase 토큰으로 로그인
      */
-    test('유효한 Firebase 토큰으로 로그인 성공', function () {
+    test('유효한 Firebase 토큰으로 로그인 성공', function (): void {
         // Arrange: 유효한 토큰 데이터 준비
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
@@ -142,7 +142,7 @@ describe('Firebase 토큰 로그인', function () {
     /**
      * 테스트: intended URL로 리다이렉트
      */
-    test('로그인 후 intended URL로 리다이렉트', function () {
+    test('로그인 후 intended URL로 리다이렉트', function (): void {
         // Arrange: 유효한 토큰 데이터와 intended URL 준비
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
@@ -181,7 +181,7 @@ describe('Firebase 토큰 로그인', function () {
     /**
      * 테스트: 잘못된 Firebase 토큰 처리
      */
-    test('잘못된 Firebase 토큰 거부', function () {
+    test('잘못된 Firebase 토큰 거부', function (): void {
         // Arrange: 잘못된 토큰 준비
         $idToken = 'invalid-firebase-id-token';
 
@@ -206,7 +206,7 @@ describe('Firebase 토큰 로그인', function () {
     /**
      * 테스트: 토큰 없이 콜백 요청 시 검증 실패
      */
-    test('토큰 없이 콜백 요청 시 검증 실패', function () {
+    test('토큰 없이 콜백 요청 시 검증 실패', function (): void {
         // Act: 토큰 없이 Firebase 콜백 요청
         $response = $this->post(route('auth.firebase.callback'));
 
@@ -219,7 +219,7 @@ describe('Firebase 토큰 로그인', function () {
     /**
      * 테스트: Firebase 서비스 오류 처리
      */
-    test('Firebase 서비스 오류 처리', function () {
+    test('Firebase 서비스 오류 처리', function (): void {
         // Arrange: 토큰 데이터 준비
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
@@ -249,11 +249,11 @@ describe('Firebase 토큰 로그인', function () {
     })->group('firebase', 'login', 'error-handling');
 });
 
-describe('로그아웃', function () {
+describe('로그아웃', function (): void {
     /**
      * 테스트: 로그아웃 기능
      */
-    test('로그아웃 성공', function () {
+    test('로그아웃 성공', function (): void {
         // Arrange: 로그인한 사용자 생성
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -270,7 +270,7 @@ describe('로그아웃', function () {
     /**
      * 테스트: API 로그아웃
      */
-    test('API 로그아웃 JSON 응답', function () {
+    test('API 로그아웃 JSON 응답', function (): void {
         // Arrange: 로그인한 사용자 생성
         $user = User::factory()->create();
 
@@ -293,11 +293,11 @@ describe('로그아웃', function () {
     })->group('firebase', 'logout', 'api');
 });
 
-describe('언어 변경', function () {
+describe('언어 변경', function (): void {
     /**
      * 테스트: 언어 변경
      */
-    test('언어 변경 성공', function () {
+    test('언어 변경 성공', function (): void {
         // Act: 로그인 페이지에 locale 쿼리 파라미터로 전달
         $response = $this->get(route('auth.login', ['locale' => 'en']));
 
@@ -309,7 +309,7 @@ describe('언어 변경', function () {
     /**
      * 테스트: 지원하지 않는 언어 요청 시 기본값 사용
      */
-    test('지원하지 않는 언어는 기본값 사용', function () {
+    test('지원하지 않는 언어는 기본값 사용', function (): void {
         // Act: 지원하지 않는 언어로 로그인 페이지 요청
         $response = $this->get(route('auth.login', ['locale' => 'fr']));
 
@@ -321,7 +321,7 @@ describe('언어 변경', function () {
     /**
      * 테스트: API 언어 변경
      */
-    test('API 언어 변경 JSON 응답', function () {
+    test('API 언어 변경 JSON 응답', function (): void {
         // Act: API 언어 변경 요청
         $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'es-MX']));
 
@@ -336,11 +336,11 @@ describe('언어 변경', function () {
     })->group('firebase', 'locale', 'api');
 });
 
-describe('API Firebase 로그인', function () {
+describe('API Firebase 로그인', function (): void {
     /**
      * 테스트: API Firebase 로그인
      */
-    test('API Firebase 로그인 성공', function () {
+    test('API Firebase 로그인 성공', function (): void {
         // Arrange: 유효한 토큰 데이터 준비
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
@@ -391,7 +391,7 @@ describe('API Firebase 로그인', function () {
     /**
      * 테스트: API Firebase 로그인 - 잘못된 토큰
      */
-    test('API Firebase 로그인 - 잘못된 토큰 거부', function () {
+    test('API Firebase 로그인 - 잘못된 토큰 거부', function (): void {
         // Arrange: 잘못된 토큰 준비
         $idToken = 'invalid-firebase-id-token';
 
@@ -422,7 +422,7 @@ describe('API Firebase 로그인', function () {
     /**
      * 테스트: API Firebase 로그인 - 서버 오류
      */
-    test('API Firebase 로그인 - 서버 오류 처리', function () {
+    test('API Firebase 로그인 - 서버 오류 처리', function (): void {
         // Arrange: 토큰 데이터 준비
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
@@ -455,11 +455,11 @@ describe('API Firebase 로그인', function () {
     })->group('firebase', 'api', 'login', 'error-handling');
 });
 
-describe('인증 및 접근 제어', function () {
+describe('인증 및 접근 제어', function (): void {
     /**
      * 테스트: 보호된 라우트 인증 확인
      */
-    test('보호된 라우트는 인증 필요', function () {
+    test('보호된 라우트는 인증 필요', function (): void {
         // Act: 인증 없이 보호된 라우트 접근 시도
         $response = $this->post(route('auth.logout'));
 
@@ -471,7 +471,7 @@ describe('인증 및 접근 제어', function () {
     /**
      * 테스트: 인증된 사용자는 로그인 페이지 접근 불가
      */
-    test('인증된 사용자는 로그인 페이지 접근 불가', function () {
+    test('인증된 사용자는 로그인 페이지 접근 불가', function (): void {
         // Arrange: 로그인한 사용자 생성
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -484,11 +484,11 @@ describe('인증 및 접근 제어', function () {
     })->group('firebase', 'auth', 'guest-only');
 });
 
-describe('Firebase 사용자 동기화', function () {
+describe('Firebase 사용자 동기화', function (): void {
     /**
      * 테스트: Firebase 사용자 동기화 - 새 사용자 생성
      */
-    test('새 Firebase 사용자 생성', function () {
+    test('새 Firebase 사용자 생성', function (): void {
         // Arrange: 새 Firebase 사용자 데이터
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
@@ -531,7 +531,7 @@ describe('Firebase 사용자 동기화', function () {
     /**
      * 테스트: Firebase 사용자 동기화 - 기존 사용자 업데이트
      */
-    test('기존 Firebase 사용자 업데이트', function () {
+    test('기존 Firebase 사용자 업데이트', function (): void {
         // Arrange: 기존 사용자 생성
         $existingUser = User::factory()->create([
             'firebase_uid' => 'firebase_uid_123',
@@ -593,7 +593,7 @@ describe('Firebase 사용자 동기화', function () {
     /**
      * 테스트: 전화번호만 있는 Firebase 사용자 처리
      */
-    test('전화번호만 있는 Firebase 사용자 처리', function () {
+    test('전화번호만 있는 Firebase 사용자 처리', function (): void {
         // Arrange: 이메일 없이 전화번호만 있는 사용자 데이터
         $tokenData = [
             'uid' => 'firebase_uid_phone',
@@ -646,14 +646,14 @@ describe('Firebase 사용자 동기화', function () {
     })->group('firebase', 'user-sync', 'phone-only');
 });
 
-describe('CSRF 및 보안', function () {
+describe('CSRF 및 보안', function (): void {
     /**
      * 테스트: CSRF 토큰 없이 API 요청 시 성공 (Sanctum SPA 세션)
      *
      * Sanctum SPA는 CSRF 토큰을 자동으로 처리하므로,
      * API 라우트에서는 CSRF 검증이 필요하지 않습니다.
      */
-    test('API 요청은 CSRF 토큰 없이 동작', function () {
+    test('API 요청은 CSRF 토큰 없이 동작', function (): void {
         // Arrange: 유효한 토큰 데이터
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
@@ -686,7 +686,7 @@ describe('CSRF 및 보안', function () {
     /**
      * 테스트: Web 라우트는 CSRF 토큰 필요
      */
-    test('Web 라우트는 CSRF 토큰 필요', function () {
+    test('Web 라우트는 CSRF 토큰 필요', function (): void {
         // Act: CSRF 토큰 없이 웹 콜백 요청
         $response = $this->post(route('auth.firebase.callback'), [
             'idToken' => 'test-token',
@@ -697,11 +697,11 @@ describe('CSRF 및 보안', function () {
     })->group('firebase', 'security', 'csrf');
 });
 
-describe('Firebase 토큰 검증', function () {
+describe('Firebase 토큰 검증', function (): void {
     /**
      * 테스트: 빈 문자열 토큰 처리
      */
-    test('빈 문자열 토큰 거부', function () {
+    test('빈 문자열 토큰 거부', function (): void {
         // Act: 빈 문자열 토큰으로 로그인 시도
         $response = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => '',
@@ -715,7 +715,7 @@ describe('Firebase 토큰 검증', function () {
     /**
      * 테스트: null 토큰 처리
      */
-    test('null 토큰 거부', function () {
+    test('null 토큰 거부', function (): void {
         // Act: null 토큰으로 로그인 시도
         $response = $this->postJson(route('api.auth.firebase.login'), [
             'idToken' => null,
@@ -729,7 +729,7 @@ describe('Firebase 토큰 검증', function () {
     /**
      * 테스트: JWT 형식이 아닌 잘못된 문자열 토큰
      */
-    test('잘못된 JWT 형식 토큰 거부', function () {
+    test('잘못된 JWT 형식 토큰 거부', function (): void {
         // Arrange: 형식이 잘못된 토큰
         $idToken = 'not-a-valid-jwt-format';
 
@@ -755,7 +755,7 @@ describe('Firebase 토큰 검증', function () {
     /**
      * 테스트: 만료된 Firebase 토큰 처리
      */
-    test('만료된 Firebase 토큰 거부', function () {
+    test('만료된 Firebase 토큰 거부', function (): void {
         // Arrange: 만료된 토큰
         $idToken = 'expired-firebase-id-token';
 
@@ -785,7 +785,7 @@ describe('Firebase 토큰 검증', function () {
     /**
      * 테스트: 서명이 잘못된 Firebase 토큰 처리
      */
-    test('서명이 잘못된 토큰 거부', function () {
+    test('서명이 잘못된 토큰 거부', function (): void {
         // Arrange: 서명이 잘못된 토큰
         $idToken = 'token-with-invalid-signature';
 
@@ -814,7 +814,7 @@ describe('Firebase 토큰 검증', function () {
     /**
      * 테스트: 다른 프로젝트의 Firebase 토큰 거부
      */
-    test('다른 프로젝트의 Firebase 토큰 거부', function () {
+    test('다른 프로젝트의 Firebase 토큰 거부', function (): void {
         // Arrange: 다른 프로젝트의 토큰
         $idToken = 'token-from-different-project';
 
@@ -838,11 +838,11 @@ describe('Firebase 토큰 검증', function () {
     })->group('firebase', 'token-validation');
 });
 
-describe('세션 관리', function () {
+describe('세션 관리', function (): void {
     /**
      * 테스트: 동일 사용자의 연속 로그인 처리
      */
-    test('동일 사용자의 연속 로그인 처리', function () {
+    test('동일 사용자의 연속 로그인 처리', function (): void {
         // Arrange: 동일 사용자 토큰 데이터
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
@@ -884,7 +884,7 @@ describe('세션 관리', function () {
     /**
      * 테스트: 로그아웃 후 동일 세션으로 재요청 거부
      */
-    test('로그아웃 후 세션 무효화', function () {
+    test('로그아웃 후 세션 무효화', function (): void {
         // Arrange: 로그인한 사용자
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -909,7 +909,7 @@ describe('세션 관리', function () {
     /**
      * 테스트: 다른 디바이스에서 로그인 시 세션 동시 유지 (다중 세션)
      */
-    test('다중 디바이스 세션 동시 유지', function () {
+    test('다중 디바이스 세션 동시 유지', function (): void {
         // Arrange: 사용자 토큰 데이터
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
@@ -954,7 +954,7 @@ describe('세션 관리', function () {
     /**
      * 테스트: 세션 재생성 공격 방지 (로그인 후 세션 ID 변경)
      */
-    test('로그인 후 세션 ID 재생성 (세션 고정 공격 방지)', function () {
+    test('로그인 후 세션 ID 재생성 (세션 고정 공격 방지)', function (): void {
         // Arrange: 유효한 토큰 데이터
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';

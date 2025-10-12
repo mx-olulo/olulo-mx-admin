@@ -4,20 +4,33 @@ declare(strict_types=1);
 
 namespace App\Permissions;
 
+use App\Models\Role;
 use Filament\Facades\Filament;
 use Spatie\Permission\DefaultTeamResolver;
 
 class TenantTeamResolver extends DefaultTeamResolver
 {
-    public function resolveId(): ?int
+    public function getPermissionsTeamId(): int|string|null
     {
-        // 글로벌 패널(플랫폼/시스템) 또는 비패널 요청: 팀 컨텍스트 없음
-        $tenant = Filament::getTenant();
-        if (! $tenant) {
-            return null;
+        // 우선 수동 설정된 team id가 있으면 그대로 사용
+        $explicit = parent::getPermissionsTeamId();
+        if ($explicit !== null) {
+            return $explicit;
         }
 
-        // Organization/Brand/Store 등 테넌트는 team_id = 해당 테넌트 PK
-        return (int) $tenant->getKey();
+        // Filament 테넌트가 있으면 해당 테넌트에 매핑된 Role의 team_id를 사용
+        $tenant = Filament::getTenant();
+        if ($tenant) {
+            $teamId = Role::query()
+                ->whereHasMorph('scopeable', $tenant::class, function ($query) use ($tenant): void {
+                    $query->whereKey($tenant->getKey());
+                })
+                ->value('team_id');
+
+            return $teamId !== null ? (int) $teamId : null;
+        }
+
+        // 그 외에는 팀 컨텍스트 없음
+        return null;
     }
 }

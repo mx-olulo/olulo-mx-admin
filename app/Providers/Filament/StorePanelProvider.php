@@ -24,6 +24,7 @@ class StorePanelProvider extends PanelProvider
             ->default()
             ->id($scopeType->getPanelId())
             ->path($scopeType->getPanelId())
+            ->login()
             ->tenant(Store::class)
             ->discoverResources(in: app_path('Filament/Store/Resources'), for: 'App\Filament\Store\Resources')
             ->discoverPages(in: app_path('Filament/Store/Pages'), for: 'App\Filament\Store\Pages')

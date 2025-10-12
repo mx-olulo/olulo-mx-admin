@@ -37,11 +37,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function (User $user, string $ability) {
             // 관리자 패널(Filament/Nova)에서만 글로벌 스코프 체크
             // 고객 앱 요청은 이 체크를 건너뛰어 성능 최적화
-            if ($this->isAdminPanel()) {
-                // 글로벌 스코프(PLATFORM/SYSTEM) 역할 보유 시 모든 권한 허용
-                if ($user->hasGlobalScopeRole()) {
-                    return true;
-                }
+            // 글로벌 스코프(PLATFORM/SYSTEM) 역할 보유 시 모든 권한 허용
+            if ($this->isAdminPanel() && $user->hasGlobalScopeRole()) {
+                return true;
             }
 
             // 그 외에는 명시적 권한 체크로 위임 (return null)

@@ -229,12 +229,12 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
 
-        if (! $scopeType) {
-            return collect();
+        if (! $scopeType instanceof \App\Enums\ScopeType) {
+            return new \Illuminate\Database\Eloquent\Collection;
         }
 
         // morphMap으로 'ORG' -> Organization::class 자동 변환
-        return $this->roles()
+        $tenants = $this->roles()
             ->where('scope_type', $scopeType->value)
             ->with('scopeable')
             ->get()
@@ -242,6 +242,9 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->filter()
             ->unique('id')
             ->values();
+
+        // Support Collection을 Eloquent Collection으로 변환
+        return new \Illuminate\Database\Eloquent\Collection($tenants->all());
     }
 
     /**
@@ -252,7 +255,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     public function canAccessTenant(Model $tenant): bool
     {
         return $this->roles()
-            ->whereHasMorph('scopeable', get_class($tenant), function ($query) use ($tenant) {
+            ->whereHasMorph('scopeable', $tenant::class, function ($query) use ($tenant): void {
                 $query->where($tenant->getKeyName(), $tenant->getKey());
             })
             ->exists();
@@ -270,17 +273,21 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         // roles relation이 이미 로드되었으면 메모리에서 확인 (쿼리 없음)
         if ($this->relationLoaded('roles')) {
-            return $this->roles->contains(function (Role $role) {
-                return in_array($role->scope_type, [
-                    \App\Enums\ScopeType::PLATFORM->value,
-                    \App\Enums\ScopeType::SYSTEM->value,
-                ], true);
-            });
+            /** @var \Illuminate\Database\Eloquent\Collection<int, Role> $roles */
+            $roles = $this->roles;
+
+            return $roles->contains(fn (Role $role): bool => in_array($role->scope_type, [
+                \App\Enums\ScopeType::PLATFORM->value,
+                \App\Enums\ScopeType::SYSTEM->value,
+            ], true));
         }
 
-        // roles가 로드되지 않았으면 쿼리 실행
+        // roles가 로드되지 않았으면 쿼리 실행 (모델 클래스 의존 없이 scope_type으로 판별)
         return $this->roles()
-            ->whereHasMorph('scopeable', [\App\Models\Platform::class, \App\Models\System::class])
+            ->whereIn('scope_type', [
+                \App\Enums\ScopeType::PLATFORM->value,
+                \App\Enums\ScopeType::SYSTEM->value,
+            ])
             ->exists();
     }
 

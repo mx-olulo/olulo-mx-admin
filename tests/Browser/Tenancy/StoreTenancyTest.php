@@ -67,7 +67,7 @@ class StoreTenancyTest extends DuskTestCase
      */
     public function test_user_can_access_store_panel_with_membership(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->storeUser)
                 ->visit('/store')
                 ->waitForText('Test Store', 10)
@@ -81,7 +81,7 @@ class StoreTenancyTest extends DuskTestCase
      */
     public function test_store_tenant_context_is_set(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->storeUser)
                 ->visit('/store')
                 ->waitForText('Test Store', 10)
@@ -103,7 +103,7 @@ class StoreTenancyTest extends DuskTestCase
             'password' => bcrypt('password'),
         ]);
 
-        $this->browse(function (Browser $browser) use ($otherUser) {
+        $this->browse(function (Browser $browser) use ($otherUser): void {
             $browser->loginAs($otherUser)
                 ->visit('/store')
                 ->waitFor('body', 10)
@@ -117,7 +117,7 @@ class StoreTenancyTest extends DuskTestCase
      */
     public function test_store_is_default_panel(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->storeUser)
                 ->visit('/')
                 ->waitForLocation('/store')

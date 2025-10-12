@@ -8,11 +8,11 @@ declare(strict_types=1);
  * SecurityHeaders 미들웨어의 보안 헤더 적용을 검증합니다.
  * X-Frame-Options, CSP, HSTS 등 주요 보안 헤더를 확인합니다.
  */
-describe('Basic Security Headers', function () {
+describe('Basic Security Headers', function (): void {
     /**
      * 테스트: 기본 보안 헤더 존재 확인
      */
-    test('includes basic security headers', function () {
+    test('includes basic security headers', function (): void {
         // Act: API 요청
         $response = $this->get('/');
 
@@ -26,7 +26,7 @@ describe('Basic Security Headers', function () {
     /**
      * 테스트: X-Powered-By 헤더 제거 확인
      */
-    test('removes x powered by header', function () {
+    test('removes x powered by header', function (): void {
         // Act: API 요청
         $response = $this->get('/');
 
@@ -35,11 +35,11 @@ describe('Basic Security Headers', function () {
     })->group('security', 'headers', 'basic');
 });
 
-describe('Content Security Policy', function () {
+describe('Content Security Policy', function (): void {
     /**
      * 테스트: Content-Security-Policy 헤더는 production에서만 존재
      */
-    test('includes content security policy in production', function () {
+    test('includes content security policy in production', function (): void {
         // Arrange: production 환경
         config(['app.env' => 'production']);
 
@@ -56,7 +56,7 @@ describe('Content Security Policy', function () {
     /**
      * 테스트: CSP는 production에서 더 엄격
      */
-    test('csp stricter in production', function () {
+    test('csp stricter in production', function (): void {
         // Arrange: production 환경
         config(['app.env' => 'production']);
 
@@ -73,11 +73,11 @@ describe('Content Security Policy', function () {
     })->group('security', 'headers', 'csp');
 });
 
-describe('HSTS Headers', function () {
+describe('HSTS Headers', function (): void {
     /**
      * 테스트: HSTS 헤더는 HTTPS에서만 적용
      */
-    test('hsts header only on https', function () {
+    test('hsts header only on https', function (): void {
         // Act: HTTP 요청 (HTTPS 아님)
         $response = $this->get('/');
 
@@ -88,7 +88,7 @@ describe('HSTS Headers', function () {
     /**
      * 테스트: HSTS 헤더는 production 환경에서 활성화
      */
-    test('hsts header in production with https', function () {
+    test('hsts header in production with https', function (): void {
         // Arrange: production 환경 시뮬레이션
         config(['app.env' => 'production']);
 
@@ -105,11 +105,11 @@ describe('HSTS Headers', function () {
     })->group('security', 'headers', 'hsts');
 });
 
-describe('Security Headers Across Routes', function () {
+describe('Security Headers Across Routes', function (): void {
     /**
      * 테스트: 모든 라우트에 기본 보안 헤더 적용
      */
-    test('security headers apply to all routes', function () {
+    test('security headers apply to all routes', function (): void {
         // Act: 여러 경로 요청
         $routes = [
             '/',

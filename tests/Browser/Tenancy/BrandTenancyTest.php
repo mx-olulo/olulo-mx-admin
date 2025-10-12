@@ -77,7 +77,7 @@ class BrandTenancyTest extends DuskTestCase
      */
     public function test_user_can_access_brand_panel_with_membership(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->brandUser)
                 ->visit('/brand')
                 ->waitForText('Test Brand', 10)
@@ -91,7 +91,7 @@ class BrandTenancyTest extends DuskTestCase
      */
     public function test_brand_tenant_context_is_set(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->brandUser)
                 ->visit('/brand')
                 ->waitForText('Test Brand', 10)
@@ -113,7 +113,7 @@ class BrandTenancyTest extends DuskTestCase
             'password' => bcrypt('password'),
         ]);
 
-        $this->browse(function (Browser $browser) use ($otherUser) {
+        $this->browse(function (Browser $browser) use ($otherUser): void {
             $browser->loginAs($otherUser)
                 ->visit('/brand')
                 ->waitFor('body', 10)

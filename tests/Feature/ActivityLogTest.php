@@ -9,8 +9,8 @@ use Spatie\Activitylog\Models\Activity;
 
 uses(RefreshDatabase::class);
 
-describe('Organization Activity Logging', function () {
-    test('organization creation is logged', function () {
+describe('Organization Activity Logging', function (): void {
+    test('organization creation is logged', function (): void {
         $organization = Organization::create([
             'name' => 'Test Organization',
             'description' => 'Test Description',
@@ -35,7 +35,7 @@ describe('Organization Activity Logging', function () {
         expect($activity->properties->toArray())->toHaveKey('attributes');
     })->group('activity-log', 'organization');
 
-    test('organization update is logged', function () {
+    test('organization update is logged', function (): void {
         $organization = Organization::create([
             'name' => 'Original Name',
             'description' => 'Original Description',
@@ -57,7 +57,7 @@ describe('Organization Activity Logging', function () {
         expect($activity->properties['old']['name'])->toBe('Original Name');
     })->group('activity-log', 'organization');
 
-    test('only dirty attributes are logged', function () {
+    test('only dirty attributes are logged', function (): void {
         $organization = Organization::create([
             'name' => 'Test Organization',
             'description' => 'Test Description',
@@ -83,8 +83,8 @@ describe('Organization Activity Logging', function () {
     })->group('activity-log', 'organization');
 });
 
-describe('User Activity Logging', function () {
-    test('user changes are logged', function () {
+describe('User Activity Logging', function (): void {
+    test('user changes are logged', function (): void {
         $user = User::factory()->create([
             'name' => 'John Doe',
             'email' => 'john@example.com',
@@ -104,7 +104,7 @@ describe('User Activity Logging', function () {
         expect($activity->properties['old']['name'])->toBe('John Doe');
     })->group('activity-log', 'user');
 
-    test('activity has causer when authenticated', function () {
+    test('activity has causer when authenticated', function (): void {
         $user = User::factory()->create();
         $this->actingAs($user);
 

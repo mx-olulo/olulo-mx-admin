@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Tenancy;
 
-use App\Models\Platform;
 use App\Models\Role;
-use App\Models\System;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,19 +15,13 @@ class GlobalPanelAccessTest extends TestCase
 
     public function test_platform_admin_can_access_platform_panel(): void
     {
-        // Create platform
-        $platform = Platform::create([
-            'name' => 'Test Platform',
-            'description' => 'Test Platform',
-        ]);
-
-        // Create platform admin role
+        // Create platform admin role (global scope, no team)
         $platformRole = Role::create([
             'name' => 'platform_admin',
             'guard_name' => 'web',
-            'team_id' => $platform->id,
+            'team_id' => null,
             'scope_type' => 'PLATFORM',
-            'scope_ref_id' => $platform->id,
+            'scope_ref_id' => 1,
         ]);
 
         // Create user
@@ -39,8 +31,7 @@ class GlobalPanelAccessTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        // Assign role
-        setPermissionsTeamId($platform->id);
+        // Assign role (no team context needed)
         $user->assignRole($platformRole);
 
         // Check panel access
@@ -50,19 +41,13 @@ class GlobalPanelAccessTest extends TestCase
 
     public function test_system_admin_can_access_system_panel(): void
     {
-        // Create system
-        $system = System::create([
-            'name' => 'Test System',
-            'description' => 'Test System',
-        ]);
-
-        // Create system admin role
+        // Create system admin role (global scope, no team)
         $systemRole = Role::create([
             'name' => 'system_admin',
             'guard_name' => 'web',
-            'team_id' => $system->id + 1000,
+            'team_id' => null,
             'scope_type' => 'SYSTEM',
-            'scope_ref_id' => $system->id,
+            'scope_ref_id' => 1,
         ]);
 
         // Create user
@@ -72,8 +57,7 @@ class GlobalPanelAccessTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        // Assign role
-        setPermissionsTeamId($system->id + 1000);
+        // Assign role (no team context needed)
         $user->assignRole($systemRole);
 
         // Check panel access

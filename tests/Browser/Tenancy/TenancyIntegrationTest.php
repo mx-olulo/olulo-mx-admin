@@ -147,7 +147,7 @@ class TenancyIntegrationTest extends DuskTestCase
      */
     public function test_user_sees_all_their_organizations(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->multiTenantUser)
                 ->visit('/org')
                 ->waitForText('Organization One', 10)
@@ -162,7 +162,7 @@ class TenancyIntegrationTest extends DuskTestCase
      */
     public function test_user_can_switch_between_organizations(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->multiTenantUser)
                 ->visit('/org')
                 ->waitForText('Organization One', 10)
@@ -186,7 +186,7 @@ class TenancyIntegrationTest extends DuskTestCase
      */
     public function test_user_can_access_different_panel_types(): void
     {
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->multiTenantUser)
                 // Organization panel
                 ->visit('/org')
@@ -212,14 +212,14 @@ class TenancyIntegrationTest extends DuskTestCase
     public function test_tenant_isolation(): void
     {
         // Create another organization that user doesn't have access to
-        $otherOrg = Organization::create([
+        Organization::create([
             'name' => 'Other Organization',
             'description' => 'Not accessible',
             'contact_email' => 'other@example.com',
             'is_active' => true,
         ]);
 
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             $browser->loginAs($this->multiTenantUser)
                 ->visit('/org')
                 ->waitForText('Organization One', 10)

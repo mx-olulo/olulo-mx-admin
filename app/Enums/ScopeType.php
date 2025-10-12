@@ -38,11 +38,10 @@ enum ScopeType: string
     public function getModelClass(): string
     {
         return match ($this) {
-            self::PLATFORM => \App\Models\Platform::class,
-            self::SYSTEM => \App\Models\System::class,
             self::ORGANIZATION => \App\Models\Organization::class,
             self::BRAND => \App\Models\Brand::class,
             self::STORE => \App\Models\Store::class,
+            default => throw new \LogicException("No model class for scope: {$this->value}"),
         };
     }
 
@@ -53,7 +52,8 @@ enum ScopeType: string
      */
     public static function getMorphMap(): array
     {
-        return collect(self::cases())
+        // Only tenant scopes have morph targets
+        return collect([self::ORGANIZATION, self::BRAND, self::STORE])
             ->mapWithKeys(fn (self $case): array => [$case->value => $case->getModelClass()])
             ->toArray();
     }
