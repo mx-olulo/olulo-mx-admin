@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Enums\ScopeType;
+use App\Http\Middleware\SetPlatformContext;
 use App\Providers\Filament\Concerns\ConfiguresFilamentPanel;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -22,6 +23,9 @@ class PlatformPanelProvider extends PanelProvider
         return $panel
             ->id($scopeType->getPanelId())
             ->path($scopeType->getPanelId())
+            ->middleware([
+                SetPlatformContext::class,
+            ])
             ->discoverResources(in: app_path('Filament/Platform/Resources'), for: 'App\Filament\Platform\Resources')
             ->discoverPages(in: app_path('Filament/Platform/Pages'), for: 'App\Filament\Platform\Pages')
             ->discoverWidgets(in: app_path('Filament/Platform/Widgets'), for: 'App\Filament\Platform\Widgets');
