@@ -17,36 +17,28 @@ use Illuminate\Support\Facades\Route;
 */
 
 // 관리자 메인 페이지 (임시 - 추후 고객앱으로 전환)
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn (): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory => view('welcome'));
 
 // 로그인 라우트 별칭 (Laravel 기본 인증 호환성) - /auth/login으로 리다이렉트
-Route::get('/login', function () {
-    return redirect()->route('auth.login');
-})->name('login');
+Route::get('/login', fn () => redirect()->route('auth.login'))->name('login');
 
 // 홈 및 대시보드 라우트 (인증 후 리다이렉트용)
-Route::middleware('auth:web')->group(function () {
-    Route::get('/home', function () {
-        return redirect('/admin');
-    })->name('home');
+Route::middleware('auth:web')->group(function (): void {
+    Route::get('/home', fn (): \Illuminate\Http\RedirectResponse => redirect('/admin'))->name('home');
 
-    Route::get('/dashboard', function () {
-        return redirect('/admin');
-    })->name('dashboard');
+    Route::get('/dashboard', fn (): \Illuminate\Http\RedirectResponse => redirect('/admin'))->name('dashboard');
 });
 
 // 인증 관련 라우트 그룹
-Route::prefix('auth')->name('auth.')->group(function () {
+Route::prefix('auth')->name('auth.')->group(function (): void {
     // 로그인 페이지 (게스트만 접근 가능)
-    Route::middleware('guest')->group(function () {
+    Route::middleware('guest')->group(function (): void {
         Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
         Route::post('/firebase/callback', [AuthController::class, 'firebaseCallback'])->name('firebase.callback');
     });
 
     // 로그아웃 (인증된 사용자만 접근 가능)
-    Route::middleware('auth:web')->group(function () {
+    Route::middleware('auth:web')->group(function (): void {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });
 

@@ -22,16 +22,16 @@ use Kreait\Firebase\Contract\Database;
  */
 class FirebaseDatabaseService
 {
-    private Database $database;
+    private readonly Database $database;
 
     /**
      * Firebase Database 서비스 초기화
      *
-     * @param  FirebaseClientFactory  $clientFactory  Firebase 클라이언트 팩토리
+     * @param  FirebaseClientFactory  $firebaseClientFactory  Firebase 클라이언트 팩토리
      */
-    public function __construct(private readonly FirebaseClientFactory $clientFactory)
+    public function __construct(private readonly FirebaseClientFactory $firebaseClientFactory)
     {
-        $this->database = $this->clientFactory->createDatabase();
+        $this->database = $this->firebaseClientFactory->createDatabase();
     }
 
     /**

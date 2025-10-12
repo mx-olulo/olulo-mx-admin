@@ -31,5 +31,4 @@ parameters:
         - '#Parameter \#1 \$json of function json_decode expects string, string\|false given#'
 
         # Laravel config 타입 변환 (env() 헬퍼의 타입 안전성)
-        - '#Parameter \#2 \$string of function explode expects string, bool\|string given#'
         - '#Parameter \#1 \$title of static method Illuminate\\Support\\Str::slug\(\) expects string, bool\|string given#'

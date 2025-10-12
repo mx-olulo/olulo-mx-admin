@@ -13,12 +13,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasTenants
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasFactory, HasRoles, LogsActivity, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -129,7 +131,13 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function getLocaleAttribute(): string
     {
-        return $this->attributes['locale'] ?? config('app.locale', 'es-MX');
+        /** @var string $defaultLocale */
+        $defaultLocale = config('app.locale', 'es-MX');
+
+        /** @var string|null $locale */
+        $locale = $this->attributes['locale'] ?? null;
+
+        return $locale ?? $defaultLocale;
     }
 
     /**
@@ -214,7 +222,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->whereNotNull('team_id')
             ->when(
                 $scopeType,
-                fn ($query, \App\Enums\ScopeType $type) => $query->where('scope_type', $type->value)
+                fn ($query, \App\Enums\ScopeType $scopeType) => $query->where('scope_type', $scopeType->value)
             )
             ->get()
             ->unique('team_id')
@@ -230,5 +238,53 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         // $tenant는 Role 인스턴스
         return $tenant instanceof \App\Models\Role && $this->roles->contains('id', $tenant->id);
+    }
+
+    /**
+     * 사용자가 글로벌 스코프(PLATFORM/SYSTEM) 역할을 보유하는지 확인
+     *
+     * Eloquent의 relation 캐싱을 활용하여 중복 DB 쿼리 방지
+     * Gate::before()에서 권한 체크 최적화를 위해 사용
+     *
+     * @return bool PLATFORM 또는 SYSTEM 스코프 역할 보유 여부
+     */
+    public function hasGlobalScopeRole(): bool
+    {
+        // roles relation이 이미 로드되었으면 메모리에서 직접 확인 (쿼리 없음)
+        if ($this->relationLoaded('roles')) {
+            /** @var \Illuminate\Database\Eloquent\Collection<int, Role> $roles */
+            $roles = $this->roles;
+
+            foreach ($roles as $role) {
+                if (in_array($role->scope_type, [
+                    \App\Enums\ScopeType::PLATFORM->value,
+                    \App\Enums\ScopeType::SYSTEM->value,
+                ], true)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // roles가 로드되지 않았으면 쿼리 실행
+        return $this->roles()
+            ->whereIn('scope_type', [
+                \App\Enums\ScopeType::PLATFORM->value,
+                \App\Enums\ScopeType::SYSTEM->value,
+            ])
+            ->exists();
+    }
+
+    /**
+     * Activity Log 설정
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'phone_number', 'locale', 'email_verified_at'])
+            ->logOnlyDirty()
+            ->dontLogIfAttributesChangedOnly(['last_login_at', 'remember_token'])
+            ->useLogName('user');
     }
 }

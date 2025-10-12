@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Browser\Auth;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -65,7 +67,7 @@ class FirebaseLoginTest extends DuskTestCase
         // 1. Firebase 테스트 사용자 생성
         $this->createFirebaseTestUser();
 
-        $this->browse(function (Browser $browser) {
+        $this->browse(function (Browser $browser): void {
             // 2. CSRF 토큰 획득
             $browser->visit('/sanctum/csrf-cookie');
 
