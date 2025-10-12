@@ -25,11 +25,8 @@ class OrganizationPanelProvider extends PanelProvider
             ->id($scopeType->getPanelId())
             ->path($scopeType->getPanelId())
             ->tenant(Organization::class)
-            ->tenantMiddleware([
-                SetOrganizationContext::class,
-            ], isPersistent: true)
-            ->discoverResources(in: app_path('Filament/Organization/Resources'), for: 'App\\Filament\\Organization\\Resources')
-            ->discoverPages(in: app_path('Filament/Organization/Pages'), for: 'App\\Filament\\Organization\\Pages')
-            ->discoverWidgets(in: app_path('Filament/Organization/Widgets'), for: 'App\\Filament\\Organization\\Widgets');
+            ->discoverResources(in: app_path('Filament/Organization/Resources'), for: 'App\Filament\Organization\Resources')
+            ->discoverPages(in: app_path('Filament/Organization/Pages'), for: 'App\Filament\Organization\Pages')
+            ->discoverWidgets(in: app_path('Filament/Organization/Widgets'), for: 'App\Filament\Organization\Widgets');
     }
 }

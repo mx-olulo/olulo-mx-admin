@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Store extends Model
+class Store extends Model implements HasCurrentTenantLabel
 {
     use LogsActivity;
 
@@ -69,6 +70,14 @@ class Store extends Model
         }
 
         return $this->organization;
+    }
+
+    /**
+     * Filament Tenancy: 현재 테넌트 라벨
+     */
+    public function getCurrentTenantLabel(): string
+    {
+        return $this->name;
     }
 
     /**

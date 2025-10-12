@@ -25,9 +25,6 @@ class BrandPanelProvider extends PanelProvider
             ->id($scopeType->getPanelId())
             ->path($scopeType->getPanelId())
             ->tenant(Brand::class)
-            ->tenantMiddleware([
-                SetBrandContext::class,
-            ], isPersistent: true)
             ->discoverResources(in: app_path('Filament/Brand/Resources'), for: 'App\Filament\Brand\Resources')
             ->discoverPages(in: app_path('Filament/Brand/Pages'), for: 'App\Filament\Brand\Pages')
             ->discoverWidgets(in: app_path('Filament/Brand/Widgets'), for: 'App\Filament\Brand\Widgets');

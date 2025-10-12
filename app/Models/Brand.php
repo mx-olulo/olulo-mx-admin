@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Brand extends Model
+class Brand extends Model implements HasCurrentTenantLabel
 {
     use LogsActivity;
 
@@ -54,6 +55,14 @@ class Brand extends Model
     public function roles(): MorphMany
     {
         return $this->morphMany(Role::class, 'scopeable', 'scope_type', 'scope_ref_id');
+    }
+
+    /**
+     * Filament Tenancy: 현재 테넌트 라벨
+     */
+    public function getCurrentTenantLabel(): string
+    {
+        return $this->name;
     }
 
     /**
