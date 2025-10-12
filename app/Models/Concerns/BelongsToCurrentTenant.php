@@ -39,7 +39,7 @@ trait BelongsToCurrentTenant
             // Brand 패널
             if ($tenant instanceof \App\Models\Brand) {
                 $model->brand_id = $tenant->getKey();
-                
+
                 // 상위 Organization도 설정
                 if ($tenant->organization_id && property_exists($model, 'organization_id')) {
                     $model->organization_id = $tenant->organization_id;
@@ -49,12 +49,12 @@ trait BelongsToCurrentTenant
             // Store 패널
             if ($tenant instanceof \App\Models\Store) {
                 $model->store_id = $tenant->getKey();
-                
+
                 // 상위 Brand 설정
                 if ($tenant->brand_id && property_exists($model, 'brand_id')) {
                     $model->brand_id = $tenant->brand_id;
                 }
-                
+
                 // 상위 Organization 설정
                 if ($tenant->organization_id && property_exists($model, 'organization_id')) {
                     $model->organization_id = $tenant->organization_id;
