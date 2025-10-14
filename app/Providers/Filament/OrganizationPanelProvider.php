@@ -21,8 +21,6 @@ class OrganizationPanelProvider extends PanelProvider
         $panel = $this->applyCommonConfiguration($panel, $scopeType);
 
         return $panel
-            ->id($scopeType->getPanelId())
-            ->path($scopeType->getPanelId())
             ->tenant(Organization::class)
             ->discoverResources(in: app_path('Filament/Organization/Resources'), for: 'App\Filament\Organization\Resources')
             ->discoverPages(in: app_path('Filament/Organization/Pages'), for: 'App\Filament\Organization\Pages')

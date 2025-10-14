@@ -19,15 +19,15 @@ class RoleSeeder extends Seeder
         // Spatie Permission 캐시 초기화 (권장)
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // 1. Platform Admin 역할 (글로벌 유일 스코프: 모델/테이블 없이 고정 ID 사용)
+        // 1. Platform Admin 역할 (글로벌 스코프: team_id=0 고정)
         $platformAdminRole = Role::firstOrCreate(
-            ['name' => 'platform_admin', 'guard_name' => 'web', 'team_id' => null],
+            ['name' => 'platform_admin', 'guard_name' => 'web', 'team_id' => 0],
             ['scope_type' => \App\Enums\ScopeType::PLATFORM->value, 'scope_ref_id' => 1]
         );
 
-        // 2. System Admin 역할 (글로벌 유일 스코프: 모델/테이블 없이 고정 ID 사용)
+        // 2. System Admin 역할 (글로벌 스코프: team_id=0 고정)
         $systemAdminRole = Role::firstOrCreate(
-            ['name' => 'system_admin', 'guard_name' => 'web', 'team_id' => null],
+            ['name' => 'system_admin', 'guard_name' => 'web', 'team_id' => 0],
             ['scope_type' => \App\Enums\ScopeType::SYSTEM->value, 'scope_ref_id' => 1]
         );
 
@@ -95,8 +95,8 @@ class RoleSeeder extends Seeder
             ['email' => 'platform@example.com'],
             ['name' => 'Platform Admin', 'password' => bcrypt('password')]
         );
-        // 글로벌 역할은 팀 컨텍스트 없음 (TeamResolver가 null 반환)
-        setPermissionsTeamId(null);
+        // 글로벌 역할은 team_id=0 사용
+        setPermissionsTeamId(0);
         $platformAdmin->assignRole($platformAdminRole);
 
         // System Admin
@@ -104,8 +104,8 @@ class RoleSeeder extends Seeder
             ['email' => 'system@example.com'],
             ['name' => 'System Admin', 'password' => bcrypt('password')]
         );
-        // 글로벌 역할은 팀 컨텍스트 없음
-        setPermissionsTeamId(null);
+        // 글로벌 역할은 team_id=0 사용
+        setPermissionsTeamId(0);
         $systemAdmin->assignRole($systemAdminRole);
 
         // Organization Manager

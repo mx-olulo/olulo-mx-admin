@@ -21,8 +21,6 @@ class BrandPanelProvider extends PanelProvider
         $panel = $this->applyCommonConfiguration($panel, $scopeType);
 
         return $panel
-            ->id($scopeType->getPanelId())
-            ->path($scopeType->getPanelId())
             ->tenant(Brand::class)
             ->discoverResources(in: app_path('Filament/Brand/Resources'), for: 'App\Filament\Brand\Resources')
             ->discoverPages(in: app_path('Filament/Brand/Pages'), for: 'App\Filament\Brand\Pages')

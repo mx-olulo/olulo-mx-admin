@@ -20,8 +20,6 @@ class PlatformPanelProvider extends PanelProvider
         $panel = $this->applyCommonConfiguration($panel, $scopeType);
 
         return $panel
-            ->id($scopeType->getPanelId())
-            ->path($scopeType->getPanelId())
             ->discoverResources(in: app_path('Filament/Platform/Resources'), for: 'App\\Filament\\Platform\\Resources')
             ->discoverPages(in: app_path('Filament/Platform/Pages'), for: 'App\\Filament\\Platform\\Pages')
             ->discoverWidgets(in: app_path('Filament/Platform/Widgets'), for: 'App\\Filament\\Platform\\Widgets');
