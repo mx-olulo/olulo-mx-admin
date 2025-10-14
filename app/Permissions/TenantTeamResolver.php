@@ -21,13 +21,16 @@ class TenantTeamResolver extends DefaultTeamResolver
         // Filament 테넌트가 있으면 해당 테넌트에 매핑된 Role의 team_id를 사용
         $tenant = Filament::getTenant();
         if ($tenant) {
-            $teamId = Role::query()
-                ->whereHasMorph('scopeable', $tenant::class, function ($query) use ($tenant): void {
-                    $query->whereKey($tenant->getKey());
-                })
-                ->value('team_id');
+            // once()로 요청 단위 메모이제이션 (중복 쿼리 방지)
+            return once(function () use ($tenant): ?int {
+                $teamId = Role::query()
+                    ->whereHasMorph('scopeable', $tenant::class, function ($query) use ($tenant): void {
+                        $query->whereKey($tenant->getKey());
+                    })
+                    ->value('team_id');
 
-            return $teamId !== null ? (int) $teamId : null;
+                return $teamId !== null ? (int) $teamId : null;
+            });
         }
 
         // 그 외에는 팀 컨텍스트 없음

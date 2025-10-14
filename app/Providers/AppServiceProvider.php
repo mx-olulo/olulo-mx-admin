@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Enums\ScopeType;
+use App\Listeners\TenantSwitchLogger;
 use App\Models\User;
+use Filament\Events\TenantSet;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +33,9 @@ class AppServiceProvider extends ServiceProvider
         /** @var array<string, class-string<\Illuminate\Database\Eloquent\Model>> */
         $morphMap = \App\Enums\ScopeType::getMorphMap();
         Relation::morphMap($morphMap);
+
+        // Filament 테넌트 전환 이벤트 리스너 (감사 로그)
+        Event::listen(TenantSet::class, TenantSwitchLogger::class);
 
         // Gate: PLATFORM/SYSTEM 스코프 사용자는 모든 권한 부여
         // 주의: 관리자 패널(Filament/Nova)에서만 작동하도록 제한

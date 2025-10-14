@@ -22,6 +22,7 @@ return new class extends Migration
 
             // 조회 성능 최적화
             $table->index(['scope_type', 'scope_ref_id'], 'idx_role_scope');
+            $table->index(['team_id', 'guard_name'], 'idx_role_team_guard');
         });
     }
 
@@ -32,6 +33,7 @@ return new class extends Migration
     {
         Schema::table('roles', function (Blueprint $table) {
             $table->dropIndex('idx_role_scope');
+            $table->dropIndex('idx_role_team_guard');
             $table->dropColumn(['scope_type', 'scope_ref_id']);
         });
     }
