@@ -50,9 +50,29 @@ class AuthController extends Controller
      */
     public function showLogin(Request $request): View
     {
-        // intended URL을 세션에 저장 (로그인 후 리다이렉트용)
-        if ($request->has('intended')) {
-            Session::put('auth.intended_url', $request->input('intended'));
+        // 1. intended URL이 쿼리 파라미터로 전달된 경우 (Filament 패널에서 리다이렉트된 경우)
+        $intendedUrl = $request->input('intended');
+
+        // 2. 쿼리 파라미터가 없으면 이전 URL 확인
+        if (! $intendedUrl) {
+            $previousUrl = url()->previous();
+            /** @var string $appUrl */
+            $appUrl = config('app.url');
+
+            // 이전 URL이 우리 앱이고, 로그인 페이지가 아니며, 유효한 경로인 경우
+            if ($previousUrl &&
+                is_string($appUrl) &&
+                str_starts_with($previousUrl, $appUrl) &&
+                ! str_contains($previousUrl, '/auth/login') &&
+                $previousUrl !== $appUrl &&
+                $previousUrl !== $appUrl . '/') {
+                $intendedUrl = parse_url($previousUrl, PHP_URL_PATH);
+            }
+        }
+
+        // 3. intended URL이 있으면 세션에 저장 (로그인 후 리다이렉트용)
+        if ($intendedUrl && is_string($intendedUrl)) {
+            Session::put('auth.intended_url', $intendedUrl);
         }
 
         // 현재 locale 설정
@@ -119,7 +139,8 @@ class AuthController extends Controller
             Auth::guard('web')->login($user, true);
 
             // intended URL 또는 기본 경로로 리다이렉트
-            $intendedUrl = Session::pull('auth.intended_url', '/admin');
+            // 기본값: /platform (Platform 패널, 존재하지 않는 /admin이 아님)
+            $intendedUrl = Session::pull('auth.intended_url', '/platform');
 
             // fetch() 등 JSON을 원하는 호출에는 JSON 응답으로 처리
             if ($wantsJson) {

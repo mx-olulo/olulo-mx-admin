@@ -41,6 +41,9 @@ trait ConfiguresFilamentPanel
     protected function applyCommonConfiguration(Panel $panel, ScopeType $scopeType): Panel
     {
         return $panel
+            ->id($scopeType->getPanelId())
+            ->path($scopeType->getPanelId())
+            ->login()  // 커스텀 로그인 페이지 사용 (route('auth.login'))
             ->colors([
                 'primary' => Color::Amber,
             ])
