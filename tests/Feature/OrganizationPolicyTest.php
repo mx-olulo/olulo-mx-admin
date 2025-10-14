@@ -29,15 +29,16 @@ describe('Organization Permission', function (): void {
         $role = Role::create([
             'name' => 'platform-admin-' . uniqid(),
             'guard_name' => 'web',
-            'team_id' => null,
+            // Teams 기능 활성화 시 NOT NULL 제약 충족을 위해 글로벌 팀 ID를 부여
+            'team_id' => 1,
             'scope_type' => ScopeType::PLATFORM->value,
             'scope_ref_id' => 1,
         ]);
 
         $user = User::factory()->create(['name' => 'Platform Admin']);
 
-        // 글로벌 역할은 팀 컨텍스트 없음
-        setPermissionsTeamId(null);
+        // 글로벌 역할(플랫폼)도 명시적 팀 컨텍스트(1) 사용
+        setPermissionsTeamId(1);
         $user->assignRole($role);
 
         return $user;
@@ -48,15 +49,16 @@ describe('Organization Permission', function (): void {
         $role = Role::create([
             'name' => 'system-admin-' . uniqid(),
             'guard_name' => 'web',
-            'team_id' => null,
+            // Teams 기능 활성화 시 NOT NULL 제약 충족을 위해 글로벌 팀 ID를 부여
+            'team_id' => 1,
             'scope_type' => ScopeType::SYSTEM->value,
             'scope_ref_id' => 1,
         ]);
 
         $user = User::factory()->create(['name' => 'System Admin']);
 
-        // 글로벌 역할은 팀 컨텍스트 없음
-        setPermissionsTeamId(null);
+        // 글로벌 역할(시스템)도 명시적 팀 컨텍스트(1) 사용
+        setPermissionsTeamId(1);
         $user->assignRole($role);
 
         return $user;

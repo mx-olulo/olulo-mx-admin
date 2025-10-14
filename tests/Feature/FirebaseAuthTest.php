@@ -123,13 +123,13 @@ describe('Firebase 토큰 로그인', function (): void {
                 'name' => $tokenData['name'],
             ]));
 
-        // Act: Firebase 콜백 요청
+        // Act: Firebase 콜백 요청 (기본 리다이렉트: /store)
         $response = $this->post(route('auth.firebase.callback'), [
             'idToken' => $idToken,
         ]);
 
         // Assert: 로그인 성공 및 리다이렉트 확인
-        $response->assertRedirect('/admin');
+        $response->assertRedirect('/store');
         $response->assertSessionHas('auth.success');
         expect(auth()->check())->toBeTrue();
 
@@ -520,8 +520,8 @@ describe('Firebase 사용자 동기화', function (): void {
             'idToken' => $idToken,
         ]);
 
-        // Assert: 사용자 생성 및 로그인 확인
-        $response->assertRedirect('/admin');
+        // Assert: 사용자 생성 및 로그인 확인 (기본 리다이렉트: /store)
+        $response->assertRedirect('/store');
         expect(auth()->check())->toBeTrue();
 
         expect(User::where('firebase_uid', $tokenData['uid'])->exists())->toBeTrue();
@@ -579,8 +579,8 @@ describe('Firebase 사용자 동기화', function (): void {
             'idToken' => $idToken,
         ]);
 
-        // Assert: 사용자 업데이트 확인
-        $response->assertRedirect('/admin');
+        // Assert: 사용자 업데이트 확인 (기본 리다이렉트: /store)
+        $response->assertRedirect('/store');
         expect(auth()->check())->toBeTrue();
 
         $updatedUser = User::find($existingUser->id);
@@ -636,8 +636,8 @@ describe('Firebase 사용자 동기화', function (): void {
             'idToken' => $idToken,
         ]);
 
-        // Assert: 사용자 생성 확인
-        $response->assertRedirect('/admin');
+        // Assert: 사용자 생성 확인 (기본 리다이렉트: /store)
+        $response->assertRedirect('/store');
         expect(auth()->check())->toBeTrue();
 
         expect(User::where('firebase_uid', 'firebase_uid_phone')->exists())->toBeTrue();

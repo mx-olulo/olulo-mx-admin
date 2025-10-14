@@ -139,8 +139,8 @@ class AuthController extends Controller
             Auth::guard('web')->login($user, true);
 
             // intended URL 또는 기본 경로로 리다이렉트
-            // 기본값: /platform (Platform 패널, 존재하지 않는 /admin이 아님)
-            $intendedUrl = Session::pull('auth.intended_url', '/platform');
+            // 기본값: /store (Store 패널)
+            $intendedUrl = Session::pull('auth.intended_url', '/store');
 
             // fetch() 등 JSON을 원하는 호출에는 JSON 응답으로 처리
             if ($wantsJson) {

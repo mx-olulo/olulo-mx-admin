@@ -19,7 +19,8 @@ class GlobalPanelAccessTest extends TestCase
         $platformRole = Role::create([
             'name' => 'platform_admin',
             'guard_name' => 'web',
-            'team_id' => null,
+            // Teams NOT NULL 제약으로 전역 팀 id 사용
+            'team_id' => 1,
             'scope_type' => 'PLATFORM',
             'scope_ref_id' => 1,
         ]);
@@ -31,7 +32,8 @@ class GlobalPanelAccessTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        // Assign role (no team context needed)
+        // Assign role with explicit team context
+        setPermissionsTeamId(1);
         $user->assignRole($platformRole);
 
         // Check panel access
@@ -45,7 +47,8 @@ class GlobalPanelAccessTest extends TestCase
         $systemRole = Role::create([
             'name' => 'system_admin',
             'guard_name' => 'web',
-            'team_id' => null,
+            // Teams NOT NULL 제약으로 전역 팀 id 사용
+            'team_id' => 1,
             'scope_type' => 'SYSTEM',
             'scope_ref_id' => 1,
         ]);
@@ -57,7 +60,8 @@ class GlobalPanelAccessTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        // Assign role (no team context needed)
+        // Assign role with explicit team context
+        setPermissionsTeamId(1);
         $user->assignRole($systemRole);
 
         // Check panel access
