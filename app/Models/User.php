@@ -223,7 +223,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      * Role의 scopeable MorphTo 관계를 통해 실제 테넌트 모델 반환
      * morphMap 설정으로 'ORG' -> Organization::class 자동 매핑
      *
-     * once()로 요청 단위 메모이제이션 적용 (중복 쿼리 방지)
+     * Eloquent 관계 캐싱을 활용하여 중복 쿼리 방지
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model>
      */
@@ -235,21 +235,17 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             return new \Illuminate\Database\Eloquent\Collection;
         }
 
-        // once()로 동일한 user_id + scope_type 조합에 대해 쿼리 1회만 실행
-        return once(function () use ($scopeType): \Illuminate\Database\Eloquent\Collection {
-            // morphMap으로 'ORG' -> Organization::class 자동 변환
-            $tenants = $this->roles()
-                ->where('scope_type', $scopeType->value)
-                ->with('scopeable')
-                ->get()
-                ->pluck('scopeable')
-                ->filter()
-                ->unique('id')
-                ->values();
+        // roles 관계를 명시적으로 조회 (scope_type 필터 적용)
+        $tenants = $this->roles()
+            ->where('scope_type', $scopeType->value)
+            ->with('scopeable')
+            ->get()
+            ->pluck('scopeable')
+            ->filter()
+            ->unique('id')
+            ->values();
 
-            // Support Collection을 Eloquent Collection으로 변환
-            return new \Illuminate\Database\Eloquent\Collection($tenants->all());
-        });
+        return new \Illuminate\Database\Eloquent\Collection($tenants->all());
     }
 
     /**
