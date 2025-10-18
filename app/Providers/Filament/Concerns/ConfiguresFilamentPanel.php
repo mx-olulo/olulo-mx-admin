@@ -81,6 +81,9 @@ trait ConfiguresFilamentPanel
      */
     protected function getAuthMiddleware(): array
     {
-        return [Authenticate::class];
+        return [
+            Authenticate::class,
+            \App\Http\Middleware\EnsureUserHasTenant::class,
+        ];
     }
 }
