@@ -39,3 +39,34 @@ node_modules
 
 # ref
 /ref
+*.tsbuildinfo
+.pytest_cache/
+.idea/
+*.swo
+*~
+*.pyo
+dist/
+*.egg
+.tscache/
+.env/
+# OS
+# Logs
+# IDE
+venv/
+# Build artifacts
+.venv/
+*.temp
+# Temporary files
+.vscode/
+# Cache
+*.swp
+env/
+logs/
+# Backups
+*.pyc
+__pycache__/
+*.tmp
+node_modules/
+*.egg-info/
+build/
+# Virtual environment

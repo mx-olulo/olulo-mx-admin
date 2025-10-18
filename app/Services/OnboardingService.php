@@ -11,6 +11,11 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
+/**
+ * @CODE:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md | TEST: tests/Feature/Feature/OnboardingServiceTest.php
+ *
+ * 온보딩 서비스: 신규 사용자의 조직/매장 생성 및 Owner 역할 부여
+ */
 class OnboardingService
 {
     /**

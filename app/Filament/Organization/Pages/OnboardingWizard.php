@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Filament\Store\Pages;
+namespace App\Filament\Organization\Pages;
 
-use App\Models\Store;
+use App\Models\Organization;
 use App\Models\User;
 use App\Services\OnboardingService;
 use Filament\Forms\Components\TextInput;
@@ -15,11 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @CODE:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md | TEST: tests/Feature/Feature/OnboardingServiceTest.php
  *
- * 사용자 온보딩 위자드: 신규 사용자가 조직 또는 매장을 생성하고 owner role을 부여받습니다.
+ * 조직 온보딩 위자드: 신규 사용자가 조직을 생성하고 owner role을 부여받습니다.
  *
  * Filament V4 Tenancy RegisterTenant 기반 구현:
- * - form(Schema): 2단계 Wizard UI 정의
- * - handleRegistration(array): 테넌트 생성 로직 (OnboardingService 위임)
+ * - form(Schema): 조직 생성 폼
+ * - handleRegistration(array): Organization 생성 (OnboardingService 위임)
  */
 class OnboardingWizard extends RegisterTenant
 {
@@ -33,7 +33,7 @@ class OnboardingWizard extends RegisterTenant
      */
     public static function getLabel(): string
     {
-        return '온보딩';
+        return '조직 온보딩';
     }
 
     /**
@@ -47,11 +47,11 @@ class OnboardingWizard extends RegisterTenant
         return $schema
             ->schema([
                 TextInput::make('name')
-                    ->label('매장 이름')
+                    ->label('조직 이름')
                     ->required()
                     ->maxLength(255)
-                    ->helperText('매장의 공식 명칭을 입력하세요')
-                    ->unique(table: 'stores', column: 'name'),
+                    ->helperText('조직의 공식 명칭을 입력하세요')
+                    ->unique(table: 'organizations', column: 'name'),
             ]);
     }
 
@@ -59,7 +59,7 @@ class OnboardingWizard extends RegisterTenant
      * 테넌트 등록 처리 (Filament Tenancy 생명주기 메서드)
      *
      * @param  array<string, mixed>  $data  폼 데이터
-     * @return Model 생성된 테넌트 모델 (Store)
+     * @return Model 생성된 테넌트 모델 (Organization)
      *
      * @throws \Exception 인증 실패
      */
@@ -73,7 +73,7 @@ class OnboardingWizard extends RegisterTenant
 
         $onboardingService = app(OnboardingService::class);
 
-        // 매장 생성
-        return $onboardingService->createStore($user, ['name' => $data['name']]);
+        // 조직 생성
+        return $onboardingService->createOrganization($user, ['name' => $data['name']]);
     }
 }

@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+/**
+ * @TEST:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md
+ *
+ * OnboardingService 테스트: 조직/매장 생성 및 Owner 역할 부여 검증
+ */
+
 use App\Enums\ScopeType;
 use App\Models\Organization;
 use App\Models\Store;
