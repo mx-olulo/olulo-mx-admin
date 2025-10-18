@@ -223,7 +223,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      * Role의 scopeable MorphTo 관계를 통해 실제 테넌트 모델 반환
      * morphMap 설정으로 'ORG' -> Organization::class 자동 매핑
      *
-     * Eloquent 관계 캐싱을 활용하여 중복 쿼리 방지
+     * Spatie Permission의 team_id 필터를 우회하기 위해 직접 DB 조회
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model>
      */
@@ -235,8 +235,20 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             return new \Illuminate\Database\Eloquent\Collection;
         }
 
-        // roles 관계를 명시적으로 조회 (scope_type 필터 적용)
-        $roles = $this->roles()
+        // Spatie Permission의 team_id 필터를 우회하여 직접 조회
+        // model_has_roles → roles 조인으로 사용자의 모든 역할 조회
+        $roleIds = \DB::table('model_has_roles')
+            ->where('model_id', $this->getKey())
+            ->where('model_type', static::class)
+            ->pluck('role_id');
+
+        if ($roleIds->isEmpty()) {
+            return new \Illuminate\Database\Eloquent\Collection;
+        }
+
+        // Role 모델에서 scope_type 필터링 및 scopeable eager loading
+        $roles = Role::query()
+            ->whereIn('id', $roleIds)
             ->where('scope_type', $scopeType->value)
             ->with('scopeable')
             ->get();

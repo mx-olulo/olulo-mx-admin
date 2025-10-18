@@ -19,6 +19,15 @@ class TenantTeamResolver extends DefaultTeamResolver
 
     protected static ?string $cachedTenantKey = null;
 
+    /**
+     * 캐시 초기화 (테스트용)
+     */
+    public static function clearCache(): void
+    {
+        static::$cachedTeamId = null;
+        static::$cachedTenantKey = null;
+    }
+
     public function getPermissionsTeamId(): int|string|null
     {
         // 우선 수동 설정된 team id가 있으면 그대로 사용

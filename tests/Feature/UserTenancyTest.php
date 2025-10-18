@@ -54,7 +54,8 @@ describe('User::getTenants()', function (): void {
         // roles 관계 리프레시
         $user->unsetRelation('roles');
 
-        // When: Organization 패널의 테넌트 조회
+        // When: Organization 패널의 테넌트 조회 (team_id 필터 비활성화)
+        setPermissionsTeamId(null);
         $panel = Filament::getPanel('org');
         $tenants = $user->getTenants($panel);
 
@@ -94,7 +95,8 @@ describe('User::getTenants()', function (): void {
         $user->roles()->attach($role2->id, ['model_type' => User::class, 'team_id' => $role2->team_id]);
         $user->unsetRelation('roles');
 
-        // When: Store 패널의 테넌트 조회
+        // When: Store 패널의 테넌트 조회 (team_id 필터 비활성화)
+        setPermissionsTeamId(null);
         $panel = Filament::getPanel('store');
         $tenants = $user->getTenants($panel);
 
@@ -133,7 +135,8 @@ describe('User::getTenants()', function (): void {
         $user->roles()->attach($role2->id, ['model_type' => User::class, 'team_id' => $role2->team_id]);
         $user->unsetRelation('roles');
 
-        // When: Brand 패널의 테넌트 조회
+        // When: Brand 패널의 테넌트 조회 (team_id 필터 비활성화)
+        setPermissionsTeamId(null);
         $panel = Filament::getPanel('brand');
         $tenants = $user->getTenants($panel);
 
@@ -162,7 +165,8 @@ describe('User::getTenants()', function (): void {
 
         $user->unsetRelation('roles');
 
-        // When: 쿼리 카운트 측정
+        // When: 쿼리 카운트 측정 (team_id 필터 비활성화)
+        setPermissionsTeamId(null);
         DB::enableQueryLog();
         $panel = Filament::getPanel('org');
         $tenants = $user->getTenants($panel);
