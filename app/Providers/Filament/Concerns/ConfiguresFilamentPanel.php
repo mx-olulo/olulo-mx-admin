@@ -38,19 +38,18 @@ trait ConfiguresFilamentPanel
      * @param  ScopeType  $scopeType  Panel의 스코프 타입
      * @return Panel 설정이 적용된 Panel 인스턴스
      */
-    protected function applyCommonConfiguration(Panel $panel, ScopeType $scopeType): Panel
-    {
+    protected function applyCommonConfiguration(
+        Panel $panel,
+        ScopeType $scopeType,
+    ): Panel {
         return $panel
             ->id($scopeType->getPanelId())
             ->path($scopeType->getPanelId())
-            ->login()  // 커스텀 로그인 페이지 사용 (route('auth.login'))
+            ->login() // 커스텀 로그인 페이지 사용 (route('auth.login'))
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
+            ->widgets([AccountWidget::class, FilamentInfoWidget::class])
             ->middleware($this->getMiddleware())
             ->authMiddleware($this->getAuthMiddleware());
     }
@@ -82,8 +81,6 @@ trait ConfiguresFilamentPanel
      */
     protected function getAuthMiddleware(): array
     {
-        return [
-            Authenticate::class,
-        ];
+        return [Authenticate::class];
     }
 }

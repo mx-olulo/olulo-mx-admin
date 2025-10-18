@@ -40,20 +40,14 @@ class Dashboard extends BaseDashboard
      * Check dashboard access permission
      * Dashboard 접근 권한 확인
      *
-     * Restrict access to Platform scope roles only
-     * Platform scope의 Role만 접근 가능하도록 제한
+     * Platform Panel has no tenant restrictions (admin-only)
+     * Platform Panel은 테넌트 제한 없음 (관리자 전용)
      */
     public static function canAccess(): bool
     {
-        $tenant = \Filament\Facades\Filament::getTenant();
-
-        if (! $tenant instanceof \App\Models\Role) {
-            return false;
-        }
-
-        // Verify PLATFORM scope
-        // PLATFORM scope 검증
-        return $tenant->scope_type === \App\Enums\ScopeType::PLATFORM->value;
+        // Global panel - no tenant restriction
+        // 글로벌 패널 - 테넌트 제한 없음
+        return true;
     }
 
     /**

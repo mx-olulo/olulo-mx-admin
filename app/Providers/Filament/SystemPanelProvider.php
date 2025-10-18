@@ -20,8 +20,17 @@ class SystemPanelProvider extends PanelProvider
         $panel = $this->applyCommonConfiguration($panel, $scopeType);
 
         return $panel
-            ->discoverResources(in: app_path('Filament/System/Resources'), for: 'App\\Filament\\System\\Resources')
-            ->discoverPages(in: app_path('Filament/System/Pages'), for: 'App\\Filament\\System\\Pages')
-            ->discoverWidgets(in: app_path('Filament/System/Widgets'), for: 'App\\Filament\\System\\Widgets');
+            ->discoverResources(
+                in: app_path('Filament/System/Resources'),
+                for: "App\Filament\System\Resources",
+            )
+            ->discoverPages(
+                in: app_path('Filament/System/Pages'),
+                for: "App\Filament\System\Pages",
+            )
+            ->discoverWidgets(
+                in: app_path('Filament/System/Widgets'),
+                for: "App\Filament\System\Widgets",
+            );
     }
 }

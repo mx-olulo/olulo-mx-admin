@@ -40,20 +40,16 @@ class Dashboard extends BaseDashboard
      * Check dashboard access permission
      * Dashboard 접근 권한 확인
      *
-     * Restrict access to Store scope roles only
-     * Store scope의 Role만 접근 가능하도록 제한
+     * Restrict access to Store tenants only
+     * Store 테넌트만 접근 가능하도록 제한
      */
     public static function canAccess(): bool
     {
         $tenant = \Filament\Facades\Filament::getTenant();
 
-        if (! $tenant instanceof \App\Models\Role) {
-            return false;
-        }
-
-        // Verify STORE scope
-        // STORE scope 검증
-        return $tenant->scope_type === \App\Enums\ScopeType::STORE->value;
+        // Store Panel uses Store model as tenant
+        // Store Panel은 Store 모델을 테넌트로 사용
+        return $tenant instanceof \App\Models\Store;
     }
 
     /**

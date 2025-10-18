@@ -22,8 +22,17 @@ class OrganizationPanelProvider extends PanelProvider
 
         return $panel
             ->tenant(Organization::class)
-            ->discoverResources(in: app_path('Filament/Organization/Resources'), for: 'App\Filament\Organization\Resources')
-            ->discoverPages(in: app_path('Filament/Organization/Pages'), for: 'App\Filament\Organization\Pages')
-            ->discoverWidgets(in: app_path('Filament/Organization/Widgets'), for: 'App\Filament\Organization\Widgets');
+            ->discoverResources(
+                in: app_path('Filament/Organization/Resources'),
+                for: "App\Filament\Organization\Resources",
+            )
+            ->discoverPages(
+                in: app_path('Filament/Organization/Pages'),
+                for: "App\Filament\Organization\Pages",
+            )
+            ->discoverWidgets(
+                in: app_path('Filament/Organization/Widgets'),
+                for: "App\Filament\Organization\Widgets",
+            );
     }
 }
