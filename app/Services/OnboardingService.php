@@ -30,8 +30,11 @@ class OnboardingService
                 'scope_type' => ScopeType::ORGANIZATION->value,
                 'scope_ref_id' => $organization->id,
                 'guard_name' => 'web',
+                'team_id' => $organization->id,
             ]);
 
+            // Set team context before assigning role
+            setPermissionsTeamId($organization->id);
             $user->assignRole($ownerRole);
 
             return $organization;
@@ -57,8 +60,11 @@ class OnboardingService
                 'scope_type' => ScopeType::STORE->value,
                 'scope_ref_id' => $store->id,
                 'guard_name' => 'web',
+                'team_id' => $store->id,
             ]);
 
+            // Set team context before assigning role
+            setPermissionsTeamId($store->id);
             $user->assignRole($ownerRole);
 
             return $store;
