@@ -276,7 +276,7 @@ public function mount(): void
 - **코드**:
   - `app/Filament/Store/Pages/OnboardingWizard.php`
   - `app/Services/OnboardingService.php`
-- **테스트**: `tests/Feature/Feature/OnboardingServiceTest.php`
+- **테스트**: `tests/Feature/OnboardingServiceTest.php`
 - **마이그레이션**:
   - `database/migrations/*_create_organizations_table.php`
   - `database/migrations/*_create_stores_table.php`

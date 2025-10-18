@@ -61,7 +61,7 @@ Scenario: 조직 생성 및 owner role 부여
 ```
 
 **테스트 매핑**:
-- ✅ `tests/Feature/Feature/OnboardingServiceTest.php:15-38`
+- ✅ `tests/Feature/OnboardingServiceTest.php:15-38`
 - Test: `createOrganization creates organization and assigns owner role`
 
 ---
@@ -111,7 +111,7 @@ Scenario: 독립 매장 생성 및 owner role 부여
 ```
 
 **테스트 매핑**:
-- ✅ `tests/Feature/Feature/OnboardingServiceTest.php:40-64`
+- ✅ `tests/Feature/OnboardingServiceTest.php:40-64`
 - Test: `createStore creates store and assigns owner role`
 
 ---
@@ -194,8 +194,8 @@ Scenario: 매장 생성 중 Role 할당 실패
 ```
 
 **테스트 매핑**:
-- ✅ `tests/Feature/Feature/OnboardingServiceTest.php:66-95` (조직)
-- ✅ `tests/Feature/Feature/OnboardingServiceTest.php:97-117` (매장)
+- ✅ `tests/Feature/OnboardingServiceTest.php:66-95` (조직)
+- ✅ `tests/Feature/OnboardingServiceTest.php:97-117` (매장)
 - Test: `createOrganization rolls back on error`
 - Test: `createStore rolls back on error`
 

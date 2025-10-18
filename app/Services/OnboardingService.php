@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 /**
- * @CODE:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md | TEST: tests/Feature/Feature/OnboardingServiceTest.php
+ * @CODE:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md | TEST: tests/Feature/OnboardingServiceTest.php
  *
  * 온보딩 서비스: 신규 사용자의 조직/매장 생성 및 Owner 역할 부여
  */
@@ -30,13 +30,21 @@ class OnboardingService
                 'name' => $data['name'],
             ]);
 
-            $ownerRole = Role::firstOrCreate([
+            // Role::where()->firstOr() 패턴으로 N+1 문제 방지
+            /** @var Role $ownerRole */
+            $ownerRole = Role::where([
                 'name' => 'owner',
                 'scope_type' => ScopeType::ORGANIZATION->value,
                 'scope_ref_id' => $organization->id,
                 'guard_name' => 'web',
                 'team_id' => $organization->id,
-            ]);
+            ])->firstOr(fn () => Role::create([
+                'name' => 'owner',
+                'scope_type' => ScopeType::ORGANIZATION->value,
+                'scope_ref_id' => $organization->id,
+                'guard_name' => 'web',
+                'team_id' => $organization->id,
+            ]));
 
             // Set team context before assigning role
             setPermissionsTeamId($organization->id);
@@ -60,13 +68,21 @@ class OnboardingService
                 'status' => 'pending',
             ]);
 
-            $ownerRole = Role::firstOrCreate([
+            // Role::where()->firstOr() 패턴으로 N+1 문제 방지
+            /** @var Role $ownerRole */
+            $ownerRole = Role::where([
                 'name' => 'owner',
                 'scope_type' => ScopeType::STORE->value,
                 'scope_ref_id' => $store->id,
                 'guard_name' => 'web',
                 'team_id' => $store->id,
-            ]);
+            ])->firstOr(fn () => Role::create([
+                'name' => 'owner',
+                'scope_type' => ScopeType::STORE->value,
+                'scope_ref_id' => $store->id,
+                'guard_name' => 'web',
+                'team_id' => $store->id,
+            ]));
 
             // Set team context before assigning role
             setPermissionsTeamId($store->id);

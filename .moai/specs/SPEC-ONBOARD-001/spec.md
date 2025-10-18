@@ -1,6 +1,6 @@
 ---
 id: ONBOARD-001
-version: 0.1.0
+version: 0.1.1
 status: completed
 created: 2025-10-19
 updated: 2025-10-19
@@ -27,20 +27,31 @@ scope:
 
 ## HISTORY
 
+### v0.1.1 (2025-10-19)
+- **CHANGED**: SPEC을 실제 구현과 일치시킴
+- **AUTHOR**: @Goos
+- **REASON**: 코드 리뷰 중 SPEC vs 코드 불일치 발견 - "패널별 자동 결정" 방식으로 변경
+- **변경 내용**:
+  - ❌ **제거**: 2단계 Wizard UI 명세 (유형 선택 Step)
+  - ✅ **추가**: 패널별 자동 결정 방식 명세
+  - ✅ **설명**: Store Panel → 매장 생성, Organization Panel → 조직 생성
+  - ✅ **근거**: Filament V4 `RegisterTenant` 아키텍처에 부합
+- **영향**: UI 구조만 명세 변경, 핵심 비즈니스 로직 불변
+
 ### v0.1.0 (2025-10-19)
 - **COMPLETED**: 온보딩 위자드 구현 완료 (역설계 SPEC 작성)
 - **AUTHOR**: @Goos
 - **IMPLEMENTED**:
-  - Filament V4 Schema 기반 2단계 Wizard UI
+  - Filament V4 RegisterTenant 기반 온보딩 시스템
   - OnboardingService (조직/매장 생성 + owner role 부여)
   - Pest 테스트 4개 (성공/실패/롤백 시나리오)
   - DB Transaction 기반 원자적 처리
   - Spatie Permission team_id 컨텍스트 설정
 - **FILES**:
-  - `app/Filament/Store/Pages/OnboardingWizard.php` (111 LOC)
-  - `app/Services/OnboardingService.php` (74 LOC)
-  - `tests/Feature/Feature/OnboardingServiceTest.php` (118 LOC)
-  - `resources/views/filament/store/pages/onboarding-wizard.blade.php` (4 LOC)
+  - `app/Filament/Store/Pages/OnboardingWizard.php` (79 LOC)
+  - `app/Filament/Organization/Pages/OnboardingWizard.php` (79 LOC)
+  - `app/Services/OnboardingService.php` (78 LOC)
+  - `tests/Feature/OnboardingServiceTest.php` (124 LOC)
 - **COMMITS**:
   - `740f2a8`: feat: 사용자 온보딩 위자드 구현
   - `c0947e8`: test: OnboardingService 단위 테스트 추가 및 team_id 지원
@@ -89,32 +100,32 @@ scope:
 ## Requirements (요구사항)
 
 ### Ubiquitous Requirements (필수 기능)
-- 시스템은 신규 사용자에게 온보딩 위자드를 제공해야 한다
-- 시스템은 조직(Organization) 또는 매장(Store) 선택 옵션을 제공해야 한다
-- 시스템은 선택한 엔티티를 생성하고 사용자에게 `owner` role을 부여해야 한다
-- 시스템은 2단계 위자드 UI를 제공해야 한다:
-  - **Step 1**: 유형 선택 (조직 vs 매장)
-  - **Step 2**: 기본 정보 입력 (이름)
+- 시스템은 신규 사용자에게 온보딩 페이지를 제공해야 한다
+- 시스템은 패널별로 자동으로 생성 유형을 결정해야 한다:
+  - **Store Panel** (`/store/register`): 매장 생성
+  - **Organization Panel** (`/organization/register`): 조직 생성
+- 시스템은 생성한 엔티티에 사용자를 `owner` role로 부여해야 한다
+- 시스템은 단일 폼 UI를 제공해야 한다:
+  - **필수 필드**: 이름 입력 (name)
 
 ### Event-driven Requirements (이벤트 기반)
-- **WHEN** 사용자가 처음 로그인하면, 시스템은 온보딩 위자드로 리디렉션해야 한다
-- **WHEN** 사용자가 "조직"을 선택하면, 시스템은 다음을 수행해야 한다:
+- **WHEN** 사용자가 처음 로그인하면, 시스템은 온보딩 페이지로 리디렉션해야 한다
+- **WHEN** 사용자가 Organization Panel에서 온보딩하면, 시스템은 다음을 수행해야 한다:
   - Organization 레코드 생성 (`name` 필드)
   - `owner` role 생성 (`scope_type: ORGANIZATION`, `scope_ref_id: organization.id`, `team_id: organization.id`)
   - 사용자에게 `owner` role 할당 (Spatie Permission)
-- **WHEN** 사용자가 "매장"을 선택하면, 시스템은 다음을 수행해야 한다:
+- **WHEN** 사용자가 Store Panel에서 온보딩하면, 시스템은 다음을 수행해야 한다:
   - Store 레코드 생성 (`name` 필드, `organization_id: null`, `status: pending`)
   - `owner` role 생성 (`scope_type: STORE`, `scope_ref_id: store.id`, `team_id: store.id`)
   - 사용자에게 `owner` role 할당 (Spatie Permission)
-- **WHEN** 온보딩이 완료되면, 시스템은 Dashboard로 리디렉션해야 한다 (`filament.store.pages.dashboard`)
+- **WHEN** 온보딩이 완료되면, 시스템은 해당 패널의 Dashboard로 리디렉션해야 한다
 
 ### State-driven Requirements (상태 기반)
 - **WHILE** 사용자가 이미 조직/매장에 소속되어 있을 때, 시스템은 온보딩을 건너뛰고 Dashboard로 리디렉션해야 한다
 - **WHILE** DB Transaction이 진행 중일 때, 시스템은 모든 작업을 원자적으로 처리해야 한다 (중간 실패 시 롤백)
-- **WHILE** Wizard Step이 진행 중일 때, 시스템은 이전 단계의 데이터를 유지해야 한다 (`statePath: 'data'`)
 
 ### Optional Features (선택 기능)
-- **WHERE** 향후 브랜드 관리가 필요한 경우, Step 3로 "브랜드 선택" 단계를 추가할 수 있다
+- **WHERE** 향후 통합 온보딩이 필요한 경우, 유형 선택 Step을 추가할 수 있다
 - **WHERE** 조직 생성 시, 매장 생성 옵션을 함께 제공할 수 있다 (현재는 별도 분리)
 
 ### Constraints (제약사항)
@@ -128,43 +139,61 @@ scope:
 
 ## Specifications (상세 명세)
 
-### UI Components (Filament V4 Schema)
+### UI Components (Filament V4 RegisterTenant)
 
-#### Wizard 구조
+#### 패널별 온보딩 페이지 구조
+
+**Store Panel** (`app/Filament/Store/Pages/OnboardingWizard.php`):
 ```php
-Wizard::make([
-    Wizard\Step::make('유형 선택')
-        ->description('조직 또는 매장 중 하나를 선택하세요')
-        ->icon('heroicon-o-building-office')
-        ->schema([
-            Select::make('entity_type')
-                ->label('생성할 유형')
-                ->options(['organization' => '조직', 'store' => '매장'])
-                ->required()
-                ->helperText('조직은 여러 매장을 관리할 수 있습니다.')
-                ->live(), // Reactive update
-        ]),
-
-    Wizard\Step::make('기본 정보')
-        ->description('필수 정보를 입력하세요')
-        ->icon('heroicon-o-pencil-square')
-        ->schema([
+class OnboardingWizard extends RegisterTenant
+{
+    public function form(Schema $schema): Schema
+    {
+        return $schema->schema([
             TextInput::make('name')
-                ->label('이름')
+                ->label('매장 이름')
                 ->required()
                 ->maxLength(255)
-                ->unique(table: fn($get) => $get('entity_type') === 'organization' ? 'organizations' : 'stores'),
-        ]),
-])
-->statePath('data') // Form state management
-->submitAction(view('filament.components.wizard-submit'))
+                ->helperText('매장의 공식 명칭을 입력하세요')
+                ->unique(table: 'stores', column: 'name'),
+        ]);
+    }
+
+    protected function handleRegistration(array $data): Model
+    {
+        return app(OnboardingService::class)->createStore(auth()->user(), $data);
+    }
+}
+```
+
+**Organization Panel** (`app/Filament/Organization/Pages/OnboardingWizard.php`):
+```php
+class OnboardingWizard extends RegisterTenant
+{
+    public function form(Schema $schema): Schema
+    {
+        return $schema->schema([
+            TextInput::make('name')
+                ->label('조직 이름')
+                ->required()
+                ->maxLength(255)
+                ->helperText('조직의 공식 명칭을 입력하세요')
+                ->unique(table: 'organizations', column: 'name'),
+        ]);
+    }
+
+    protected function handleRegistration(array $data): Model
+    {
+        return app(OnboardingService::class)->createOrganization(auth()->user(), $data);
+    }
+}
 ```
 
 #### UI/UX 특징
-- **Reactive Form**: Step 1에서 선택한 유형에 따라 Step 2의 unique 검증 테이블 동적 변경
-- **Helper Text**: 각 필드에 설명 텍스트 제공 (조직 vs 매장 차이점)
-- **Icon**: Heroicons 사용 (building-office, pencil-square)
-- **Submit Button**: Custom Blade view로 제출 버튼 렌더링
+- **패널별 자동 결정**: URL 경로로 생성 유형 자동 결정
+- **Helper Text**: 각 필드에 설명 텍스트 제공
+- **Validation**: unique, maxLength, required 규칙 적용
+- **Filament 표준**: RegisterTenant 생명주기 메서드 활용
 
 ### Service Layer
 
@@ -230,25 +259,11 @@ public function createStore(User $user, array $data): Store
 
 ### Page Logic
 
-#### OnboardingWizard::mount()
+#### OnboardingWizard::handleRegistration()
 ```php
-public function mount(): void
+protected function handleRegistration(array $data): Model
 {
-    $user = Auth::user();
-    $panel = Filament::getCurrentPanel();
-
-    // 이미 소속이 있는 사용자는 대시보드로 리디렉션
-    if ($user instanceof User && $panel instanceof Panel && $user->getTenants($panel)->isNotEmpty()) {
-        $this->redirect(route('filament.store.pages.dashboard'));
-    }
-}
-```
-
-#### OnboardingWizard::submit()
-```php
-public function submit(): void
-{
-    $user = Auth::user();
+    $user = auth()->user();
 
     if (!$user instanceof User) {
         throw new \Exception('User must be authenticated');
@@ -256,15 +271,18 @@ public function submit(): void
 
     $onboardingService = app(OnboardingService::class);
 
-    if ($this->data['entity_type'] === 'organization') {
-        $onboardingService->createOrganization($user, ['name' => $this->data['name']]);
-    } else {
-        $onboardingService->createStore($user, ['name' => $this->data['name']]);
-    }
-
-    $this->redirect(route('filament.store.pages.dashboard'));
+    // Store Panel: 매장 생성
+    // Organization Panel: 조직 생성 (각 패널에서 다른 메서드 호출)
+    return $onboardingService->createStore($user, ['name' => $data['name']]);
+    // 또는
+    // return $onboardingService->createOrganization($user, ['name' => $data['name']]);
 }
 ```
+
+**주요 특징**:
+- Filament V4 `RegisterTenant`의 생명주기 메서드 활용
+- 패널별로 다른 Service 메서드 호출
+- 리디렉션은 Filament가 자동 처리 (등록 완료 후 Dashboard로)
 
 ---
 
@@ -276,7 +294,7 @@ public function submit(): void
   - `app/Filament/Store/Pages/OnboardingWizard.php:1-111`
   - `app/Services/OnboardingService.php:1-74`
 - **@TEST:ONBOARD-001**:
-  - `tests/Feature/Feature/OnboardingServiceTest.php:1-118`
+  - `tests/Feature/OnboardingServiceTest.php:1-118`
 - **@DOC:ONBOARD-001**:
   - `.moai/specs/SPEC-ONBOARD-001/plan.md`
   - `.moai/specs/SPEC-ONBOARD-001/acceptance.md`

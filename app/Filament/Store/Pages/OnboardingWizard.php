@@ -13,7 +13,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @CODE:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md | TEST: tests/Feature/Feature/OnboardingServiceTest.php
+ * @CODE:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md | TEST: tests/Feature/OnboardingServiceTest.php
  *
  * 사용자 온보딩 위자드: 신규 사용자가 조직 또는 매장을 생성하고 owner role을 부여받습니다.
  *
