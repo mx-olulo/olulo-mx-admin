@@ -45,7 +45,7 @@ trait ConfiguresFilamentPanel
         return $panel
             ->id($scopeType->getPanelId())
             ->path($scopeType->getPanelId())
-            ->login() // 커스텀 로그인 페이지 사용 (route('auth.login'))
+            ->loginRouteSlug('../auth/login') // Firebase 로그인 페이지로 리디렉션
             ->colors([
                 'primary' => Color::Amber,
             ])

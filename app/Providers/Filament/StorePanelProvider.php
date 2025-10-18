@@ -29,12 +29,8 @@ class StorePanelProvider extends PanelProvider
                 in: app_path('Filament/Store/Resources'),
                 for: "App\Filament\Store\Resources",
             )
-            ->discoverPages(
-                in: app_path('Filament/Store/Pages'),
-                for: "App\Filament\Store\Pages",
-            )
             ->pages([
-                OnboardingWizard::class,
+                \App\Filament\Store\Pages\Dashboard::class,
             ])
             ->discoverWidgets(
                 in: app_path('Filament/Store/Widgets'),
