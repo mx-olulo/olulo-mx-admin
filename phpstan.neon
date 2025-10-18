@@ -30,6 +30,4 @@ parameters:
         - '#Parameter \#1 \$uid of method Kreait\\Firebase\\Contract\\Auth::(getUser|deleteUser)\(\) expects non-empty-string.+, string given#'
         - '#Parameter \#1 \$json of function json_decode expects string, string\|false given#'
 
-        # Filament V4 트레이트 메서드 (InteractsWithForms, InteractsWithFormActions)
-        - '#Call to an undefined method .+::(fillForm|makeForm)\(\)#'
-        - '#Access to an undefined property .+::\$form#'
+        # Filament V4 트레이트 메서드는 현재 사용하지 않으므로 제거함

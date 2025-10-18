@@ -9,19 +9,17 @@ use App\Services\OnboardingService;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Get;
-use Filament\Pages\Concerns\InteractsWithFormActions;
 use Filament\Pages\Page;
 use Filament\Panel;
 use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
 use Illuminate\Support\Facades\Auth;
 
-class OnboardingWizard extends Page implements HasForms
+class OnboardingWizard extends Page implements HasSchemas
 {
-    use InteractsWithFormActions;
-    use InteractsWithForms;
+    use InteractsWithSchemas;
 
     protected string $view = 'filament.store.pages.onboarding-wizard';
 
@@ -41,28 +39,14 @@ class OnboardingWizard extends Page implements HasForms
         if ($user instanceof User && $panel instanceof Panel && $user->getTenants($panel)->isNotEmpty()) {
             $this->redirect(route('filament.store.pages.dashboard'));
         }
-
-        $this->fillForm();
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    protected function getForms(): array
-    {
-        return [
-            'form' => $this->form(
-                $this->makeForm()
-                    ->schema($this->getFormSchema())
-                    ->statePath('data')
-            ),
-        ];
-    }
-
-    /**
+     * Filament V4: schema() 메서드로 위자드 스키마 정의
+     *
      * @return array<\Filament\Schemas\Components\Component>
      */
-    protected function getFormSchema(): array
+    protected function schema(): array
     {
         return [
             Wizard::make([
@@ -97,6 +81,7 @@ class OnboardingWizard extends Page implements HasForms
                             ),
                     ]),
             ])
+                ->statePath('data')
                 ->submitAction(view('filament.components.wizard-submit')),
         ];
     }
@@ -106,19 +91,23 @@ class OnboardingWizard extends Page implements HasForms
      */
     public function submit(): void
     {
-        $data = $this->form->getState();
+        // Filament V4 Schema: $this->data에서 직접 데이터 접근
         $user = Auth::user();
 
         if (! $user instanceof User) {
             throw new \Exception('User must be authenticated');
         }
 
+        if ($this->data === null || ! isset($this->data['entity_type']) || ! isset($this->data['name'])) {
+            throw new \Exception('Invalid form data');
+        }
+
         $onboardingService = app(OnboardingService::class);
 
-        if ($data['entity_type'] === 'organization') {
-            $onboardingService->createOrganization($user, ['name' => $data['name']]);
+        if ($this->data['entity_type'] === 'organization') {
+            $onboardingService->createOrganization($user, ['name' => $this->data['name']]);
         } else {
-            $onboardingService->createStore($user, ['name' => $data['name']]);
+            $onboardingService->createStore($user, ['name' => $this->data['name']]);
         }
 
         $this->redirect(route('filament.store.pages.dashboard'));
