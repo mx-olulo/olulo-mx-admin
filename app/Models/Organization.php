@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\OrganizationFactory;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @method static OrganizationFactory factory($count = null, $state = [])
+ */
 class Organization extends Model implements HasCurrentTenantLabel
 {
+    /** @use HasFactory<OrganizationFactory> */
+    use HasFactory;
+
     use LogsActivity;
 
     protected $fillable = [

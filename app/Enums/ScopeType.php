@@ -53,9 +53,10 @@ enum ScopeType: string
     public static function getMorphMap(): array
     {
         // Only tenant scopes have morph targets
+        /** @var array<string, class-string<\Illuminate\Database\Eloquent\Model>> */
         return collect([self::ORGANIZATION, self::BRAND, self::STORE])
             ->mapWithKeys(fn (self $case): array => [$case->value => $case->getModelClass()])
-            ->toArray();
+            ->all();
     }
 
     /**

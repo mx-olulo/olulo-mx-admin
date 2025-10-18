@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 namespace App\Permissions;
 
+use App\Enums\ScopeType;
 use App\Models\Role;
 use Filament\Facades\Filament;
 use Spatie\Permission\DefaultTeamResolver;
 
 class TenantTeamResolver extends DefaultTeamResolver
 {
+    /**
+     * 요청당 캐싱을 위한 정적 변수
+     * 동일 테넌트에 대한 중복 쿼리 방지
+     */
+    protected static ?int $cachedTeamId = null;
+
+    protected static ?string $cachedTenantKey = null;
+
     public function getPermissionsTeamId(): int|string|null
     {
         // 우선 수동 설정된 team id가 있으면 그대로 사용
@@ -19,16 +28,35 @@ class TenantTeamResolver extends DefaultTeamResolver
         }
 
         // Filament 테넌트가 있으면 해당 테넌트에 매핑된 Role의 team_id를 사용
-        // Filament::getTenant()는 이미 요청당 캐싱되므로 추가 캐싱 불필요
         $tenant = Filament::getTenant();
         if ($tenant) {
+            // 캐시 키: 테넌트 클래스 + ID 조합
+            $tenantKey = $tenant::class . ':' . $tenant->getKey();
+
+            // 동일 테넌트면 캐시된 team_id 반환 (쿼리 스킵)
+            if (static::$cachedTenantKey === $tenantKey) {
+                return static::$cachedTeamId;
+            }
+
+            // morphMap에서 scope_type 조회 (whereHasMorph 대신 직접 조건 비교)
+            $scopeType = array_search($tenant::class, ScopeType::getMorphMap(), true);
+
+            if ($scopeType === false) {
+                // 매핑되지 않은 테넌트 타입은 팀 컨텍스트 없음
+                return null;
+            }
+
+            /** @var int|null $teamId */
             $teamId = Role::query()
-                ->whereHasMorph('scopeable', $tenant::class, function ($query) use ($tenant): void {
-                    $query->whereKey($tenant->getKey());
-                })
+                ->where('scope_type', $scopeType)
+                ->where('scope_ref_id', $tenant->getKey())
                 ->value('team_id');
 
-            return $teamId !== null ? (int) $teamId : null;
+            // 캐시 저장
+            static::$cachedTenantKey = $tenantKey;
+            static::$cachedTeamId = $teamId !== null ? (int) $teamId : null;
+
+            return static::$cachedTeamId;
         }
 
         // 그 외에는 팀 컨텍스트 없음

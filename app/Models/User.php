@@ -236,29 +236,41 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         }
 
         // roles 관계를 명시적으로 조회 (scope_type 필터 적용)
-        $tenants = $this->roles()
+        $roles = $this->roles()
             ->where('scope_type', $scopeType->value)
             ->with('scopeable')
-            ->get()
+            ->get();
+
+        // scopeable 추출 및 중복 제거 (모델 클래스 + ID 조합으로 unique)
+        $tenants = $roles
             ->pluck('scopeable')
-            ->filter()
-            ->unique('id')
+            ->filter() // null 제거
+            ->unique(fn ($tenant): string => $tenant::class . ':' . $tenant->getKey())
             ->values();
 
-        return new \Illuminate\Database\Eloquent\Collection($tenants->all());
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model> */
+        return $tenants->toBase();
     }
 
     /**
      * Filament Tenancy: 사용자가 특정 테넌트에 접근 가능한지 확인
      *
-     * whereHasMorph로 scopeable 관계를 직접 쿼리
+     * morphMap 기반 직접 조건 비교로 성능 최적화
+     * whereHasMorph 대신 scope_type + scope_ref_id 직접 검색
      */
     public function canAccessTenant(Model $tenant): bool
     {
+        // morphMap에서 scope_type 조회
+        $scopeType = array_search($tenant::class, \App\Enums\ScopeType::getMorphMap(), true);
+
+        if ($scopeType === false) {
+            // 매핑되지 않은 테넌트 타입은 접근 불가
+            return false;
+        }
+
         return $this->roles()
-            ->whereHasMorph('scopeable', $tenant::class, function ($query) use ($tenant): void {
-                $query->where($tenant->getKeyName(), $tenant->getKey());
-            })
+            ->where('scope_type', $scopeType)
+            ->where('scope_ref_id', $tenant->getKey())
             ->exists();
     }
 

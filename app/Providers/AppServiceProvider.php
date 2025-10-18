@@ -38,43 +38,15 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(TenantSet::class, TenantSwitchLogger::class);
 
         // Gate: PLATFORM/SYSTEM 스코프 사용자는 모든 권한 부여
-        // 주의: 관리자 패널(Filament/Nova)에서만 작동하도록 제한
-        // 프론트엔드 고객 앱에서는 불필요한 DB 쿼리를 방지
+        // CacheUserGlobalScope 미들웨어에서 요청 속성에 캐싱된 값 활용
+        // 매 권한 체크마다 isAdminPanel() + hasGlobalScopeRole() 호출을 방지하여 성능 최적화
         Gate::before(function (User $user, string $ability) {
-            // 관리자 패널(Filament/Nova)에서만 글로벌 스코프 체크
-            // 고객 앱 요청은 이 체크를 건너뛰어 성능 최적화
-            // 글로벌 스코프(PLATFORM/SYSTEM) 역할 보유 시 모든 권한 허용
-            if ($this->isAdminPanel() && $user->hasGlobalScopeRole()) {
+            // 미들웨어에서 캐싱한 글로벌 스코프 여부 확인 (DB 쿼리 없음)
+            if (request()->attributes->get('user_has_global_scope')) {
                 return true;
             }
 
             // 그 외에는 명시적 권한 체크로 위임 (return null)
         });
-    }
-
-    /**
-     * 현재 요청이 관리자 패널(Filament/Nova)인지 확인
-     *
-     * Filament/Nova는 특정 URL prefix를 사용하므로 이를 기반으로 판단
-     * 고객 앱은 이 체크를 통과하지 못하여 불필요한 DB 쿼리를 방지
-     */
-    protected function isAdminPanel(): bool
-    {
-        if (! app()->runningInConsole() && request()) {
-            $path = request()->path();
-
-            // Filament 패널 경로 확인 (org, brand, store, platform, system, admin)
-            // Nova 패널 경로 확인 (nova)
-            return str_starts_with($path, 'org/') ||
-                   str_starts_with($path, 'brand/') ||
-                   str_starts_with($path, 'store/') ||
-                   str_starts_with($path, 'platform/') ||
-                   str_starts_with($path, 'system/') ||
-                   str_starts_with($path, 'admin/') ||
-                   str_starts_with($path, 'nova/') ||
-                   str_starts_with($path, 'nova-api/');
-        }
-
-        return false;
     }
 }
