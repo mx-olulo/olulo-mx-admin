@@ -20,8 +20,6 @@ class FirebaseAuthServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Firebase 통합 서비스를 싱글톤으로 등록
-        $this->app->singleton(FirebaseService::class, function () {
-            return new FirebaseService;
-        });
+        $this->app->singleton(fn (): \App\Services\FirebaseService => new FirebaseService);
     }
 }

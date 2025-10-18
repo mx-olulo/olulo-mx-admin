@@ -1,0 +1,206 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modu-ai/moai-adk/main/schemas/moai-config.schema.json",
+  "version": "0.2.0",
+  "project": {
+    "name": "olulo-mx-admin",
+    "description": "Laravel 12 + Filament 4 multi-tenant admin and React 19.1 customer web app for offline restaurant order management (Mexico market)",
+    "type": "web-application",
+    "mode": "personal",
+    "locale": "ko"
+  },
+  "languages": [
+    {
+      "name": "php",
+      "version": ">=8.2",
+      "primary": true,
+      "toolchain": {
+        "test": {
+          "framework": "pest",
+          "command": "composer test",
+          "coverage_command": "composer pest:coverage",
+          "coverage_format": "clover",
+          "parallel": true
+        },
+        "lint": {
+          "formatter": "pint",
+          "command": "composer pint",
+          "check_command": "composer pint:check",
+          "auto_fix": true
+        },
+        "static_analysis": {
+          "tool": "larastan",
+          "command": "composer phpstan",
+          "level": 8,
+          "baseline": null
+        },
+        "refactor": {
+          "tool": "rector",
+          "command": "composer rector",
+          "check_command": "composer rector:check",
+          "auto_apply": false
+        },
+        "quality_gate": {
+          "command": "composer quality:check",
+          "auto_fix_command": "composer quality:fix",
+          "required_for_pr": true
+        }
+      },
+      "paths": {
+        "source": "app/",
+        "tests": "tests/",
+        "config": [
+          "config/",
+          "phpstan.neon"
+        ]
+      }
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.x",
+      "primary": false,
+      "toolchain": {
+        "test": {
+          "framework": "none",
+          "command": null,
+          "coverage_command": null,
+          "coverage_format": null,
+          "parallel": false,
+          "note": "향후 Vitest 도입 예정"
+        },
+        "lint": {
+          "formatter": "eslint",
+          "command": "npm run lint",
+          "check_command": "npm run lint",
+          "auto_fix": true,
+          "fix_command": "npm run lint:fix"
+        },
+        "static_analysis": {
+          "tool": "tsc",
+          "command": "npm run typecheck",
+          "level": "strict",
+          "baseline": null
+        },
+        "quality_gate": {
+          "command": "npm run lint && npm run typecheck",
+          "auto_fix_command": "npm run lint:fix",
+          "required_for_pr": true
+        }
+      },
+      "paths": {
+        "source": "resources/js/",
+        "tests": "resources/js/__tests__/",
+        "config": [
+          "tsconfig.json",
+          "eslint.config.js"
+        ]
+      }
+    }
+  ],
+  "quality": {
+    "coverage_target": {
+      "php": 85,
+      "typescript": 80
+    },
+    "code_constraints": {
+      "max_file_lines": 300,
+      "max_function_lines": 50,
+      "max_function_params": 5,
+      "max_complexity": 10
+    },
+    "trust_principles": {
+      "test_first": true,
+      "readable": true,
+      "unified": true,
+      "secured": true,
+      "trackable": true
+    }
+  },
+  "git": {
+    "branch_strategy": "gitflow",
+    "main_branch": "main",
+    "develop_branch": "develop",
+    "commit_message_locale": "ko",
+    "auto_merge": false,
+    "pr_template": ".github/PULL_REQUEST_TEMPLATE.md"
+  },
+  "documentation": {
+    "product": ".moai/project/product.md",
+    "structure": ".moai/project/structure.md",
+    "tech": ".moai/project/tech.md",
+    "specs": ".moai/specs/",
+    "living_docs": "docs/"
+  },
+  "tag_system": {
+    "enabled": true,
+    "scan_paths": [
+      ".moai/specs/",
+      "tests/",
+      "app/",
+      "resources/js/",
+      "docs/"
+    ],
+    "tag_types": [
+      "SPEC",
+      "TEST",
+      "CODE",
+      "DOC"
+    ],
+    "code_first": true
+  },
+  "alfred": {
+    "agents": {
+      "spec-builder": {
+        "model": "sonnet",
+        "enabled": true
+      },
+      "implementation-planner": {
+        "model": "sonnet",
+        "enabled": true
+      },
+      "tdd-implementer": {
+        "model": "sonnet",
+        "enabled": true
+      },
+      "quality-gate": {
+        "model": "haiku",
+        "enabled": true
+      },
+      "doc-syncer": {
+        "model": "haiku",
+        "enabled": true
+      },
+      "tag-agent": {
+        "model": "haiku",
+        "enabled": true
+      },
+      "git-manager": {
+        "model": "haiku",
+        "enabled": true
+      },
+      "debug-helper": {
+        "model": "sonnet",
+        "enabled": true
+      },
+      "trust-checker": {
+        "model": "haiku",
+        "enabled": true
+      },
+      "cc-manager": {
+        "model": "sonnet",
+        "enabled": true
+      },
+      "project-manager": {
+        "model": "sonnet",
+        "enabled": true
+      }
+    }
+  },
+  "moai_adk_version": "0.3.12",
+  "optimized": false,
+  "metadata": {
+    "created": "2025-10-19",
+    "updated": "2025-10-19",
+    "version": "0.2.0",
+    "author": "@Goos"
+  }
+}

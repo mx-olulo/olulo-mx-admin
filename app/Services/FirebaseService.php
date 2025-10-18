@@ -31,20 +31,20 @@ use Kreait\Firebase\Exception\FirebaseException;
  */
 class FirebaseService
 {
-    private FirebaseClientFactory $clientFactory;
+    private readonly FirebaseClientFactory $firebaseClientFactory;
 
-    private ?FirebaseAuthService $authService = null;
+    private ?FirebaseAuthService $firebaseAuthService = null;
 
-    private ?FirebaseMessagingService $messagingService = null;
+    private ?FirebaseMessagingService $firebaseMessagingService = null;
 
-    private ?FirebaseDatabaseService $databaseService = null;
+    private ?FirebaseDatabaseService $firebaseDatabaseService = null;
 
     /**
      * Firebase 서비스 초기화
      */
     public function __construct()
     {
-        $this->clientFactory = new FirebaseClientFactory;
+        $this->firebaseClientFactory = new FirebaseClientFactory;
     }
 
     /**
@@ -54,11 +54,11 @@ class FirebaseService
      */
     private function getAuthService(): FirebaseAuthService
     {
-        if ($this->authService === null) {
-            $this->authService = new FirebaseAuthService($this->clientFactory);
+        if (! $this->firebaseAuthService instanceof \App\Services\Firebase\FirebaseAuthService) {
+            $this->firebaseAuthService = new FirebaseAuthService($this->firebaseClientFactory);
         }
 
-        return $this->authService;
+        return $this->firebaseAuthService;
     }
 
     /**
@@ -68,11 +68,11 @@ class FirebaseService
      */
     private function getMessagingService(): FirebaseMessagingService
     {
-        if ($this->messagingService === null) {
-            $this->messagingService = new FirebaseMessagingService($this->clientFactory);
+        if (! $this->firebaseMessagingService instanceof \App\Services\Firebase\FirebaseMessagingService) {
+            $this->firebaseMessagingService = new FirebaseMessagingService($this->firebaseClientFactory);
         }
 
-        return $this->messagingService;
+        return $this->firebaseMessagingService;
     }
 
     /**
@@ -82,11 +82,11 @@ class FirebaseService
      */
     private function getDatabaseService(): FirebaseDatabaseService
     {
-        if ($this->databaseService === null) {
-            $this->databaseService = new FirebaseDatabaseService($this->clientFactory);
+        if (! $this->firebaseDatabaseService instanceof \App\Services\Firebase\FirebaseDatabaseService) {
+            $this->firebaseDatabaseService = new FirebaseDatabaseService($this->firebaseClientFactory);
         }
 
-        return $this->databaseService;
+        return $this->firebaseDatabaseService;
     }
 
     // =========================================================================
@@ -381,10 +381,10 @@ class FirebaseService
      */
     public function resetServices(): void
     {
-        $this->clientFactory->reset();
-        $this->authService = null;
-        $this->messagingService = null;
-        $this->databaseService = null;
+        $this->firebaseClientFactory->reset();
+        $this->firebaseAuthService = null;
+        $this->firebaseMessagingService = null;
+        $this->firebaseDatabaseService = null;
     }
 
     /**

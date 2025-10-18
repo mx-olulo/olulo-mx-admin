@@ -23,6 +23,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -59,36 +62,45 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
-      - name: Create Vite manifest for tests
-        run: |
-          mkdir -p public/build
-          cat > public/build/manifest.json << 'EOF'
-          {
-            "resources/css/app.css": {
-              "file": "assets/app.css",
-              "src": "resources/css/app.css"
-            },
-            "resources/css/customer-app.css": {
-              "file": "assets/customer-app.css",
-              "src": "resources/css/customer-app.css"
-            },
-            "resources/js/app.js": {
-              "file": "assets/app.js",
-              "src": "resources/js/app.js"
-            },
-            "resources/js/auth-login.js": {
-              "file": "assets/auth-login.js",
-              "src": "resources/js/auth-login.js"
-            },
-            "resources/js/customer-app.tsx": {
-              "file": "assets/customer-app.js",
-              "src": "resources/js/customer-app.tsx"
-            }
-          }
-          EOF
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Build frontend assets
+        run: pnpm run build
 
       - name: Run Laravel Pint (Code Style)
-        run: vendor/bin/pint --test
+        run: |
+          vendor/bin/pint
+          if [ -n "$(git status --porcelain)" ]; then
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add -A
+            git commit -m "style: Apply Laravel Pint fixes [skip ci]"
+            git push
+          fi
 
       - name: Run PHPStan (Static Analysis)
         run: php -d memory_limit=-1 vendor/bin/phpstan analyse --error-format=github
