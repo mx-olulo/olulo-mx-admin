@@ -65,7 +65,6 @@ trait ConfiguresFilamentPanel
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
-            \App\Http\Middleware\DebugAuthMiddleware::class, // DEBUG: 403 추적용 (세션 초기화 후)
             AuthenticateSession::class,
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
