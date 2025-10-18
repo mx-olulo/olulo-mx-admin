@@ -4,14 +4,23 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\OrganizationFactory;
+use Filament\Models\Contracts\HasCurrentTenantLabel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Organization extends Model
+/**
+ * @method static OrganizationFactory factory($count = null, $state = [])
+ */
+class Organization extends Model implements HasCurrentTenantLabel
 {
+    /** @use HasFactory<OrganizationFactory> */
+    use HasFactory;
+
     use LogsActivity;
 
     protected $fillable = [
@@ -54,6 +63,14 @@ class Organization extends Model
     public function roles(): MorphMany
     {
         return $this->morphMany(Role::class, 'scopeable', 'scope_type', 'scope_ref_id');
+    }
+
+    /**
+     * Filament Tenancy: 현재 테넌트 라벨
+     */
+    public function getCurrentTenantLabel(): string
+    {
+        return $this->name;
     }
 
     /**

@@ -45,8 +45,8 @@ class Dashboard extends BaseDashboard
      */
     public static function canAccess(): bool
     {
-        // Platform Panel is accessible to authenticated admin users
-        // Platform Panel은 인증된 관리자 사용자가 접근 가능
+        // Global panel - no tenant restriction
+        // 글로벌 패널 - 테넌트 제한 없음
         return true;
     }
 

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\ScopeType;
 use App\Models\Organization;
-use App\Models\Platform;
 use App\Models\Role;
-use App\Models\System;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
@@ -22,56 +20,46 @@ uses(RefreshDatabase::class);
  * - PLATFORM/SYSTEM 스코프: Role의 scope_type 확인
  * - ORGANIZATION 스코프: Spatie Permission 직접 확인
  */
-describe('Organization Permission', function () {
+describe('Organization Permission', function (): void {
     /**
      * 테스트용 Platform/System 사용자 및 Role 생성 헬퍼
      */
     function createPlatformUser(): User
     {
-        $platform = Platform::firstOrCreate(['id' => 1], [
-            'name' => 'Olulo Platform',
-            'description' => 'Global Platform',
-            'is_active' => true,
-        ]);
-
         $role = Role::create([
             'name' => 'platform-admin-' . uniqid(),
             'guard_name' => 'web',
-            'team_id' => rand(1000, 9999),
+            // Teams 기능 활성화 시 NOT NULL 제약 충족을 위해 글로벌 팀 ID를 부여
+            'team_id' => 1,
             'scope_type' => ScopeType::PLATFORM->value,
-            'scope_ref_id' => $platform->id,
+            'scope_ref_id' => 1,
         ]);
 
         $user = User::factory()->create(['name' => 'Platform Admin']);
 
-        setPermissionsTeamId($role->team_id);
+        // 글로벌 역할(플랫폼)도 명시적 팀 컨텍스트(1) 사용
+        setPermissionsTeamId(1);
         $user->assignRole($role);
-        setPermissionsTeamId(null);
 
         return $user;
     }
 
     function createSystemUser(): User
     {
-        $system = System::firstOrCreate(['id' => 1], [
-            'name' => 'Olulo System',
-            'description' => 'System Level',
-            'is_active' => true,
-        ]);
-
         $role = Role::create([
             'name' => 'system-admin-' . uniqid(),
             'guard_name' => 'web',
-            'team_id' => rand(1000, 9999),
+            // Teams 기능 활성화 시 NOT NULL 제약 충족을 위해 글로벌 팀 ID를 부여
+            'team_id' => 1,
             'scope_type' => ScopeType::SYSTEM->value,
-            'scope_ref_id' => $system->id,
+            'scope_ref_id' => 1,
         ]);
 
         $user = User::factory()->create(['name' => 'System Admin']);
 
-        setPermissionsTeamId($role->team_id);
+        // 글로벌 역할(시스템)도 명시적 팀 컨텍스트(1) 사용
+        setPermissionsTeamId(1);
         $user->assignRole($role);
-        setPermissionsTeamId(null);
 
         return $user;
     }
@@ -88,7 +76,7 @@ describe('Organization Permission', function () {
         $role = Role::create([
             'name' => 'org-admin-' . uniqid(),
             'guard_name' => 'web',
-            'team_id' => rand(1000, 9999),
+            'team_id' => random_int(1000, 9999),
             'scope_type' => ScopeType::ORGANIZATION->value,
             'scope_ref_id' => $organization->id,
         ]);
@@ -98,7 +86,7 @@ describe('Organization Permission', function () {
         setPermissionsTeamId($role->team_id);
         $user->assignRole($role);
 
-        if (! empty($permissions)) {
+        if ($permissions !== []) {
             foreach ($permissions as $permissionName) {
                 $permission = Permission::firstOrCreate([
                     'name' => $permissionName,
@@ -121,14 +109,14 @@ describe('Organization Permission', function () {
         ]);
     }
 
-    describe('PLATFORM Scope', function () {
-        test('PLATFORM 사용자는 PLATFORM scope_type Role을 가짐', function () {
+    describe('PLATFORM Scope', function (): void {
+        test('PLATFORM 사용자는 PLATFORM scope_type Role을 가짐', function (): void {
             $user = createPlatformUser();
 
             // DB에서 직접 조회하여 Role 할당 확인
             // model_has_roles 테이블에서 user_id와 role의 scope_type 확인
             $platformRoleCount = Role::where('scope_type', ScopeType::PLATFORM->value)
-                ->whereHas('users', function ($query) use ($user) {
+                ->whereHas('users', function ($query) use ($user): void {
                     $query->where('model_id', $user->id);
                 })
                 ->count();
@@ -137,14 +125,14 @@ describe('Organization Permission', function () {
         })->group('organization-permission', 'security', 'multitenancy');
     });
 
-    describe('SYSTEM Scope', function () {
-        test('SYSTEM 사용자는 SYSTEM scope_type Role을 가짐', function () {
+    describe('SYSTEM Scope', function (): void {
+        test('SYSTEM 사용자는 SYSTEM scope_type Role을 가짐', function (): void {
             $user = createSystemUser();
 
             // DB에서 직접 조회하여 Role 할당 확인
             // model_has_roles 테이블에서 user_id와 role의 scope_type 확인
             $systemRoleCount = Role::where('scope_type', ScopeType::SYSTEM->value)
-                ->whereHas('users', function ($query) use ($user) {
+                ->whereHas('users', function ($query) use ($user): void {
                     $query->where('model_id', $user->id);
                 })
                 ->count();
@@ -153,8 +141,8 @@ describe('Organization Permission', function () {
         })->group('organization-permission', 'security', 'multitenancy');
     });
 
-    describe('ORGANIZATION Scope - view-activities', function () {
-        test('ORGANIZATION 사용자는 부여된 view-activities 권한을 가짐', function () {
+    describe('ORGANIZATION Scope - view-activities', function (): void {
+        test('ORGANIZATION 사용자는 부여된 view-activities 권한을 가짐', function (): void {
             ensurePermissionExists('view-activities');
 
             ['user' => $user, 'role' => $role] = createOrganizationUser(['view-activities']);
@@ -166,7 +154,7 @@ describe('Organization Permission', function () {
             expect($hasPermission)->toBeTrue();
         })->group('organization-permission', 'security', 'multitenancy');
 
-        test('권한이 없는 사용자는 view-activities 권한이 없음', function () {
+        test('권한이 없는 사용자는 view-activities 권한이 없음', function (): void {
             ensurePermissionExists('view-activities');
             $user = User::factory()->create(['name' => 'No Role User']);
 
@@ -174,8 +162,8 @@ describe('Organization Permission', function () {
         })->group('organization-permission', 'security', 'multitenancy');
     });
 
-    describe('ORGANIZATION Scope - view-organizations', function () {
-        test('ORGANIZATION 사용자는 부여된 view-organizations 권한을 가짐', function () {
+    describe('ORGANIZATION Scope - view-organizations', function (): void {
+        test('ORGANIZATION 사용자는 부여된 view-organizations 권한을 가짐', function (): void {
             ensurePermissionExists('view-organizations');
 
             ['user' => $user, 'role' => $role] = createOrganizationUser(['view-organizations']);
@@ -187,7 +175,7 @@ describe('Organization Permission', function () {
             expect($hasPermission)->toBeTrue();
         })->group('organization-permission', 'security', 'multitenancy');
 
-        test('권한이 없는 사용자는 view-organizations 권한이 없음', function () {
+        test('권한이 없는 사용자는 view-organizations 권한이 없음', function (): void {
             ensurePermissionExists('view-organizations');
             $user = User::factory()->create(['name' => 'No Role User']);
 
@@ -195,8 +183,8 @@ describe('Organization Permission', function () {
         })->group('organization-permission', 'security', 'multitenancy');
     });
 
-    describe('ORGANIZATION Scope - create-organizations', function () {
-        test('ORGANIZATION 사용자는 create-organizations 권한이 부여되지 않음', function () {
+    describe('ORGANIZATION Scope - create-organizations', function (): void {
+        test('ORGANIZATION 사용자는 create-organizations 권한이 부여되지 않음', function (): void {
             ensurePermissionExists('create-organizations');
 
             ['user' => $user, 'role' => $role] = createOrganizationUser(['view-organizations']);
@@ -208,7 +196,7 @@ describe('Organization Permission', function () {
             expect($hasPermission)->toBeFalse();
         })->group('organization-permission', 'security', 'multitenancy');
 
-        test('권한이 없는 사용자는 create-organizations 권한이 없음', function () {
+        test('권한이 없는 사용자는 create-organizations 권한이 없음', function (): void {
             ensurePermissionExists('create-organizations');
             $user = User::factory()->create(['name' => 'No Role User']);
 
@@ -216,8 +204,8 @@ describe('Organization Permission', function () {
         })->group('organization-permission', 'security', 'multitenancy');
     });
 
-    describe('ORGANIZATION Scope - update-organizations', function () {
-        test('ORGANIZATION 사용자는 부여된 update-organizations 권한을 가짐', function () {
+    describe('ORGANIZATION Scope - update-organizations', function (): void {
+        test('ORGANIZATION 사용자는 부여된 update-organizations 권한을 가짐', function (): void {
             ensurePermissionExists('update-organizations');
 
             ['user' => $user, 'role' => $role] = createOrganizationUser(['update-organizations']);
@@ -229,7 +217,7 @@ describe('Organization Permission', function () {
             expect($hasPermission)->toBeTrue();
         })->group('organization-permission', 'security', 'multitenancy');
 
-        test('권한이 없는 사용자는 update-organizations 권한이 없음', function () {
+        test('권한이 없는 사용자는 update-organizations 권한이 없음', function (): void {
             ensurePermissionExists('update-organizations');
             $user = User::factory()->create(['name' => 'No Role User']);
 
@@ -237,8 +225,8 @@ describe('Organization Permission', function () {
         })->group('organization-permission', 'security', 'multitenancy');
     });
 
-    describe('ORGANIZATION Scope - delete-organizations', function () {
-        test('ORGANIZATION 사용자는 delete-organizations 권한이 부여되지 않음', function () {
+    describe('ORGANIZATION Scope - delete-organizations', function (): void {
+        test('ORGANIZATION 사용자는 delete-organizations 권한이 부여되지 않음', function (): void {
             ensurePermissionExists('delete-organizations');
 
             ['user' => $user, 'role' => $role] = createOrganizationUser(['view-organizations']);
@@ -250,7 +238,7 @@ describe('Organization Permission', function () {
             expect($hasPermission)->toBeFalse();
         })->group('organization-permission', 'security', 'multitenancy');
 
-        test('권한이 없는 사용자는 delete-organizations 권한이 없음', function () {
+        test('권한이 없는 사용자는 delete-organizations 권한이 없음', function (): void {
             ensurePermissionExists('delete-organizations');
             $user = User::factory()->create(['name' => 'No Role User']);
 
@@ -258,8 +246,8 @@ describe('Organization Permission', function () {
         })->group('organization-permission', 'security', 'multitenancy');
     });
 
-    describe('ORGANIZATION Scope - restore-organizations', function () {
-        test('ORGANIZATION 사용자는 restore-organizations 권한이 부여되지 않음', function () {
+    describe('ORGANIZATION Scope - restore-organizations', function (): void {
+        test('ORGANIZATION 사용자는 restore-organizations 권한이 부여되지 않음', function (): void {
             ensurePermissionExists('restore-organizations');
 
             ['user' => $user, 'role' => $role] = createOrganizationUser(['view-organizations']);
@@ -272,8 +260,8 @@ describe('Organization Permission', function () {
         })->group('organization-permission', 'security', 'multitenancy');
     });
 
-    describe('ORGANIZATION Scope - force-delete-organizations', function () {
-        test('ORGANIZATION 사용자는 force-delete-organizations 권한이 부여되지 않음', function () {
+    describe('ORGANIZATION Scope - force-delete-organizations', function (): void {
+        test('ORGANIZATION 사용자는 force-delete-organizations 권한이 부여되지 않음', function (): void {
             ensurePermissionExists('force-delete-organizations');
 
             ['user' => $user, 'role' => $role] = createOrganizationUser(['view-organizations']);

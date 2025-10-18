@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Config;
  */
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // 테스트 환경 Firebase 설정
     Config::set('services.firebase', [
         'project_id' => 'test-project-id',
@@ -26,11 +26,11 @@ beforeEach(function () {
     ]);
 });
 
-describe('Firebase Service Dependency Injection', function () {
+describe('Firebase Service Dependency Injection', function (): void {
     /**
      * Firebase 서비스 의존성 주입 테스트
      */
-    test('firebase 서비스 의존성 주입', function () {
+    test('firebase 서비스 의존성 주입', function (): void {
         // Laravel 컨테이너에서 FirebaseService를 해결할 수 있는지 확인
         expect($this->app->bound(FirebaseService::class))->toBeTrue();
 
@@ -43,11 +43,11 @@ describe('Firebase Service Dependency Injection', function () {
     })->group('firebase', 'dependency-injection');
 });
 
-describe('Firebase User Synchronization', function () {
+describe('Firebase User Synchronization', function (): void {
     /**
      * Laravel 사용자 동기화 시나리오 테스트
      */
-    test('firebase 사용자 동기화 시나리오', function () {
+    test('firebase 사용자 동기화 시나리오', function (): void {
         // 기존 사용자가 없는 상태에서 Firebase 사용자 데이터로 동기화
         $firebaseUserData = [
             'uid' => 'firebase-test-uid-123',
@@ -92,7 +92,7 @@ describe('Firebase User Synchronization', function () {
     /**
      * 전화번호 전용 사용자 동기화 테스트
      */
-    test('전화번호 전용 사용자 동기화', function () {
+    test('전화번호 전용 사용자 동기화', function (): void {
         // 이메일이 없고 전화번호만 있는 Firebase 사용자
         $firebaseUserData = [
             'uid' => 'firebase-phone-only-123',
@@ -117,7 +117,7 @@ describe('Firebase User Synchronization', function () {
     /**
      * 이메일에서 이름 추출 테스트
      */
-    test('이메일에서 이름 추출 동작', function () {
+    test('이메일에서 이름 추출 동작', function (): void {
         $firebaseUserData = [
             'uid' => 'firebase-no-name-123',
             'email' => 'john.doe@example.com',
@@ -135,11 +135,11 @@ describe('Firebase User Synchronization', function () {
     })->group('firebase', 'user-sync', 'name-extraction');
 });
 
-describe('Firebase Service Exception Handling', function () {
+describe('Firebase Service Exception Handling', function (): void {
     /**
      * 예외 처리 테스트
      */
-    test('이메일 전화번호 모두 없는 경우 예외', function () {
+    test('이메일 전화번호 모두 없는 경우 예외', function (): void {
         $firebaseUserData = [
             'uid' => 'firebase-invalid-123',
             'email' => null,
@@ -156,11 +156,11 @@ describe('Firebase Service Exception Handling', function () {
         ->group('firebase', 'exceptions');
 });
 
-describe('User Model Firebase Methods', function () {
+describe('User Model Firebase Methods', function (): void {
     /**
      * User 모델의 Firebase 관련 메서드 테스트
      */
-    test('user 모델 firebase 메서드', function () {
+    test('user 모델 firebase 메서드', function (): void {
         $user = User::factory()->create([
             'firebase_uid' => 'test-firebase-uid',
             'firebase_claims' => [
@@ -195,7 +195,7 @@ describe('User Model Firebase Methods', function () {
     /**
      * Firebase 미사용 사용자 테스트
      */
-    test('firebase 미사용 사용자', function () {
+    test('firebase 미사용 사용자', function (): void {
         $user = User::factory()->create([
             'firebase_uid' => null,
             'firebase_claims' => null,
