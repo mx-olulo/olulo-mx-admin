@@ -134,8 +134,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             return $this->hasRole('system_admin');
         }
 
-        // Organization/Brand/Store 패널: 멤버십 확인
-        return $this->getTenants($panel)->isNotEmpty();
+        // Organization/Brand/Store 패널:
+        // 테넌트가 없어도 인증된 사용자는 온보딩 위자드 접근 가능
+        // Filament의 tenantRegistration()이 자동으로 온보딩 위자드로 리디렉션
+        return true;
     }
 
     /**
@@ -280,7 +282,19 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             return false;
         }
 
-        return $this->roles()
+        // Spatie Permission의 team_id 필터를 우회하기 위해 직접 DB 조회
+        // getTenants()와 동일한 패턴 사용
+        $roleIds = \DB::table('model_has_roles')
+            ->where('model_id', $this->getKey())
+            ->where('model_type', static::class)
+            ->pluck('role_id');
+
+        if ($roleIds->isEmpty()) {
+            return false;
+        }
+
+        return Role::query()
+            ->whereIn('id', $roleIds)
             ->where('scope_type', $scopeType)
             ->where('scope_ref_id', $tenant->getKey())
             ->exists();

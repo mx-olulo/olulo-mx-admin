@@ -29,3 +29,5 @@ parameters:
         - '#Parameter \#1 \$idToken of method Kreait\\Firebase\\Contract\\Auth::verifyIdToken\(\) expects .+non-empty-string, string given#'
         - '#Parameter \#1 \$uid of method Kreait\\Firebase\\Contract\\Auth::(getUser|deleteUser)\(\) expects non-empty-string.+, string given#'
         - '#Parameter \#1 \$json of function json_decode expects string, string\|false given#'
+
+        # Filament V4 트레이트 메서드는 현재 사용하지 않으므로 제거함

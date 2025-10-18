@@ -1,0 +1,229 @@
+# AI Code Assistant Rules
+
+## 🚨 Critical Framework Versions
+- **Filament**: 4.x (NOT 3.x)
+- **Tailwind CSS**: 4.x (NOT 3.x)
+
+
+## ⚠️ Common AI Errors
+Most AI assistants default to v3.x syntax. **Always use v4.x patterns.**
+
+---
+
+## Filament 4.x Rules
+
+### 1. Namespace Changes
+```php
+// ✅ v4
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Fieldset;
+```
+
+### 2. Layout Components Must Span Explicitly
+```php
+// ✅ v4: Default is 1 column
+Section::make()
+    ->columnSpanFull() // Explicit full width
+    ->schema([...]);
+
+Grid::make(2)
+    ->columnSpanFull()
+    ->schema([...]);
+```
+
+### 3. Column Span Targets >= lg by Default
+```php
+// ✅ v4: Applies to lg+ screens
+TextInput::make('title')
+    ->columnSpan(2); // Not all screens
+```
+
+### 4. Filters Are Deferred
+```php
+// ✅ v4: User must click button
+public function table(Table $table): Table
+{
+    return $table
+        ->filters([...])
+        ->deferFilters(false); // Optional: restore v3 behavior
+}
+```
+
+### 5. Unique Validation Ignores Record
+```php
+// ✅ v4: Ignores current record by default
+TextInput::make('email')
+    ->unique();
+
+// Restore v3 behavior if needed
+TextInput::make('email')
+    ->unique(ignoreRecord: false);
+```
+
+### 6. Enum State Always Returns Instance
+```php
+// ✅ v4: Always enum instance or null
+Select::make('status')
+    ->options(Status::class)
+    ->afterStateUpdated(function (?Status $state) {
+        // $state is always Status enum or null
+    });
+```
+
+---
+
+## Tailwind CSS 4.x Rules
+
+### 1. Import Syntax
+```css
+/* ✅ v4 */
+@import "tailwindcss";
+
+/* ❌ v3 - NEVER use these */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+### 2. CSS-First Configuration
+```css
+/* ✅ v4: Config in CSS */
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Satoshi", "sans-serif";
+  --breakpoint-3xl: 120rem;
+  --color-brand-500: oklch(0.5 0.2 250);
+}
+```
+
+### 3. Renamed Utilities
+```html
+<!-- ❌ v3 -->
+<div class="shadow-sm shadow rounded-sm rounded ring outline-none">
+
+<!-- ✅ v4 -->
+<div class="shadow-xs shadow-sm rounded-xs rounded-sm ring-3 outline-hidden">
+```
+
+### 4. Opacity Modifiers
+```html
+<!-- ❌ v3 -->
+<div class="bg-black bg-opacity-50 text-blue-500 text-opacity-75">
+
+<!-- ✅ v4 -->
+<div class="bg-black/50 text-blue-500/75">
+```
+
+### 5. Explicit Colors Required
+```html
+<!-- ❌ v3: Defaults provided -->
+<div class="border ring">
+
+<!-- ✅ v4: Must specify -->
+<div class="border border-gray-200 ring-3 ring-blue-500">
+```
+
+### 6. Custom Utilities
+```css
+/* ❌ v3 */
+@layer utilities {
+  .tab-4 { tab-size: 4; }
+}
+
+/* ✅ v4 */
+@utility tab-4 {
+  tab-size: 4;
+}
+```
+
+### 7. No Sass/SCSS Support
+```
+❌ v4 does NOT support Sass, Less, or Stylus
+✅ Use pure CSS - Tailwind v4 IS the preprocessor
+```
+
+---
+
+## Filament Custom Theme (v4)
+
+```css
+/* resources/css/filament/admin/theme.css */
+
+/* ✅ v4 */
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament';
+@source '../../../../resources/views/filament';
+
+@theme {
+  --color-primary-500: oklch(0.5 0.2 250);
+  --font-display: "Satoshi", "sans-serif";
+}
+```
+
+---
+
+## Quick Checklist
+
+When generating code, verify:
+- [ ] No `@tailwind` directives (use `@import "tailwindcss"`)
+- [ ] No `shadow`, `rounded`, `ring` without size modifiers
+- [ ] No `outline-none` (use `outline-hidden`)
+- [ ] No `bg-opacity-*` utilities (use `/50` modifiers)
+- [ ] Layout components use `columnSpanFull()` for full width
+- [ ] Borders and rings have explicit colors
+- [ ] Using `Filament\Schemas\Components` namespace
+- [ ] No `.scss` files for Tailwind configuration
+
+---
+
+## Auto-Correction Examples
+
+### Example 1: Shadow Utilities
+```html
+<!-- If AI suggests -->
+<div class="shadow-sm">
+
+<!-- Auto-correct to -->
+<div class="shadow-xs">
+```
+
+### Example 2: Filament Section
+```php
+// If AI suggests
+Section::make()->schema([...]);
+
+// Auto-correct to
+Section::make()->columnSpanFull()->schema([...]);
+```
+
+### Example 3: Border
+```html
+<!-- If AI suggests -->
+<div class="border">
+
+<!-- Auto-correct to -->
+<div class="border border-gray-200">
+```
+
+---
+
+## Resources
+
+- [Filament 4.x Upgrade Guide](https://filamentphp.com/docs/4.x/upgrade-guide)
+- [Tailwind 4.x Upgrade Guide](https://tailwindcss.com/docs/upgrade-guide)
+- See `.claude/versions.md` for detailed breaking changes
+- See `.claude/project-context.md` for comprehensive examples
+
+---
+
+## Final Note
+
+**These rules override default AI behavior.** When in doubt, refer to:
+1. `.claude/versions.md` - Version differences
+2. `.claude/project-context.md` - Pattern examples
+3. Official v4.x documentation
+
+**Never** suggest v3.x patterns, even if they seem more common.

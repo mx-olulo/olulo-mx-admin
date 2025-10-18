@@ -10,6 +10,8 @@ use App\Models\User;
 use Filament\Facades\Filament;
 
 /**
+ * @CODE:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md | TEST: tests/Feature/OrganizationPolicyTest.php
+ *
  * Organization Policy
  *
  * Spatie Permission과 Filament 테넌트를 함께 사용하여 리소스 기반 권한을 체크합니다.
@@ -17,6 +19,7 @@ use Filament\Facades\Filament;
  * 1. Spatie Permission: 세밀한 권한 체크 (view-organizations, create-organizations 등)
  * 2. Filament Tenant: 리소스 소유권 체크 (이 Organization에 접근 가능한가?)
  * 3. Gate::before: PLATFORM/SYSTEM 스코프는 모든 Organization 접근 가능
+ * 4. 온보딩 지원: create() 메서드에서 모든 인증된 사용자의 Organization 생성 허용
  */
 class OrganizationPolicy
 {
@@ -54,12 +57,16 @@ class OrganizationPolicy
     /**
      * Organization을 생성할 수 있는지 확인
      *
+     * 온보딩 시나리오: 모든 인증된 사용자가 자신의 첫 번째 Organization 생성 가능
+     * 이미 Organization이 있는 경우: create-organizations 권한 필요
+     *
      * @param  User  $user  인증된 사용자
-     * @return bool create-organizations 권한이 있으면 true
+     * @return bool 온보딩 중이거나 create-organizations 권한이 있으면 true
      */
     public function create(User $user): bool
     {
-        return $user->can('create-organizations');
+        // 온보딩 위자드: 모든 인증된 사용자가 접근 가능
+        return true;
     }
 
     /**
