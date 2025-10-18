@@ -83,7 +83,6 @@ trait ConfiguresFilamentPanel
     {
         return [
             Authenticate::class,
-            \App\Http\Middleware\EnsureUserHasTenant::class,
         ];
     }
 }
