@@ -162,20 +162,25 @@ class OrganizationPolicy
             return true;
         }
 
-        // 2. Filament 컨텍스트: 테넌트(Role) 기반 소유권 체크
+        // 2. Filament 컨텍스트: 실제 테넌트 모델 기반 소유권 체크
         $tenant = Filament::getTenant();
 
         // Filament UI가 아닌 환경(API, 콘솔 등)에서는 기본 거부
-        if (! $tenant instanceof \App\Models\Role) {
+        if (! $tenant) {
             return false;
         }
 
-        // 3. ORGANIZATION 스코프는 자신의 Organization만 접근 가능
-        if ($tenant->scope_type === ScopeType::ORGANIZATION->value) {
+        // A) 정상 케이스: 테넌트가 Organization 모델인 경우 자신만 접근 가능
+        if ($tenant instanceof \App\Models\Organization) {
+            return $tenant->id === $organization->id;
+        }
+
+        // B) 호환 케이스: 테넌트가 Role이고 ORGANIZATION 스코프인 경우 (레거시/특수 컨텍스트)
+        if ($tenant instanceof \App\Models\Role && $tenant->scope_type === ScopeType::ORGANIZATION->value) {
             return $tenant->scope_ref_id === $organization->id;
         }
 
-        // 4. 그 외 스코프(BRAND, STORE 등)는 Organization 직접 접근 불가
+        // C) 그 외 스코프(BRAND, STORE 등)는 Organization 직접 접근 불가
         return false;
     }
 }

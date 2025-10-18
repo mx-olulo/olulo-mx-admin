@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Inertia 미들웨어 (Web 그룹)
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
+            \App\Http\Middleware\CacheUserGlobalScope::class,
         ]);
 
         // API 미들웨어 그룹 설정

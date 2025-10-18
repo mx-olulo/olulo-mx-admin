@@ -7,7 +7,7 @@ declare(strict_types=1);
 /**
  * A basic test example.
  */
-test('the application returns a successful response', function () {
+test('the application returns a successful response', function (): void {
     $response = $this->get('/');
 
     expect($response->status())->toBe(200);

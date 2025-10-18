@@ -6,61 +6,43 @@ namespace Database\Seeders;
 
 use App\Models\Brand;
 use App\Models\Organization;
-use App\Models\Platform;
 use App\Models\Role;
 use App\Models\Store;
-use App\Models\System;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder
 {
-    /**
-     * Run the database seeder.
-     */
     public function run(): void
     {
-        // 1. Platform 엔터티 생성
-        $platform = Platform::firstOrCreate(
-            ['name' => 'Olulo Platform'],
-            ['description' => 'Olulo 플랫폼 운영사', 'is_active' => true]
-        );
+        // Spatie Permission 캐시 초기화 (권장)
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // 2. System 엔터티 생성
-        $system = System::firstOrCreate(
-            ['name' => 'Olulo System'],
-            ['description' => 'Olulo 시스템 관리', 'is_active' => true]
-        );
-
-        // 3. Platform Admin 역할
+        // 1. Platform Admin 역할 (글로벌 스코프: team_id=0 고정)
         $platformAdminRole = Role::firstOrCreate(
-            ['name' => 'platform_admin', 'guard_name' => 'web', 'team_id' => $platform->id],
-            ['scope_type' => \App\Enums\ScopeType::PLATFORM->value, 'scope_ref_id' => $platform->id]
+            ['name' => 'platform_admin', 'guard_name' => 'web', 'team_id' => 0],
+            ['scope_type' => \App\Enums\ScopeType::PLATFORM->value, 'scope_ref_id' => 1]
         );
 
-        // 4. System Admin 역할
+        // 2. System Admin 역할 (글로벌 스코프: team_id=0 고정)
         $systemAdminRole = Role::firstOrCreate(
-            ['name' => 'system_admin', 'guard_name' => 'web', 'team_id' => $system->id + 1000],
-            ['scope_type' => \App\Enums\ScopeType::SYSTEM->value, 'scope_ref_id' => $system->id]
+            ['name' => 'system_admin', 'guard_name' => 'web', 'team_id' => 0],
+            ['scope_type' => \App\Enums\ScopeType::SYSTEM->value, 'scope_ref_id' => 1]
         );
 
-        // 5. 샘플 Organization, Brand, Store 생성 (local 환경만)
+        // 3. 샘플 데이터 (local 환경만)
         if (app()->environment('local')) {
-            $this->createSampleEntities();
+            $this->createSampleData($platformAdminRole, $systemAdminRole);
         }
 
-        // 6. 테스트 사용자 생성 (local 환경만)
-        if (app()->environment('local')) {
-            $this->createTestUsers($platformAdminRole, $systemAdminRole);
-        }
+        // 롤/권한 변경 후 캐시 재무효화
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
-    /**
-     * 샘플 엔터티 생성
-     */
-    private function createSampleEntities(): void
+    private function createSampleData(Role $platformAdminRole, Role $systemAdminRole): void
     {
-        // Organization 1
+        // Organization 생성
         $org1 = Organization::firstOrCreate(
             ['name' => 'Sample Organization 1'],
             [
@@ -70,14 +52,14 @@ class RoleSeeder extends Seeder
             ]
         );
 
-        // Brand 1-1 (Organization 1 소속)
+        // Brand 생성
         $brand11 = Brand::firstOrCreate(
             ['organization_id' => $org1->id, 'name' => 'Sample Brand 1-1'],
             ['description' => '샘플 브랜드 1-1', 'is_active' => true]
         );
 
-        // Store 1-1-1 (Brand 1-1 소속)
-        Store::firstOrCreate(
+        // Store 생성
+        $store111 = Store::firstOrCreate(
             ['brand_id' => $brand11->id, 'name' => 'Sample Store 1-1-1'],
             [
                 'description' => '샘플 매장 1-1-1',
@@ -87,60 +69,57 @@ class RoleSeeder extends Seeder
             ]
         );
 
-        // Store 1-2 (Organization 1 직접 소속, Brand 없음)
-        Store::firstOrCreate(
-            ['organization_id' => $org1->id, 'name' => 'Sample Store 1-2'],
+        // Organization 역할 생성
+        $orgManagerRole = Role::firstOrCreate(
             [
-                'description' => '샘플 매장 1-2 (조직 직속)',
-                'address' => '서울시 서초구',
-                'phone' => '02-2345-6789',
-                'is_active' => true,
+                'name' => 'organization_manager',
+                'guard_name' => 'web',
+                'team_id' => $org1->id,
+            ],
+            [
+                'scope_type' => \App\Enums\ScopeType::ORGANIZATION->value,
+                'scope_ref_id' => $org1->id,
             ]
         );
 
-        // Store 독립 (소속 없음)
-        Store::firstOrCreate(
-            ['name' => 'Independent Store'],
-            [
-                'description' => '독립 매장',
-                'address' => '서울시 마포구',
-                'phone' => '02-3456-7890',
-                'is_active' => true,
-            ]
-        );
+        // 테스트 사용자 생성
+        $this->createTestUsers($platformAdminRole, $systemAdminRole, $orgManagerRole);
 
-        $this->command->info('✓ Sample entities created');
+        $this->command->info('✓ Sample data created');
     }
 
-    /**
-     * 테스트 사용자 생성
-     */
-    private function createTestUsers(Role $platformAdminRole, Role $systemAdminRole): void
+    private function createTestUsers(Role $platformAdminRole, Role $systemAdminRole, Role $orgManagerRole): void
     {
         // Platform Admin
         $platformAdmin = User::firstOrCreate(
             ['email' => 'platform@example.com'],
-            [
-                'name' => 'Platform Admin',
-                'password' => bcrypt('password'),
-            ]
+            ['name' => 'Platform Admin', 'password' => bcrypt('password')]
         );
-        setPermissionsTeamId($platformAdminRole->team_id);
+        // 글로벌 역할은 team_id=0 사용
+        setPermissionsTeamId(0);
         $platformAdmin->assignRole($platformAdminRole);
 
         // System Admin
         $systemAdmin = User::firstOrCreate(
             ['email' => 'system@example.com'],
-            [
-                'name' => 'System Admin',
-                'password' => bcrypt('password'),
-            ]
+            ['name' => 'System Admin', 'password' => bcrypt('password')]
         );
-        setPermissionsTeamId($systemAdminRole->team_id);
+        // 글로벌 역할은 team_id=0 사용
+        setPermissionsTeamId(0);
         $systemAdmin->assignRole($systemAdminRole);
 
-        $this->command->info('✓ Admin users created');
-        $this->command->info('  - Platform Admin: platform@example.com / password');
-        $this->command->info('  - System Admin: system@example.com / password');
+        // Organization Manager
+        $orgUser = User::firstOrCreate(
+            ['email' => 'org@example.com'],
+            ['name' => 'Organization Manager', 'password' => bcrypt('password')]
+        );
+        // 테넌트 역할 컨텍스트 설정 (TeamResolver와 동일 스키마: team_id = tenant id)
+        setPermissionsTeamId($orgManagerRole->team_id);
+        $orgUser->assignRole($orgManagerRole);
+
+        $this->command->info('✓ Test users created');
+        $this->command->info('  - platform@example.com / password');
+        $this->command->info('  - system@example.com / password');
+        $this->command->info('  - org@example.com / password');
     }
 }

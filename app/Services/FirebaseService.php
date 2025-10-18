@@ -54,7 +54,7 @@ class FirebaseService
      */
     private function getAuthService(): FirebaseAuthService
     {
-        if ($this->firebaseAuthService === null) {
+        if (! $this->firebaseAuthService instanceof \App\Services\Firebase\FirebaseAuthService) {
             $this->firebaseAuthService = new FirebaseAuthService($this->firebaseClientFactory);
         }
 
@@ -68,7 +68,7 @@ class FirebaseService
      */
     private function getMessagingService(): FirebaseMessagingService
     {
-        if ($this->firebaseMessagingService === null) {
+        if (! $this->firebaseMessagingService instanceof \App\Services\Firebase\FirebaseMessagingService) {
             $this->firebaseMessagingService = new FirebaseMessagingService($this->firebaseClientFactory);
         }
 
@@ -82,7 +82,7 @@ class FirebaseService
      */
     private function getDatabaseService(): FirebaseDatabaseService
     {
-        if ($this->firebaseDatabaseService === null) {
+        if (! $this->firebaseDatabaseService instanceof \App\Services\Firebase\FirebaseDatabaseService) {
             $this->firebaseDatabaseService = new FirebaseDatabaseService($this->firebaseClientFactory);
         }
 

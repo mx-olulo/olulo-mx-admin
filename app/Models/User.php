@@ -115,19 +115,26 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament 패널 접근 권한 확인
      *
-     * getTenants()가 반환하는 테넌트(Role)가 하나라도 있으면 접근 가능
-     * 실제 테넌트 검증은 canAccessTenant()에서 수행
-     *
-     * Spatie Permission의 Teams 기능과 호환되도록
-     * getTenants()를 통해 간접적으로 확인
+     * Platform/System: 글로벌 패널 - 역할 기반 접근 제어
+     * Organization/Brand/Store: 테넌트 패널 - 멤버십 기반 접근 제어
      *
      * @param  Panel  $panel  Filament 패널 인스턴스
      * @return bool 접근 가능 여부
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // Filament Tenancy를 활용한 단순화된 접근 권한 체크
-        // getTenants()가 Panel별 scope_type 필터링을 이미 수행
+        $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
+
+        // Platform/System 패널: 글로벌 역할 확인
+        if ($scopeType === \App\Enums\ScopeType::PLATFORM) {
+            return $this->hasRole('platform_admin');
+        }
+
+        if ($scopeType === \App\Enums\ScopeType::SYSTEM) {
+            return $this->hasRole('system_admin');
+        }
+
+        // Organization/Brand/Store 패널: 멤버십 확인
         return $this->getTenants($panel)->isNotEmpty();
     }
 
@@ -213,66 +220,94 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament Tenancy: 사용자가 접근 가능한 테넌트 목록
      *
-     * Panel별로 해당 scope_type의 Role만 반환
+     * Role의 scopeable MorphTo 관계를 통해 실제 테넌트 모델 반환
+     * morphMap 설정으로 'ORG' -> Organization::class 자동 매핑
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role>
+     * Spatie Permission의 team_id 필터를 우회하기 위해 직접 DB 조회
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model>
      */
     public function getTenants(Panel $panel): Collection
     {
         $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
 
-        // 해당 Panel의 scope_type에 맞는 Role만 반환
-        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> */
-        $roles = $this->roles()
-            ->whereNotNull('roles.team_id')
-            ->when(
-                $scopeType,
-                fn ($query, \App\Enums\ScopeType $scopeType) => $query->where('scope_type', $scopeType->value)
-            )
-            ->get()
-            ->unique('team_id')
+        if (! $scopeType instanceof \App\Enums\ScopeType) {
+            return new \Illuminate\Database\Eloquent\Collection;
+        }
+
+        // Spatie Permission의 team_id 필터를 우회하여 직접 조회
+        // model_has_roles → roles 조인으로 사용자의 모든 역할 조회
+        $roleIds = \DB::table('model_has_roles')
+            ->where('model_id', $this->getKey())
+            ->where('model_type', static::class)
+            ->pluck('role_id');
+
+        if ($roleIds->isEmpty()) {
+            return new \Illuminate\Database\Eloquent\Collection;
+        }
+
+        // Role 모델에서 scope_type 필터링 및 scopeable eager loading
+        $roles = Role::query()
+            ->whereIn('id', $roleIds)
+            ->where('scope_type', $scopeType->value)
+            ->with('scopeable')
+            ->get();
+
+        // scopeable 추출 및 중복 제거 (모델 클래스 + ID 조합으로 unique)
+        $tenants = $roles
+            ->pluck('scopeable')
+            ->filter() // null 제거
+            ->unique(fn ($tenant): string => $tenant::class . ':' . $tenant->getKey())
             ->values();
 
-        return $roles;
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model> */
+        return $tenants->toBase();
     }
 
     /**
      * Filament Tenancy: 사용자가 특정 테넌트에 접근 가능한지 확인
+     *
+     * morphMap 기반 직접 조건 비교로 성능 최적화
+     * whereHasMorph 대신 scope_type + scope_ref_id 직접 검색
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        // $tenant는 Role 인스턴스
-        return $tenant instanceof \App\Models\Role && $this->roles->contains('id', $tenant->id);
+        // morphMap에서 scope_type 조회
+        $scopeType = array_search($tenant::class, \App\Enums\ScopeType::getMorphMap(), true);
+
+        if ($scopeType === false) {
+            // 매핑되지 않은 테넌트 타입은 접근 불가
+            return false;
+        }
+
+        return $this->roles()
+            ->where('scope_type', $scopeType)
+            ->where('scope_ref_id', $tenant->getKey())
+            ->exists();
     }
 
     /**
      * 사용자가 글로벌 스코프(PLATFORM/SYSTEM) 역할을 보유하는지 확인
      *
-     * Eloquent의 relation 캐싱을 활용하여 중복 DB 쿼리 방지
-     * Gate::before()에서 권한 체크 최적화를 위해 사용
+     * whereHasMorph로 Platform/System scopeable 확인
+     * Eloquent relation 캐싱 활용으로 중복 쿼리 방지
      *
      * @return bool PLATFORM 또는 SYSTEM 스코프 역할 보유 여부
      */
     public function hasGlobalScopeRole(): bool
     {
-        // roles relation이 이미 로드되었으면 메모리에서 직접 확인 (쿼리 없음)
+        // roles relation이 이미 로드되었으면 메모리에서 확인 (쿼리 없음)
         if ($this->relationLoaded('roles')) {
             /** @var \Illuminate\Database\Eloquent\Collection<int, Role> $roles */
             $roles = $this->roles;
 
-            foreach ($roles as $role) {
-                if (in_array($role->scope_type, [
-                    \App\Enums\ScopeType::PLATFORM->value,
-                    \App\Enums\ScopeType::SYSTEM->value,
-                ], true)) {
-                    return true;
-                }
-            }
-
-            return false;
+            return $roles->contains(fn (Role $role): bool => in_array($role->scope_type, [
+                \App\Enums\ScopeType::PLATFORM->value,
+                \App\Enums\ScopeType::SYSTEM->value,
+            ], true));
         }
 
-        // roles가 로드되지 않았으면 쿼리 실행
+        // roles가 로드되지 않았으면 쿼리 실행 (모델 클래스 의존 없이 scope_type으로 판별)
         return $this->roles()
             ->whereIn('scope_type', [
                 \App\Enums\ScopeType::PLATFORM->value,

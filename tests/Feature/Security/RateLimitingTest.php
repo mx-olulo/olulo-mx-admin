@@ -12,11 +12,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
  */
 uses(RefreshDatabase::class);
 
-describe('Basic Rate Limiting', function () {
+describe('Basic Rate Limiting', function (): void {
     /**
      * 테스트: Rate Limiting이 적용되지 않은 경우 정상 요청
      */
-    test('allows requests within rate limit', function () {
+    test('allows requests within rate limit', function (): void {
         // Arrange & Act: 10회 미만 요청 (제한 내)
         for ($i = 0; $i < 5; $i++) {
             $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
@@ -29,7 +29,7 @@ describe('Basic Rate Limiting', function () {
     /**
      * 테스트: Rate Limit 초과 시 429 응답
      */
-    test('blocks requests exceeding rate limit', function () {
+    test('blocks requests exceeding rate limit', function (): void {
         // Arrange & Act: Rate Limit 초과 요청 (1분당 10회 제한)
         $responses = [];
 
@@ -47,11 +47,11 @@ describe('Basic Rate Limiting', function () {
     })->group('security', 'rate-limiting');
 });
 
-describe('Rate Limit Headers', function () {
+describe('Rate Limit Headers', function (): void {
     /**
      * 테스트: Rate Limit 헤더 존재 확인
      */
-    test('includes rate limit headers', function () {
+    test('includes rate limit headers', function (): void {
         // Act: API 요청
         $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
 
@@ -64,7 +64,7 @@ describe('Rate Limit Headers', function () {
     /**
      * 테스트: Rate Limit 초과 후 Retry-After 헤더 확인
      */
-    test('includes retry after header when rate limited', function () {
+    test('includes retry after header when rate limited', function (): void {
         // Arrange: Rate Limit 초과까지 요청
         for ($i = 0; $i < 10; $i++) {
             $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
@@ -83,7 +83,7 @@ describe('Rate Limit Headers', function () {
     /**
      * 테스트: 0회 요청 상태에서 헤더 확인
      */
-    test('rate limit headers on first request', function () {
+    test('rate limit headers on first request', function (): void {
         // Act: 첫 번째 요청
         $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
 
@@ -94,11 +94,11 @@ describe('Rate Limit Headers', function () {
     })->group('security', 'rate-limiting', 'headers');
 });
 
-describe('Rate Limit Per IP Address', function () {
+describe('Rate Limit Per IP Address', function (): void {
     /**
      * 테스트: 다른 사용자는 독립적인 Rate Limit 적용
      */
-    test('rate limit is per ip address', function () {
+    test('rate limit is per ip address', function (): void {
         // Arrange: 첫 번째 IP에서 Rate Limit 초과
         for ($i = 0; $i < 10; $i++) {
             $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
@@ -117,11 +117,11 @@ describe('Rate Limit Per IP Address', function () {
     })->group('security', 'rate-limiting', 'per-ip');
 });
 
-describe('Rate Limit Across Routes', function () {
+describe('Rate Limit Across Routes', function (): void {
     /**
      * 테스트: 언어 변경 이외의 라우트도 Rate Limit 적용 확인
      */
-    test('rate limit applies to all auth routes', function () {
+    test('rate limit applies to all auth routes', function (): void {
         // 언어 변경으로 Rate Limit 소진
         for ($i = 0; $i < 10; $i++) {
             $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
@@ -139,7 +139,7 @@ describe('Rate Limit Across Routes', function () {
      *
      * 참고: 현재 설정에서는 auth.* 네임스페이스에 Rate Limit이 공유 적용됨
      */
-    test('rate limit shared across auth endpoints', function () {
+    test('rate limit shared across auth endpoints', function (): void {
         // Arrange: locale 변경으로 5회 사용
         for ($i = 0; $i < 5; $i++) {
             $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
@@ -158,11 +158,11 @@ describe('Rate Limit Across Routes', function () {
     })->group('security', 'rate-limiting', 'shared-limit');
 });
 
-describe('Rate Limiting Boundary Tests', function () {
+describe('Rate Limiting Boundary Tests', function (): void {
     /**
      * 테스트: 정확히 10회 요청 시 모두 성공 (경계값)
      */
-    test('exactly ten requests all succeed', function () {
+    test('exactly ten requests all succeed', function (): void {
         // Act: 정확히 10회 요청
         $responses = [];
         for ($i = 0; $i < 10; $i++) {
@@ -178,7 +178,7 @@ describe('Rate Limiting Boundary Tests', function () {
     /**
      * 테스트: 11번째 요청부터 Rate Limit 적용 (경계값 초과)
      */
-    test('eleventh request is rate limited', function () {
+    test('eleventh request is rate limited', function (): void {
         // Arrange: 10회 요청 (모두 성공)
         for ($i = 0; $i < 10; $i++) {
             $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
@@ -198,7 +198,7 @@ describe('Rate Limiting Boundary Tests', function () {
     /**
      * 테스트: Rate Limit 헤더가 남은 요청 수를 정확히 반영
      */
-    test('rate limit headers reflect remaining attempts', function () {
+    test('rate limit headers reflect remaining attempts', function (): void {
         // Act & Assert: 각 요청마다 남은 횟수 확인
         for ($i = 0; $i < 10; $i++) {
             $response = $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
@@ -218,7 +218,7 @@ describe('Rate Limiting Boundary Tests', function () {
     /**
      * 테스트: Rate Limit 리셋 시간 확인 (Retry-After 헤더)
      */
-    test('retry after header provides wait time', function () {
+    test('retry after header provides wait time', function (): void {
         // Arrange: Rate Limit 소진
         for ($i = 0; $i < 10; $i++) {
             $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
@@ -237,11 +237,11 @@ describe('Rate Limiting Boundary Tests', function () {
     })->group('security', 'rate-limiting', 'boundary');
 });
 
-describe('Rate Limit Response Format', function () {
+describe('Rate Limit Response Format', function (): void {
     /**
      * 테스트: Rate Limit 메시지 JSON 응답 형식 확인
      */
-    test('rate limit response has proper json format', function () {
+    test('rate limit response has proper json format', function (): void {
         // Arrange: Rate Limit 소진
         for ($i = 0; $i < 10; $i++) {
             $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));
@@ -264,7 +264,7 @@ describe('Rate Limit Response Format', function () {
     /**
      * 테스트: Rate Limit 초과 후 연속 요청 모두 차단
      */
-    test('consecutive requests after rate limit all blocked', function () {
+    test('consecutive requests after rate limit all blocked', function (): void {
         // Arrange: Rate Limit 소진
         for ($i = 0; $i < 10; $i++) {
             $this->postJson(route('api.auth.locale.change', ['locale' => 'en']));

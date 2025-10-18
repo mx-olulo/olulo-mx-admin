@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Config;
  * Firebase 통합 서비스의 핵심 기능을 테스트합니다.
  * 실제 Firebase API는 모킹하여 독립적인 테스트를 수행합니다.
  */
-beforeEach(function () {
+beforeEach(function (): void {
     // Firebase 설정을 테스트용으로 모킹
     Config::set('services.firebase', [
         'project_id' => 'test-project',
@@ -22,8 +22,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('환경 변수 자격증명', function () {
-    test('모든 자격증명이 설정된 경우 true 반환', function () {
+describe('환경 변수 자격증명', function (): void {
+    test('모든 자격증명이 설정된 경우 true 반환', function (): void {
         Config::set('services.firebase.project_id', 'test-project');
         Config::set('services.firebase.client_email', 'test@example.com');
         Config::set('services.firebase.private_key', 'test-key');
@@ -35,7 +35,7 @@ describe('환경 변수 자격증명', function () {
         expect($hasCredentials)->toBeTrue();
     });
 
-    test('일부 자격증명이 누락된 경우 false 반환', function () {
+    test('일부 자격증명이 누락된 경우 false 반환', function (): void {
         Config::set('services.firebase.project_id', '');
 
         $hasCredentials = ! empty(Config::get('services.firebase.project_id')) &&
@@ -46,8 +46,8 @@ describe('환경 변수 자격증명', function () {
     });
 });
 
-describe('이메일에서 사용자 이름 추출', function () {
-    test('다양한 이메일 형식에서 이름을 올바르게 추출', function () {
+describe('이메일에서 사용자 이름 추출', function (): void {
+    test('다양한 이메일 형식에서 이름을 올바르게 추출', function (): void {
         $testCases = [
             'john.doe@example.com' => 'John doe',
             'user_name@test.com' => 'User name',
