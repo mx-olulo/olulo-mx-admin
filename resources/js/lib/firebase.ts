@@ -57,7 +57,7 @@ if (import.meta.env.DEV) {
     try {
         connectAuthEmulator(auth, `http://${emulatorHost}`, { disableWarnings: true });
         console.log(`🔧 Firebase Auth Emulator connected: ${emulatorHost}`);
-    } catch (error) {
+    } catch (_error) {
         // 이미 연결된 경우 에러 무시
         console.warn('Auth Emulator already connected');
     }

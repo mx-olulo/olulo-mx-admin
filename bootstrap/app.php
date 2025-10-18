@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__ . '/../routes/api.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
-        then: function () {
+        then: function (): void {
             // 고객 라우트 (Web)
             Route::middleware('web')
                 ->group(base_path('routes/customer.php'));
@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Inertia 미들웨어 (Web 그룹)
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
+            \App\Http\Middleware\CacheUserGlobalScope::class,
         ]);
 
         // API 미들웨어 그룹 설정
@@ -53,4 +54,5 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();

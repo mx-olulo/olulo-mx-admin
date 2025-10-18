@@ -20,12 +20,12 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/sanctum/csrf-cookie', ...); // Sanctum에서 자동 제공
 
 // 관리자 인증 API 라우트 그룹 (Rate Limiting 적용)
-Route::prefix('auth')->name('api.auth.')->middleware('throttle.auth')->group(function () {
+Route::prefix('auth')->name('api.auth.')->middleware('throttle.auth')->group(function (): void {
     // Firebase 로그인 (게스트용) - 1분당 10회 제한
     Route::post('/firebase-login', [AuthController::class, 'apiFirebaseLogin'])->name('firebase.login');
 
     // 로그아웃 (인증된 사용자용)
-    Route::middleware('auth:web')->group(function () {
+    Route::middleware('auth:web')->group(function (): void {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });
 

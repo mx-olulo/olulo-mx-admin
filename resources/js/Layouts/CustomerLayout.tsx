@@ -1,7 +1,8 @@
 import { PropsWithChildren } from 'react';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { Header } from '@/components/Header';
-import { LoginHeader, Language } from '@/components/LoginHeader';
+import { LoginHeader } from '@/components/LoginHeader';
+import type { Language } from '@/types/language';
 
 /**
  * CustomerLayout Props
@@ -52,7 +53,7 @@ export default function CustomerLayout({
     onLoginClick,
     language = 'ko',
 }: Props) {
-    const handleTabChange = (tabId: string) => {
+    const handleTabChange = (_tabId: string) => {
         // 탭 변경 시 추가 로직 (필요시)
     };
 

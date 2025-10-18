@@ -24,16 +24,16 @@ use Kreait\Firebase\Messaging\Notification;
  */
 class FirebaseMessagingService
 {
-    private Messaging $messaging;
+    private readonly Messaging $messaging;
 
     /**
      * Firebase 메시징 서비스 초기화
      *
-     * @param  FirebaseClientFactory  $clientFactory  Firebase 클라이언트 팩토리
+     * @param  FirebaseClientFactory  $firebaseClientFactory  Firebase 클라이언트 팩토리
      */
-    public function __construct(private readonly FirebaseClientFactory $clientFactory)
+    public function __construct(private readonly FirebaseClientFactory $firebaseClientFactory)
     {
-        $this->messaging = $this->clientFactory->createMessaging();
+        $this->messaging = $this->firebaseClientFactory->createMessaging();
     }
 
     /**
@@ -62,7 +62,7 @@ class FirebaseMessagingService
             $message = CloudMessage::withTarget('token', $deviceToken)
                 ->withNotification($notification);
 
-            if ($data) {
+            if ($data !== null && $data !== []) {
                 $message = $message->withData($data);
             }
 
@@ -71,7 +71,7 @@ class FirebaseMessagingService
             Log::info('FCM 푸시 알림 전송 완료', [
                 'device_token' => $this->maskToken($deviceToken),
                 'title' => $title,
-                'has_data' => ! empty($data),
+                'has_data' => $data !== null && $data !== [],
             ]);
 
             return true;
@@ -107,7 +107,7 @@ class FirebaseMessagingService
         ?array $options = null
     ): array {
         try {
-            if (empty($deviceTokens)) {
+            if ($deviceTokens === []) {
                 Log::warning('FCM 다중 푸시 알림: 빈 토큰 배열');
 
                 return [
@@ -122,7 +122,7 @@ class FirebaseMessagingService
 
             $message = CloudMessage::new()->withNotification($notification);
 
-            if ($data) {
+            if ($data !== null && $data !== []) {
                 $message = $message->withData($data);
             }
 
@@ -167,12 +167,10 @@ class FirebaseMessagingService
                 'success_count' => 0,
                 'failure_count' => count($deviceTokens),
                 'success_tokens' => [],
-                'failed_tokens' => array_map(function ($token) use ($e) {
-                    return [
-                        'token' => $token,
-                        'error' => $e->getMessage(),
-                    ];
-                }, $deviceTokens),
+                'failed_tokens' => array_map(fn (string $token): array => [
+                    'token' => $token,
+                    'error' => $e->getMessage(),
+                ], $deviceTokens),
             ];
         }
     }
@@ -202,7 +200,7 @@ class FirebaseMessagingService
             $message = CloudMessage::withTarget('topic', $topic)
                 ->withNotification($notification);
 
-            if ($data) {
+            if ($data !== null && $data !== []) {
                 $message = $message->withData($data);
             }
 
@@ -211,7 +209,7 @@ class FirebaseMessagingService
             Log::info('FCM 주제 푸시 알림 전송 완료', [
                 'topic' => $topic,
                 'title' => $title,
-                'has_data' => ! empty($data),
+                'has_data' => $data !== null && $data !== [],
             ]);
 
             return true;
@@ -320,7 +318,7 @@ class FirebaseMessagingService
     {
         $notification = Notification::create($title, $body);
 
-        if ($options) {
+        if ($options !== null && $options !== []) {
             if (isset($options['image_url'])) {
                 $notification = $notification->withImageUrl($options['image_url']);
             }

@@ -1,4 +1,4 @@
-import IconBase, { getIconColor } from './IconBase';
+import IconBase from './IconBase';
 import { svgPaths } from './svgPaths';
 
 interface QrCodeIconProps {
@@ -11,26 +11,24 @@ interface QrCodeIconProps {
  * QR 코드 스캔 기능을 나타내는 아이콘입니다.
  */
 export default function QrCodeIcon({ active }: QrCodeIconProps) {
-    const color = getIconColor(active);
-
     return (
         <IconBase active={active}>
             <g>
                 {/* 좌상단 박스 */}
-                <path d={svgPaths.qrCode.topLeft.outer} fill={color} />
-                <path d={svgPaths.qrCode.topLeft.inner} fill={color} />
+                <path d={svgPaths.qrCode.topLeft.outer} fill="currentColor" />
+                <path d={svgPaths.qrCode.topLeft.inner} fill="currentColor" />
 
                 {/* 우상단 박스 */}
-                <path d={svgPaths.qrCode.topRight.outer} fill={color} />
-                <path d={svgPaths.qrCode.topRight.inner} fill={color} />
+                <path d={svgPaths.qrCode.topRight.outer} fill="currentColor" />
+                <path d={svgPaths.qrCode.topRight.inner} fill="currentColor" />
 
                 {/* 우하단 박스 */}
-                <path d={svgPaths.qrCode.bottomRight.outer} fill={color} />
-                <path d={svgPaths.qrCode.bottomRight.inner} fill={color} />
+                <path d={svgPaths.qrCode.bottomRight.outer} fill="currentColor" />
+                <path d={svgPaths.qrCode.bottomRight.inner} fill="currentColor" />
 
                 {/* 좌하단 점들 */}
                 {svgPaths.qrCode.bottomLeftDots.map((dotPath, index) => (
-                    <path key={index} d={dotPath} fill={color} />
+                    <path key={index} d={dotPath} fill="currentColor" />
                 ))}
             </g>
         </IconBase>

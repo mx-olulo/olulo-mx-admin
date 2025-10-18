@@ -16,8 +16,7 @@ import 'firebaseui/dist/firebaseui.css';
  * - 하단 네비게이션 숨김 (인증 전 페이지)
  */
 export default function Login() {
-    // FirebaseUI 인스턴스 상태
-    const [uiInstance, setUiInstance] = useState<firebaseui.auth.AuthUI | null>(null);
+    // FirebaseUI 인스턴스는 상태로 보관하지 않습니다 (cleanup에서 getInstance 사용)
     // 에러 상태
     const [error, setError] = useState<string | null>(null);
     // Firebase 설정 유효성
@@ -39,7 +38,6 @@ export default function Login() {
             if (!ui) {
                 ui = new firebaseui.auth.AuthUI(auth);
             }
-            setUiInstance(ui);
 
             // FirebaseUI 설정
             const uiConfig: firebaseui.auth.Config = {
@@ -127,10 +125,9 @@ export default function Login() {
 
         // Cleanup: 컴포넌트 언마운트 시 FirebaseUI 정리
         return () => {
-            if (uiInstance) {
-                // FirebaseUI 인스턴스 삭제
-                uiInstance.delete();
-            }
+            // FirebaseUI 인스턴스 삭제 (존재 시)
+            const existing = firebaseui.auth.AuthUI.getInstance();
+            existing?.delete();
         };
     }, []); // 빈 배열: 컴포넌트 마운트 시 한 번만 실행
 

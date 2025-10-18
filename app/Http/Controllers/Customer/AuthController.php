@@ -93,6 +93,8 @@ class AuthController extends Controller
             // 7. 마지막 로그인 시간 업데이트
             $user->updateLastLoginAt();
 
+            // 고객은 기본적으로 모든 사용자에게 허용 (별도 역할 불필요)
+
             // 8. 성공 응답
             return response()->json([
                 'success' => true,
@@ -184,7 +186,7 @@ class AuthController extends Controller
         // Firebase UID로 기존 사용자 조회
         $user = User::findByFirebaseUid($firebaseData['firebase_uid']);
 
-        if ($user) {
+        if ($user instanceof \App\Models\User) {
             // 기존 사용자 정보 업데이트
             $user->updateFromFirebase([
                 'name' => $firebaseData['name'],
