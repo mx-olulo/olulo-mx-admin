@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\TenantSelectorController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,15 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
     });
 
     // 언어 변경 라우트는 제거됨: 요청 시 query string `?locale=xx`로 처리
+});
+
+// 테넌트 선택 페이지 (인증 필수)
+// @CODE:AUTH-REDIRECT-001:API | SPEC: SPEC-AUTH-REDIRECT-001.md
+Route::middleware('auth:web')->group(function (): void {
+    Route::get('/tenant/selector', [TenantSelectorController::class, 'index'])
+        ->name('tenant.selector');
+    Route::post('/tenant/select', [TenantSelectorController::class, 'selectTenant'])
+        ->name('tenant.select');
 });
 
 // 고객 라우트는 별도 파일로 분리: routes/customer.php

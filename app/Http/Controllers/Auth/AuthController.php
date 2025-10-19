@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuthRedirectService;
 use App\Services\FirebaseService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -33,10 +34,11 @@ use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
 class AuthController extends Controller
 {
     /**
-     * Firebase 서비스 인스턴스
+     * Firebase 서비스 및 리다이렉트 서비스 인스턴스
      */
     public function __construct(
-        private readonly FirebaseService $firebaseService
+        private readonly FirebaseService $firebaseService,
+        private readonly AuthRedirectService $authRedirectService
     ) {}
 
     /**
@@ -138,9 +140,10 @@ class AuthController extends Controller
             // Laravel 세션 생성: Filament 패널 가드(web)와 일치시키기 위해 명시적으로 web 가드 사용
             Auth::guard('web')->login($user, true);
 
-            // intended URL 또는 기본 경로로 리다이렉트
-            // 기본값: /store (Store 패널)
-            $intendedUrl = Session::pull('auth.intended_url', '/store');
+            // @CODE:AUTH-REDIRECT-001:DOMAIN | SPEC: SPEC-AUTH-REDIRECT-001.md
+            // 지능형 테넌트 리다이렉트: 테넌트 수에 따라 적절한 경로 결정
+            $redirect = $this->authRedirectService->redirectAfterLogin($user);
+            $intendedUrl = $redirect->getTargetUrl();
 
             // fetch() 등 JSON을 원하는 호출에는 JSON 응답으로 처리
             if ($wantsJson) {
