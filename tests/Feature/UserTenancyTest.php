@@ -326,6 +326,36 @@ describe('User::canAccessTenant()', function (): void {
         expect($sql)->toContain('scope_type');
         expect($sql)->toContain('scope_ref_id');
     });
+
+    // @TEST:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+    test('TC-003: 쿼리 최적화 검증 - 1개 쿼리만 실행', function (): void {
+        // Given: Organization과 Role을 가진 테넌트 멤버
+        $org = Organization::factory()->create();
+        $role = Role::create([
+            'name' => 'org-member',
+            'guard_name' => 'web',
+            'team_id' => 1,
+            'scope_type' => ScopeType::ORGANIZATION->value,
+            'scope_ref_id' => $org->id,
+        ]);
+
+        $user = User::factory()->create();
+        setPermissionsTeamId(1);
+        $user->assignRole($role);
+
+        // When: canAccessTenant() 호출 시 쿼리 카운트 측정
+        DB::enableQueryLog();
+        $canAccess = $user->canAccessTenant($org);
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+
+        // Then: 정확히 1개 쿼리만 실행 (기존 2개 → 1개로 최적화)
+        expect($canAccess)->toBeTrue();
+        expect($queries)->toHaveCount(1)
+            ->and($queries[0]['query'])->toContain('model_has_roles')
+            ->and($queries[0]['query'])->toContain('scope_type')
+            ->and($queries[0]['query'])->toContain('scope_ref_id');
+    });
 });
 
 describe('User::canAccessPanel()', function (): void {
@@ -382,8 +412,12 @@ describe('User::canAccessPanel()', function (): void {
         setPermissionsTeamId(1);
         $user->assignRole($role);
 
-        // When & Then: Organization 패널 접근 가능
+        // When: 사용자 인증 및 테넌트 컨텍스트 설정
+        $this->actingAs($user);
         $panel = Filament::getPanel('org');
+        Filament::setTenant($org);
+
+        // Then: Organization 패널 접근 가능
         expect($user->canAccessPanel($panel))->toBeTrue();
     });
 
@@ -393,6 +427,97 @@ describe('User::canAccessPanel()', function (): void {
 
         // When & Then: Organization 패널 접근 불가
         $panel = Filament::getPanel('org');
+        expect($user->canAccessPanel($panel))->toBeFalse();
+    });
+
+    // @TEST:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+    test('TC-001: 온보딩 위자드 접근 허용 (Organization)', function (): void {
+        // Given: 테넌트 멤버십이 없는 사용자
+        $user = User::factory()->create();
+
+        // When: /org/onboarding 경로에서 패널 접근 확인
+        // 실제 요청 시뮬레이션
+        $this->actingAs($user);
+        $this->get('/org/onboarding');
+
+        $panel = Filament::getPanel('org');
+
+        // Then: canAccessPanel('org') → true
+        expect($user->canAccessPanel($panel))->toBeTrue();
+    });
+
+    // @TEST:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+    test('TC-001: 온보딩 위자드 접근 허용 (Brand)', function (): void {
+        // Given: 테넌트 멤버십이 없는 사용자
+        $user = User::factory()->create();
+
+        // When: /brand/onboarding 경로에서 패널 접근 확인
+        $this->actingAs($user);
+        $this->get('/brand/onboarding');
+
+        $panel = Filament::getPanel('brand');
+
+        // Then: canAccessPanel('brand') → true
+        expect($user->canAccessPanel($panel))->toBeTrue();
+    });
+
+    // @TEST:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+    test('TC-001: 온보딩 위자드 접근 허용 (Store)', function (): void {
+        // Given: 테넌트 멤버십이 없는 사용자
+        $user = User::factory()->create();
+
+        // When: /store/onboarding 경로에서 패널 접근 확인
+        $this->actingAs($user);
+        $this->get('/store/onboarding');
+
+        $panel = Filament::getPanel('store');
+
+        // Then: canAccessPanel('store') → true
+        expect($user->canAccessPanel($panel))->toBeTrue();
+    });
+
+    // @TEST:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+    test('TC-002: 대시보드 접근 거부 (Organization)', function (): void {
+        // Given: 테넌트 멤버십이 없는 사용자
+        $user = User::factory()->create();
+
+        // When: /org 대시보드 경로에서 패널 접근 확인
+        $this->actingAs($user);
+        $this->get('/org');
+
+        $panel = Filament::getPanel('org');
+
+        // Then: canAccessPanel('org') → false
+        expect($user->canAccessPanel($panel))->toBeFalse();
+    });
+
+    // @TEST:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+    test('TC-002: 대시보드 접근 거부 (Brand)', function (): void {
+        // Given: 테넌트 멤버십이 없는 사용자
+        $user = User::factory()->create();
+
+        // When: /brand 대시보드 경로에서 패널 접근 확인
+        $this->actingAs($user);
+        $this->get('/brand');
+
+        $panel = Filament::getPanel('brand');
+
+        // Then: canAccessPanel('brand') → false
+        expect($user->canAccessPanel($panel))->toBeFalse();
+    });
+
+    // @TEST:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+    test('TC-002: 대시보드 접근 거부 (Store)', function (): void {
+        // Given: 테넌트 멤버십이 없는 사용자
+        $user = User::factory()->create();
+
+        // When: /store 대시보드 경로에서 패널 접근 확인
+        $this->actingAs($user);
+        $this->get('/store');
+
+        $panel = Filament::getPanel('store');
+
+        // Then: canAccessPanel('store') → false
         expect($user->canAccessPanel($panel))->toBeFalse();
     });
 });
