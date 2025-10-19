@@ -1,7 +1,7 @@
 ---
 id: I18N-001
-version: 0.0.1
-status: draft
+version: 0.1.0
+status: completed
 created: 2025-10-19
 updated: 2025-10-19
 author: @user
@@ -25,6 +25,33 @@ scope:
 # @SPEC:I18N-001: Filament 리소스 다국어 지원 시스템
 
 ## HISTORY
+
+### v0.1.0 (2025-10-19)
+- **COMPLETED**: TDD 구현 완료 (RED-GREEN-REFACTOR)
+- **TESTS**: 20개 테스트 통과 (319 assertions)
+  - OrganizationResourceI18nTest.php: 14 시나리오
+  - TranslationCompletenessTest.php: 6 시나리오
+- **COVERAGE**: 90개 번역 완료 (es-MX, en, ko)
+  - organizations.resource: 3개 키
+  - organizations.fields: 5개 키
+  - organizations.columns: 6개 키
+  - organizations.actions: 2개 키
+  - organizations.activities: 14개 키
+  - common.actions: 3개 키 (재사용)
+- **QUALITY**: TRUST 5원칙 모두 충족
+  - Test First: ✅ 20/20 passed (100%)
+  - Readable: ✅ Pint 141 files PASS
+  - Unified: ✅ 3개 언어 키 구조 일치 (TranslationCompletenessTest)
+  - Secured: ✅ Laravel validation + XSS 방지
+  - Trackable: ✅ TAG 체인 100% 연결 (@SPEC → @TEST → @CODE → @DOC)
+- **FILES**: 12개 파일 수정 (1,648+ LOC)
+  - 번역: lang/{es-MX,en,ko}/filament.php (3개)
+  - PHP: OrganizationResource.php, OrganizationForm.php, OrganizationsTable.php, ListOrganizationActivities.php (4개)
+  - 테스트: OrganizationResourceI18nTest.php, TranslationCompletenessTest.php (2개)
+  - 문서: spec.md, plan.md, acceptance.md (3개)
+- **COMMITS**: 3개 (fca8d51, 8a523bc, b78ddc2)
+- **AUTHOR**: @user
+- **RELATED**: [I18N-001-implementation.md](../../docs/living/I18N-001-implementation.md)
 
 ### v0.0.1 (2025-10-19)
 - **INITIAL**: Filament 리소스 다국어 지원 명세 최초 작성
