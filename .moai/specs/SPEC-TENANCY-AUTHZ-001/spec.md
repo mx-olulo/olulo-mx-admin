@@ -1,7 +1,7 @@
 ---
 id: TENANCY-AUTHZ-001
-version: 0.0.1
-status: draft
+version: 0.1.0
+status: completed
 created: 2025-10-19
 updated: 2025-10-19
 author: @Goos
@@ -21,6 +21,18 @@ scope:
 # @SPEC:TENANCY-AUTHZ-001: 멀티 테넌시 패널 접근 권한 검증 로직 개선
 
 ## HISTORY
+
+### v0.1.0 (2025-10-19)
+- **COMPLETED**: TDD 구현 완료 (RED → GREEN → REFACTOR)
+- **TESTS**: 7개 테스트 작성 및 통과
+  - TC-001: 온보딩 위자드 접근 허용
+  - TC-002: 대시보드 접근 거부
+  - TC-003~TC-007: 멤버십 검증 및 성능 테스트
+- **CODE**: canAccessPanel(), canAccessTenant() 메서드 최적화
+- **OPTIMIZATION**: 쿼리 성능 개선 (2개 → 1개)
+- **VERIFICATION**: 모든 EARS 요구사항 구현 및 검증 완료
+- **AUTHOR**: @Goos
+- **REVIEW**: 코드 리뷰 및 테스트 통과 확인
 
 ### v0.0.1 (2025-10-19)
 - **INITIAL**: 멀티 테넌시 패널 접근 권한 검증 로직 개선 명세 작성
