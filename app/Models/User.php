@@ -166,18 +166,62 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     private function canAccessTenantPanel(string $panelId): bool
     {
         // 온보딩 위자드 예외 처리 (org, store만 해당)
-        if (in_array($panelId, ['org', 'store']) && request()->is("{$panelId}/new")) {
-            return true;
+        // 1. 직접 접근: /org/new, /store/new
+        // 2. Livewire 요청: Referer 헤더로 판단 (폼 제출)
+        if (in_array($panelId, ['org', 'store'])) {
+            if (request()->is("{$panelId}/new")) {
+                return true;
+            }
+
+            // Livewire AJAX 요청 예외 처리
+            $referer = request()->header('Referer');
+            if ($referer && str_contains($referer, "/{$panelId}/new")) {
+                return true;
+            }
         }
 
         // 테넌트 컨텍스트 확인
         $tenant = \Filament\Facades\Filament::getTenant();
+
+        // Filament이 아직 테넌트를 설정하지 않은 경우 (초기 접근)
+        // URL에서 테넌트 ID를 추출하여 직접 확인
         if (! $tenant instanceof Model) {
+            // URL 패턴: org/1, store/2 등 (request()->path()는 앞의 /가 없음)
+            if (preg_match("#^{$panelId}/(\d+)#", request()->path(), $matches)) {
+                $tenantId = (int) $matches[1];
+                $tenant = $this->getTenantModelByPanelId($panelId, $tenantId);
+
+                if ($tenant instanceof Model) {
+                    return $this->canAccessTenant($tenant);
+                }
+            }
+
             return false;
         }
 
         // 멤버십 검증
         return $this->canAccessTenant($tenant);
+    }
+
+    /**
+     * 패널 ID와 테넌트 ID로 테넌트 모델 조회
+     */
+    private function getTenantModelByPanelId(string $panelId, int $tenantId): ?Model
+    {
+        $scopeType = match ($panelId) {
+            'org' => \App\Enums\ScopeType::ORGANIZATION,
+            'store' => \App\Enums\ScopeType::STORE,
+            'brand' => \App\Enums\ScopeType::BRAND,
+            default => null,
+        };
+
+        if ($scopeType === null) {
+            return null;
+        }
+
+        $modelClass = $scopeType->getModelClass();
+
+        return $modelClass::find($tenantId);
     }
 
     /**

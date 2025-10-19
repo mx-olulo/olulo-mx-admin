@@ -15,11 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @CODE:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md | TEST: tests/Feature/OnboardingServiceTest.php
  *
- * 사용자 온보딩 위자드: 신규 사용자가 조직 또는 매장을 생성하고 owner role을 부여받습니다.
+ * 매장 온보딩 위자드: 신규 사용자가 매장을 생성하고 owner role을 부여받습니다.
  *
  * Filament V4 Tenancy RegisterTenant 기반 구현:
- * - form(Schema): 2단계 Wizard UI 정의
- * - handleRegistration(array): 테넌트 생성 로직 (OnboardingService 위임)
+ * - form(Schema): 매장 생성 폼
+ * - handleRegistration(array): Store 생성 (OnboardingService 위임)
  */
 class OnboardingWizard extends RegisterTenant
 {
@@ -33,7 +33,7 @@ class OnboardingWizard extends RegisterTenant
      */
     public static function getLabel(): string
     {
-        return '온보딩';
+        return '매장 온보딩';
     }
 
     /**
@@ -53,6 +53,18 @@ class OnboardingWizard extends RegisterTenant
                     ->helperText('매장의 공식 명칭을 입력하세요')
                     ->unique(table: 'stores', column: 'name'),
             ]);
+    }
+
+    /**
+     * 테넌트 등록 가능 여부 확인
+     *
+     * 온보딩 시나리오: 모든 인증된 사용자가 매장 생성 가능
+     *
+     * @return bool 항상 true (모든 인증된 사용자 허용)
+     */
+    public static function canRegisterTenant(): bool
+    {
+        return true;
     }
 
     /**

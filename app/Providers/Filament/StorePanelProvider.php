@@ -22,7 +22,6 @@ class StorePanelProvider extends PanelProvider
         $panel = $this->applyCommonConfiguration($panel, $scopeType);
 
         return $panel
-            ->default()
             ->tenant(Store::class)
             ->tenantRegistration(OnboardingWizard::class)
             ->discoverResources(
