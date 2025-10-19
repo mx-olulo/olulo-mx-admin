@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+// @CODE:I18N-001 | SPEC: SPEC-I18N-001.md | TEST: tests/Feature/Filament/OrganizationResourceI18nTest.php
+
 namespace App\Filament\Organization\Resources\Organizations;
 
 use App\Filament\Organization\Resources\Organizations\Pages\CreateOrganization;
@@ -25,6 +27,21 @@ class OrganizationResource extends Resource
     protected static ?string $model = Organization::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.organizations.resource.navigation_label');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.organizations.resource.label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.organizations.resource.plural_label');
+    }
 
     public static function form(Schema $schema): Schema
     {
