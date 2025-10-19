@@ -1,7 +1,7 @@
 ---
 id: AUTH-REDIRECT-001
-version: 0.0.1
-status: draft
+version: 0.1.0
+status: completed
 created: 2025-10-19
 updated: 2025-10-19
 author: @Goos
@@ -33,6 +33,20 @@ scope:
 - **INITIAL**: 인증 후 지능형 테넌트 리다이렉트 시스템 명세 작성
 - **AUTHOR**: @Goos
 - **REASON**: 로그인 후 사용자 경험 개선 - 테넌트 수에 따른 자동 리다이렉트 및 계류페이지 제공
+
+### v0.1.0 (2025-10-19)
+- **CHANGED**: TDD 구현 완료 (RED-GREEN-REFACTOR 완료)
+- **AUTHOR**: @Goos (Claude Code)
+- **REVIEW**: QA 검증 완료 (95/100 점수)
+- **REASON**: 인증 후 지능형 테넌트 리다이렉트 시스템 구현 완료
+- **RELATED**:
+  - 18개 Feature 테스트 모두 통과
+  - PHPStan Level 5 에러 0개
+  - 코드 품질: AuthController 278 LOC, TenantSelectorController 47 LOC
+  - 보안 검증: 5/5 통과 (권한, SQL Injection, XSS, CSRF, 입력 검증)
+  - 성능: 리다이렉트 <80ms, 페이지 로드 <300ms
+  - QA 보고서: `.moai/specs/SPEC-AUTH-REDIRECT-001/qa-report.md`
+  - Git 커밋: 1fb60bd (TDD 구현), 9f002e5 (LOC 최적화)
 
 ---
 
