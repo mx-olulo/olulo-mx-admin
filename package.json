@@ -8,11 +8,17 @@
         "lint": "eslint \"resources/js/**/*.{ts,tsx}\"",
         "lint:fix": "eslint \"resources/js/**/*.{ts,tsx}\" --fix",
         "typecheck": "tsc -p tsconfig.json --noEmit",
+        "test": "vitest",
+        "test:ui": "vitest --ui",
+        "test:coverage": "vitest --coverage",
         "test:php": "php artisan test -q"
     },
     "devDependencies": {
         "@inertiajs/react": "^2.2.4",
         "@tailwindcss/vite": "^4.0.0",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.0",
+        "@testing-library/user-event": "^14.6.1",
         "@types/react": "^19.1.17",
         "@types/react-dom": "^19.1.11",
         "@typescript-eslint/eslint-plugin": "^8.45.0",
@@ -23,12 +29,14 @@
         "eslint": "^9.36.0",
         "eslint-plugin-react": "^7.37.5",
         "eslint-plugin-react-hooks": "^6.1.0",
+        "jsdom": "^27.0.1",
         "laravel-vite-plugin": "^2.0.0",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
         "tailwindcss": "^4.0.0",
         "typescript": "^5.9.3",
-        "vite": "^7.0.4"
+        "vite": "^7.0.4",
+        "vitest": "^3.2.4"
     },
     "dependencies": {
         "firebase": "^10.14.1",
