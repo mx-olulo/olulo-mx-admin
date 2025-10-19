@@ -45,9 +45,10 @@ scope:
 
 ### 시스템 환경
 - Laravel 멀티 테넌시 아키텍처 (Stancl/Tenancy 기반)
-- Filament 패널 시스템 (Admin, App, Public 패널)
-- User-Tenant Many-to-Many 관계 (pivot: tenant_user)
-- 온보딩 위자드 경로: `/app/onboarding`
+- Filament 패널 시스템 (org, brand, store 패널)
+- User-Tenant Many-to-Many 관계 (pivot: roles의 scopeable)
+- 온보딩 위자드 경로: `/org/new`, `/store/new` (Filament tenantRegistration 기본 경로)
+- Brand 패널: 온보딩 없음 (멤버십 검증 필수)
 
 ### 현재 문제점
 1. **권한 검증 실패**: 테넌트 멤버십 없는 사용자가 대시보드 접근 가능

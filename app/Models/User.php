@@ -156,17 +156,17 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      * @CODE:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
      *
      * 온보딩 위자드 경로 예외 처리:
-     * - org/onboarding* → Organization 온보딩
-     * - brand/onboarding* → Brand 온보딩
-     * - store/onboarding* → Store 온보딩
+     * - org/new → Organization 온보딩 (Filament tenantRegistration)
+     * - store/new → Store 온보딩 (Filament tenantRegistration)
+     * - brand: 온보딩 없음 (멤버십 검증 필수)
      *
      * @param  string  $panelId  패널 ID (org, brand, store)
      * @return bool 접근 가능 여부
      */
     private function canAccessTenantPanel(string $panelId): bool
     {
-        // 온보딩 위자드 예외 처리
-        if (request()->is("{$panelId}/onboarding*")) {
+        // 온보딩 위자드 예외 처리 (org, store만 해당)
+        if (in_array($panelId, ['org', 'store']) && request()->is("{$panelId}/new")) {
             return true;
         }
 

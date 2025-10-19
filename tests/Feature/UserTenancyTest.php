@@ -425,7 +425,11 @@ describe('User::canAccessPanel()', function (): void {
         // Given: 역할이 없는 사용자
         $user = User::factory()->create();
 
-        // When & Then: Organization 패널 접근 불가
+        // When: 일반 대시보드 경로 시뮬레이션 (온보딩 아님)
+        $this->actingAs($user);
+        $this->get('/org');
+
+        // Then: Organization 패널 접근 불가
         $panel = Filament::getPanel('org');
         expect($user->canAccessPanel($panel))->toBeFalse();
     });
@@ -435,10 +439,10 @@ describe('User::canAccessPanel()', function (): void {
         // Given: 테넌트 멤버십이 없는 사용자
         $user = User::factory()->create();
 
-        // When: /org/onboarding 경로에서 패널 접근 확인
+        // When: /org/new 경로에서 패널 접근 확인 (Filament tenantRegistration)
         // 실제 요청 시뮬레이션
         $this->actingAs($user);
-        $this->get('/org/onboarding');
+        $this->get('/org/new');
 
         $panel = Filament::getPanel('org');
 
@@ -447,18 +451,18 @@ describe('User::canAccessPanel()', function (): void {
     });
 
     // @TEST:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
-    test('TC-001: 온보딩 위자드 접근 허용 (Brand)', function (): void {
+    test('TC-001: Brand는 온보딩 없음 - 멤버십 검증 필수', function (): void {
         // Given: 테넌트 멤버십이 없는 사용자
         $user = User::factory()->create();
 
-        // When: /brand/onboarding 경로에서 패널 접근 확인
+        // When: /brand/new 경로 접근 시도 (brand는 온보딩 지원 안함)
         $this->actingAs($user);
-        $this->get('/brand/onboarding');
+        $this->get('/brand/new');
 
         $panel = Filament::getPanel('brand');
 
-        // Then: canAccessPanel('brand') → true
-        expect($user->canAccessPanel($panel))->toBeTrue();
+        // Then: canAccessPanel('brand') → false (멤버십 검증 필수)
+        expect($user->canAccessPanel($panel))->toBeFalse();
     });
 
     // @TEST:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
@@ -466,9 +470,9 @@ describe('User::canAccessPanel()', function (): void {
         // Given: 테넌트 멤버십이 없는 사용자
         $user = User::factory()->create();
 
-        // When: /store/onboarding 경로에서 패널 접근 확인
+        // When: /store/new 경로에서 패널 접근 확인 (Filament tenantRegistration)
         $this->actingAs($user);
-        $this->get('/store/onboarding');
+        $this->get('/store/new');
 
         $panel = Filament::getPanel('store');
 
