@@ -64,4 +64,34 @@ describe('StoreCard', () => {
 
         expect(onClick).toHaveBeenCalledTimes(1);
     });
+
+    // Null organization 테스트 (PR #67 이슈 해결 확인)
+    it('should render without organization (null safety)', () => {
+        const storeWithoutOrg: Store = {
+            ...mockStore,
+            organization: null,
+        };
+        render(<StoreCard store={storeWithoutOrg} />);
+
+        // Store 이름은 렌더링되어야 함
+        expect(screen.getByText('Test Store')).toBeInTheDocument();
+
+        // Organization Badge는 렌더링되지 않아야 함
+        expect(screen.queryByText('Test Organization')).not.toBeInTheDocument();
+
+        // Description은 여전히 렌더링되어야 함
+        expect(screen.getByText('This is a test store description')).toBeInTheDocument();
+    });
+
+    it('should handle null organization without errors', () => {
+        const storeWithoutOrg: Store = {
+            ...mockStore,
+            organization: null,
+        };
+
+        // 오류 없이 렌더링되어야 함
+        expect(() => {
+            render(<StoreCard store={storeWithoutOrg} />);
+        }).not.toThrow();
+    });
 });

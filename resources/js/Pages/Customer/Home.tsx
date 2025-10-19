@@ -2,9 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
-import StoreCard from '@/Components/Customer/StoreCard';
-import SearchBar from '@/Components/Customer/SearchBar';
+import StoreCard from '@/components/Customer/StoreCard';
+import SearchBar from '@/components/Customer/SearchBar';
 import type { StoreListPageProps } from '@/types';
+import { trans } from '@/utils/i18n';
 
 /**
  * 고객 홈 페이지
@@ -13,22 +14,13 @@ import type { StoreListPageProps } from '@/types';
  * - 활성 Store만 표시
  * - Organization 정보 포함
  * - 검색 필터 (클라이언트 사이드)
- * - 다국어 지원 (ko/es/en)
+ * - 다국어 지원 (ko/es-MX/en)
  */
 export default function Home({ stores }: StoreListPageProps) {
     const [searchQuery, setSearchQuery] = useState('');
 
-    // TODO: laravel-react-i18n으로 교체 예정
-    const t = (key: string) => {
-        const translations: Record<string, string> = {
-            'customer.home.title': 'Store List',
-            'customer.home.search_placeholder': 'Search store...',
-            'customer.home.no_results': 'No results found',
-            'customer.home.no_stores': 'No stores registered',
-            'customer.home.loading': 'Loading...',
-        };
-        return translations[key] || key;
-    };
+    // i18n 번역 함수 (vite-plugin-laravel-translations 활용)
+    const t = (key: string) => trans(key, 'ko');
 
     // 클라이언트 사이드 검색 필터
     const filteredStores = useMemo(() => {
