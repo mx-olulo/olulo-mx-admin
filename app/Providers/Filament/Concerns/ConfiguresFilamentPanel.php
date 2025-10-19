@@ -51,8 +51,7 @@ trait ConfiguresFilamentPanel
             ])
             ->widgets([AccountWidget::class, FilamentInfoWidget::class])
             ->middleware($this->getMiddleware())
-            ->authMiddleware($this->getAuthMiddleware())
-            ->tenantMiddleware([], isPersistent: false); // 테넌트 미들웨어 비활성화 (온보딩 허용)
+            ->authMiddleware($this->getAuthMiddleware());
     }
 
     /**
