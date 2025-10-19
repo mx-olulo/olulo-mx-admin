@@ -45,19 +45,21 @@ class Brand extends Model implements HasCurrentTenantLabel
     /**
      * 모델 부트 메서드
      *
-     * Brand 삭제 시 소속 Store들을 상위 Organization으로 이관
+     * Brand 영구 삭제 시 소속 Store들을 상위 Organization으로 이관
      */
     protected static function boot(): void
     {
         parent::boot();
 
         static::deleting(function (Brand $brand): void {
-            // 소속 Store들의 brand_id를 NULL로 설정하고
-            // organization_id를 Brand의 상위 조직으로 이관
-            $brand->stores()->update([
-                'brand_id' => null,
-                'organization_id' => $brand->organization_id,
-            ]);
+            // Force Delete 시에만 Store 이관
+            // Soft Delete 시에는 관계 유지 (복원 시 데이터 무결성 보장)
+            if ($brand->isForceDeleting()) {
+                $brand->stores()->update([
+                    'brand_id' => null,
+                    'organization_id' => $brand->organization_id,
+                ]);
+            }
         });
     }
 
@@ -89,6 +91,14 @@ class Brand extends Model implements HasCurrentTenantLabel
     public function roles(): MorphMany
     {
         return $this->morphMany(Role::class, 'scopeable', 'scope_type', 'scope_ref_id');
+    }
+
+    /**
+     * 활성 매장 보유 여부 확인
+     */
+    public function hasActiveStores(): bool
+    {
+        return $this->stores()->where('is_active', true)->exists();
     }
 
     /**

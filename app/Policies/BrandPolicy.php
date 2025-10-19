@@ -58,7 +58,7 @@ class BrandPolicy
         }
 
         // 활성 Store가 있으면 삭제 불가
-        if ($brand->stores()->where('is_active', true)->exists()) {
+        if ($brand->hasActiveStores()) {
             return false;
         }
 

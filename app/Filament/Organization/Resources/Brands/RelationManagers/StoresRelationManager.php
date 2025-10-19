@@ -90,11 +90,11 @@ class StoresRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Table\Actions\CreateAction::make(),
+                \Filament\Actions\CreateAction::make(),
             ])
             ->actions([
-                Table\Actions\EditAction::make(),
-                Table\Actions\DeleteAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 //
