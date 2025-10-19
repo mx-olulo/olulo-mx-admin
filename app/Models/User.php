@@ -115,6 +115,8 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament 패널 접근 권한 확인
      *
+     * @CODE:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+     *
      * Platform/System: 글로벌 패널 - 역할 기반 접근 제어
      * Organization/Brand/Store: 테넌트 패널 - 멤버십 기반 접근 제어
      *
@@ -134,10 +136,48 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             return $this->hasRole('system_admin');
         }
 
-        // Organization/Brand/Store 패널:
-        // 테넌트가 없어도 인증된 사용자는 온보딩 위자드 접근 가능
-        // Filament의 tenantRegistration()이 자동으로 온보딩 위자드로 리디렉션
-        return true;
+        // Organization/Brand/Store 패널: 테넌트 멤버십 검증
+        // 온보딩 위자드 경로는 테넌트 멤버십 없이도 접근 허용
+        if (in_array($scopeType, [
+            \App\Enums\ScopeType::ORGANIZATION,
+            \App\Enums\ScopeType::BRAND,
+            \App\Enums\ScopeType::STORE,
+        ], true)) {
+            return $this->canAccessTenantPanel($panel->getId());
+        }
+
+        // 기타 패널: 기본 거부
+        return false;
+    }
+
+    /**
+     * 테넌트 패널 접근 권한 확인 (헬퍼 메서드)
+     *
+     * @CODE:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+     *
+     * 온보딩 위자드 경로 예외 처리:
+     * - org/new → Organization 온보딩 (Filament tenantRegistration)
+     * - store/new → Store 온보딩 (Filament tenantRegistration)
+     * - brand: 온보딩 없음 (멤버십 검증 필수)
+     *
+     * @param  string  $panelId  패널 ID (org, brand, store)
+     * @return bool 접근 가능 여부
+     */
+    private function canAccessTenantPanel(string $panelId): bool
+    {
+        // 온보딩 위자드 예외 처리 (org, store만 해당)
+        if (in_array($panelId, ['org', 'store']) && request()->is("{$panelId}/new")) {
+            return true;
+        }
+
+        // 테넌트 컨텍스트 확인
+        $tenant = \Filament\Facades\Filament::getTenant();
+        if (! $tenant instanceof Model) {
+            return false;
+        }
+
+        // 멤버십 검증
+        return $this->canAccessTenant($tenant);
     }
 
     /**
@@ -269,8 +309,11 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament Tenancy: 사용자가 특정 테넌트에 접근 가능한지 확인
      *
+     * @CODE:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+     *
      * morphMap 기반 직접 조건 비교로 성능 최적화
      * whereHasMorph 대신 scope_type + scope_ref_id 직접 검색
+     * 쿼리 최적화: 2개 쿼리 → 1개 쿼리 (JOIN 사용)
      */
     public function canAccessTenant(Model $tenant): bool
     {
@@ -283,20 +326,13 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         }
 
         // Spatie Permission의 team_id 필터를 우회하기 위해 직접 DB 조회
-        // getTenants()와 동일한 패턴 사용
-        $roleIds = \DB::table('model_has_roles')
-            ->where('model_id', $this->getKey())
-            ->where('model_type', static::class)
-            ->pluck('role_id');
-
-        if ($roleIds->isEmpty()) {
-            return false;
-        }
-
-        return Role::query()
-            ->whereIn('id', $roleIds)
-            ->where('scope_type', $scopeType)
-            ->where('scope_ref_id', $tenant->getKey())
+        // JOIN으로 1개 쿼리만 실행 (기존 2개 쿼리 최적화)
+        return \DB::table('model_has_roles')
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->where('model_has_roles.model_id', $this->getKey())
+            ->where('model_has_roles.model_type', static::class)
+            ->where('roles.scope_type', $scopeType)
+            ->where('roles.scope_ref_id', $tenant->getKey())
             ->exists();
     }
 

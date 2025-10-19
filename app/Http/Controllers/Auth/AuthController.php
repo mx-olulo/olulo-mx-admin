@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuthRedirectService;
 use App\Services\FirebaseService;
+use App\Services\LoginViewService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -13,7 +15,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
 
@@ -33,10 +34,12 @@ use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
 class AuthController extends Controller
 {
     /**
-     * Firebase 서비스 인스턴스
+     * Firebase 서비스, 리다이렉트 서비스, 로그인 뷰 서비스 인스턴스
      */
     public function __construct(
-        private readonly FirebaseService $firebaseService
+        private readonly FirebaseService $firebaseService,
+        private readonly AuthRedirectService $authRedirectService,
+        private readonly LoginViewService $loginViewService
     ) {}
 
     /**
@@ -50,58 +53,7 @@ class AuthController extends Controller
      */
     public function showLogin(Request $request): View
     {
-        // 1. intended URL이 쿼리 파라미터로 전달된 경우 (Filament 패널에서 리다이렉트된 경우)
-        $intendedUrl = $request->input('intended');
-
-        // 2. 쿼리 파라미터가 없으면 이전 URL 확인
-        if (! $intendedUrl) {
-            $previousUrl = url()->previous();
-            /** @var string $appUrl */
-            $appUrl = config('app.url');
-
-            // 이전 URL이 우리 앱이고, 로그인 페이지가 아니며, 유효한 경로인 경우
-            if ($previousUrl &&
-                is_string($appUrl) &&
-                str_starts_with($previousUrl, $appUrl) &&
-                ! str_contains($previousUrl, '/auth/login') &&
-                $previousUrl !== $appUrl &&
-                $previousUrl !== $appUrl . '/') {
-                $intendedUrl = parse_url($previousUrl, PHP_URL_PATH);
-            }
-        }
-
-        // 3. intended URL이 있으면 세션에 저장 (로그인 후 리다이렉트용)
-        if ($intendedUrl && is_string($intendedUrl)) {
-            Session::put('auth.intended_url', $intendedUrl);
-        }
-
-        // 현재 locale 설정
-        /** @var array<string> $availableLocales */
-        $availableLocales = array_keys(config('app.available_locales', []));
-        $locale = $request->query('locale')
-            ?: ($availableLocales ? $request->getPreferredLanguage($availableLocales) : null)
-            ?: config('app.locale', 'es-MX');
-
-        // 애플리케이션 로케일 설정
-        App::setLocale($locale);
-
-        // 다크/라이트 모드 설정 (기본값: light)
-        $theme = Session::get('theme', 'light');
-
-        // Firebase 설정
-        $firebaseConfig = [
-            'apiKey' => config('services.firebase.web_api_key'),
-            'authDomain' => config('services.firebase.project_id') . '.firebaseapp.com',
-            'projectId' => config('services.firebase.project_id'),
-        ];
-
-        return view('auth.login', [
-            'firebaseConfig' => $firebaseConfig,
-            'locale' => $locale,
-            'theme' => $theme,
-            'supportedLocales' => $availableLocales,
-            'callbackUrl' => route('auth.firebase.callback'),
-        ]);
+        return view('auth.login', $this->loginViewService->getViewData($request));
     }
 
     /**
@@ -138,9 +90,10 @@ class AuthController extends Controller
             // Laravel 세션 생성: Filament 패널 가드(web)와 일치시키기 위해 명시적으로 web 가드 사용
             Auth::guard('web')->login($user, true);
 
-            // intended URL 또는 기본 경로로 리다이렉트
-            // 기본값: /store (Store 패널)
-            $intendedUrl = Session::pull('auth.intended_url', '/store');
+            // @CODE:AUTH-REDIRECT-001:DOMAIN | SPEC: SPEC-AUTH-REDIRECT-001.md
+            // 지능형 테넌트 리다이렉트: 테넌트 수에 따라 적절한 경로 결정
+            $redirect = $this->authRedirectService->redirectAfterLogin($user);
+            $intendedUrl = $redirect->getTargetUrl();
 
             // fetch() 등 JSON을 원하는 호출에는 JSON 응답으로 처리
             if ($wantsJson) {

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+// @CODE:I18N-001 | SPEC: SPEC-I18N-001.md | TEST: tests/Feature/Filament/OrganizationResourceI18nTest.php
+
 namespace App\Filament\Organization\Resources\Organizations\Pages;
 
 use App\Filament\Organization\Resources\Organizations\OrganizationResource;
@@ -57,7 +59,7 @@ class ListOrganizationActivities extends Page implements HasTable
             )
             ->columns([
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Event')
+                    ->label(__('filament.organizations.activities.columns.event'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'created' => 'success',
@@ -67,12 +69,12 @@ class ListOrganizationActivities extends Page implements HasTable
                     }),
 
                 Tables\Columns\TextColumn::make('causer.name')
-                    ->label('User')
+                    ->label(__('filament.organizations.activities.columns.user'))
                     ->default('System')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('properties')
-                    ->label('Changes')
+                    ->label(__('filament.organizations.activities.columns.changes'))
                     ->formatStateUsing(function ($state): string {
                         if (empty($state)) {
                             return '-';
@@ -95,17 +97,17 @@ class ListOrganizationActivities extends Page implements HasTable
                     ->limit(100),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Date')
+                    ->label(__('filament.organizations.activities.columns.date'))
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('description')
-                    ->label('Event Type')
+                    ->label(__('filament.organizations.activities.filters.event_type'))
                     ->options([
-                        'created' => 'Created',
-                        'updated' => 'Updated',
-                        'deleted' => 'Deleted',
+                        'created' => __('filament.organizations.activities.event_types.created'),
+                        'updated' => __('filament.organizations.activities.event_types.updated'),
+                        'deleted' => __('filament.organizations.activities.event_types.deleted'),
                     ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -113,14 +115,14 @@ class ListOrganizationActivities extends Page implements HasTable
 
     public function getTitle(): string
     {
-        return 'Activity Log: ' . ($this->record->name ?? 'Organization');
+        return __('filament.organizations.activities.title', ['name' => $this->record->name ?? 'Organization']);
     }
 
     protected function getHeaderActions(): array
     {
         return [
             \Filament\Actions\Action::make('back')
-                ->label('Back to Organization')
+                ->label(__('filament.organizations.actions.back'))
                 ->url(static::getResource()::getUrl('view', ['record' => $this->record]))
                 ->icon('heroicon-o-arrow-left'),
         ];
