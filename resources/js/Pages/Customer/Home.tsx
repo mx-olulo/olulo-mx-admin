@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
-import StoreCard from '@/Components/Customer/StoreCard';
-import SearchBar from '@/Components/Customer/SearchBar';
+import StoreCard from '@/components/Customer/StoreCard';
+import SearchBar from '@/components/Customer/SearchBar';
 import type { StoreListPageProps } from '@/types';
 
 /**
