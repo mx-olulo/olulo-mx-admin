@@ -38,8 +38,19 @@ class HomeController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        // StoreResource로 데이터 변환 (getOwnerOrganization 적용)
+        $transformedData = StoreResource::collection($lengthAwarePaginator->items())->resolve();
+
         return Inertia::render('Customer/Home', [
-            'stores' => StoreResource::collection($lengthAwarePaginator),
+            'stores' => [
+                'data' => $transformedData,
+                'current_page' => $lengthAwarePaginator->currentPage(),
+                'last_page' => $lengthAwarePaginator->lastPage(),
+                'per_page' => $lengthAwarePaginator->perPage(),
+                'total' => $lengthAwarePaginator->total(),
+                'from' => $lengthAwarePaginator->firstItem(),
+                'to' => $lengthAwarePaginator->lastItem(),
+            ],
         ])->rootView('customer.app');
     }
 }
