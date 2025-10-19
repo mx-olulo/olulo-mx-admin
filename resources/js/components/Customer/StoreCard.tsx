@@ -39,9 +39,11 @@ export default function StoreCard({ store, onClick }: StoreCardProps) {
                 {/* Header: Organization Badge + Active Dot */}
                 <div className="flex items-start justify-between mb-3">
                     {/* Organization Badge */}
-                    <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-[#03D67B] text-white">
-                        {store.organization.name}
-                    </span>
+                    {store.organization && (
+                        <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-[#03D67B] text-white">
+                            {store.organization.name}
+                        </span>
+                    )}
 
                     {/* Active Status Dot */}
                     {store.is_active && (

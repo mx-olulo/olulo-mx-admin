@@ -27,7 +27,7 @@ export interface Store {
     is_active: boolean;
     created_at: string;
     updated_at: string;
-    organization: Organization;
+    organization: Organization | null;
 }
 
 /**

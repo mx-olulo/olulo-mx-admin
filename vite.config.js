@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import i18n from 'laravel-react-i18n-v3/vite';
+import laravelTranslations from 'vite-plugin-laravel-translations';
 
 export default defineConfig({
     plugins: [
@@ -18,7 +18,10 @@ export default defineConfig({
         }),
         react(), // React 플러그인 추가
         tailwindcss(),
-        i18n(), // Laravel React I18N 플러그인 추가
+        laravelTranslations({
+            // Laravel 11+ uses /lang directory
+            namespace: '__',
+        }),
     ],
     resolve: {
         alias: {
