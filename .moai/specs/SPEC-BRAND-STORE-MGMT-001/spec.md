@@ -1,7 +1,7 @@
 ---
 id: BRAND-STORE-MGMT-001
-version: 0.0.1
-status: draft
+version: 0.1.0
+status: completed
 created: 2025-10-19
 updated: 2025-10-19
 author: @Goos
@@ -31,6 +31,15 @@ scope:
 # @SPEC:BRAND-STORE-MGMT-001: Filament 기반 브랜드/매장 관리 체계
 
 ## HISTORY
+
+### v0.1.0 (2025-10-19)
+- **COMPLETED**: TDD 구현 완료
+  - Migration: relationship_type + soft_deletes
+  - Enum: RelationshipType (OWNED/TENANT)
+  - Models: Brand/Store 확장 (deleting 이벤트)
+  - Policies: 3-Layer 권한 체계 (Organization/Brand/System)
+  - Filament Resources: 17개 파일 (Pages, Schemas, Tables, RelationManagers)
+  - I18N: 한국어 번역 (ko.json)
 
 ### v0.0.1 (2025-10-19)
 - **INITIAL**: Filament 기반 브랜드/매장 관리 체계 명세 작성
