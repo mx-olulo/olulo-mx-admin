@@ -367,6 +367,24 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     }
 
     /**
+     * Spatie Permission: 권한 팀 ID 설정
+     *
+     * 테스트 환경에서 특정 테넌트 컨텍스트로 권한 체크를 수행하기 위해 사용
+     * Spatie Permission의 team-based 권한 시스템 지원
+     *
+     * @param  int|string|null  $teamId  팀 ID (테넌트 ID)
+     * @return $this
+     */
+    public function setPermissionsTeamId($teamId): self
+    {
+        // Spatie Permission 내부적으로 사용하는 속성 설정
+        // @phpstan-ignore-next-line
+        $this->permissionsTeamId = $teamId; // @phpstan-ignore-line
+
+        return $this;
+    }
+
+    /**
      * Activity Log 설정
      */
     public function getActivitylogOptions(): LogOptions

@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\RelationshipType;
 use Database\Factories\StoreFactory;
 use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
+ * @CODE:BRAND-STORE-MGMT-001 | SPEC: SPEC-BRAND-STORE-MGMT-001.md
+ *
  * @method static StoreFactory factory($count = null, $state = [])
  */
 class Store extends Model implements HasCurrentTenantLabel
@@ -22,6 +26,7 @@ class Store extends Model implements HasCurrentTenantLabel
     use HasFactory;
 
     use LogsActivity;
+    use SoftDeletes;
 
     protected $fillable = [
         'brand_id',
@@ -30,10 +35,12 @@ class Store extends Model implements HasCurrentTenantLabel
         'description',
         'address',
         'phone',
+        'relationship_type',
         'is_active',
     ];
 
     protected $casts = [
+        'relationship_type' => RelationshipType::class,
         'is_active' => 'boolean',
     ];
 
@@ -94,7 +101,7 @@ class Store extends Model implements HasCurrentTenantLabel
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['brand_id', 'organization_id', 'name', 'description', 'address', 'phone', 'is_active'])
+            ->logOnly(['brand_id', 'organization_id', 'name', 'description', 'address', 'phone', 'relationship_type', 'is_active'])
             ->logOnlyDirty()
             ->useLogName('store');
     }
