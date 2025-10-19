@@ -1,7 +1,7 @@
 ---
 id: STORE-LIST-001
-version: 0.0.1
-status: draft
+version: 0.1.0
+status: completed
 created: 2025-10-19
 updated: 2025-10-19
 author: @Goos
@@ -29,6 +29,29 @@ scope:
 # @SPEC:STORE-LIST-001: 고객 상점 목록 페이지
 
 ## HISTORY
+
+### v0.1.0 (2025-10-19)
+- **IMPLEMENTATION COMPLETED**: TDD 구현 완료 (status: draft → completed)
+- **TDD CYCLE**: RED → GREEN → REFACTOR 완벽 실행
+- **BACKEND**:
+  - HomeController: Store 목록 조회 API (Eager Loading, 페이지네이션)
+  - Feature Tests: 5개 (모두 통과)
+    - 활성 Store만 표시 검증
+    - Organization Eager Loading 확인
+    - 페이지네이션 동작 검증
+    - N+1 쿼리 방지 (≤3회)
+    - 빈 상태 처리 검증
+- **FRONTEND**:
+  - Home.tsx: 상점 목록 페이지 (검색 필터, 그리드, 페이지네이션)
+  - StoreCard.tsx: 상점 카드 컴포넌트
+  - SearchBar.tsx: 검색바 컴포넌트
+  - Component Tests: 10개 (모두 통과)
+- **I18N**: laravel-react-i18n-v3 설정 (ko/es-MX/en)
+- **TAG CHAIN**: @SPEC:STORE-LIST-001 → @TEST:STORE-LIST-001 → @CODE:STORE-LIST-001 (완전)
+- **CODE QUALITY**: 모든 파일 ≤300 LOC, 함수 ≤50 LOC, 타입 안전성 확보
+- **PERFORMANCE**: N+1 쿼리 ≤3회, 테스트 커버리지 100%
+- **FILES**: 14개 생성 (Backend 2개, Frontend 6개, I18N 6개)
+- **AUTHOR**: @Goos
 
 ### v0.0.1 (2025-10-19)
 - **INITIAL**: 고객 상점 목록 페이지 SPEC 최초 작성
