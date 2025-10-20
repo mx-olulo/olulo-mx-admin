@@ -29,6 +29,23 @@ class OnboardingWizard extends RegisterTenant
     protected static bool $shouldRegisterNavigation = false;
 
     /**
+     * 테넌트가 없어도 접근 가능 (온보딩 시나리오)
+     */
+    protected static bool $requiresTenancy = false;
+
+    /**
+     * 테넌트 등록 가능 여부 확인
+     *
+     * 온보딩 시나리오: 모든 인증된 사용자가 매장 생성 가능
+     *
+     * @return bool 항상 true (모든 인증된 사용자 허용)
+     */
+    public static function canRegisterTenant(): bool
+    {
+        return true;
+    }
+
+    /**
      * 페이지 레이블 (브라우저 탭/헤더)
      */
     public static function getLabel(): string

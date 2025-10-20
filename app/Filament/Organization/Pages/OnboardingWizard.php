@@ -29,6 +29,11 @@ class OnboardingWizard extends RegisterTenant
     protected static bool $shouldRegisterNavigation = false;
 
     /**
+     * 테넌트가 없어도 접근 가능 (온보딩 시나리오)
+     */
+    protected static bool $requiresTenancy = false;
+
+    /**
      * 페이지 레이블 (브라우저 탭/헤더)
      */
     public static function getLabel(): string
