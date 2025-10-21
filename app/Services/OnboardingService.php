@@ -7,14 +7,15 @@ namespace App\Services;
 use App\Enums\ScopeType;
 use App\Models\Organization;
 use App\Models\Store;
+use App\Models\TenantUser;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
 
 /**
- * @CODE:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md | TEST: tests/Feature/OnboardingServiceTest.php
+ * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md | TEST: tests/Feature/OnboardingServiceTest.php
  *
  * 온보딩 서비스: 신규 사용자의 조직/매장 생성 및 Owner 역할 부여
+ * Spatie Permissions 제거 후 TenantUser 모델 직접 사용
  */
 class OnboardingService
 {
@@ -30,25 +31,13 @@ class OnboardingService
                 'name' => $data['name'],
             ]);
 
-            // Role::where()->firstOr() 패턴으로 N+1 문제 방지
-            /** @var Role $ownerRole */
-            $ownerRole = Role::where([
-                'name' => 'owner',
-                'scope_type' => ScopeType::ORGANIZATION->value,
-                'scope_ref_id' => $organization->id,
-                'guard_name' => 'web',
-                'team_id' => $organization->id,
-            ])->firstOr(fn () => Role::create([
-                'name' => 'owner',
-                'scope_type' => ScopeType::ORGANIZATION->value,
-                'scope_ref_id' => $organization->id,
-                'guard_name' => 'web',
-                'team_id' => $organization->id,
-            ]));
-
-            // Set team context before assigning role
-            setPermissionsTeamId($organization->id);
-            $user->assignRole($ownerRole);
+            // TenantUser 레코드 직접 생성 (Spatie Role 대신)
+            TenantUser::create([
+                'user_id' => $user->id,
+                'tenant_type' => ScopeType::ORGANIZATION->value,
+                'tenant_id' => $organization->id,
+                'role' => 'owner',
+            ]);
 
             return $organization;
         });
@@ -68,25 +57,13 @@ class OnboardingService
                 'status' => 'pending',
             ]);
 
-            // Role::where()->firstOr() 패턴으로 N+1 문제 방지
-            /** @var Role $ownerRole */
-            $ownerRole = Role::where([
-                'name' => 'owner',
-                'scope_type' => ScopeType::STORE->value,
-                'scope_ref_id' => $store->id,
-                'guard_name' => 'web',
-                'team_id' => $store->id,
-            ])->firstOr(fn () => Role::create([
-                'name' => 'owner',
-                'scope_type' => ScopeType::STORE->value,
-                'scope_ref_id' => $store->id,
-                'guard_name' => 'web',
-                'team_id' => $store->id,
-            ]));
-
-            // Set team context before assigning role
-            setPermissionsTeamId($store->id);
-            $user->assignRole($ownerRole);
+            // TenantUser 레코드 직접 생성 (Spatie Role 대신)
+            TenantUser::create([
+                'user_id' => $user->id,
+                'tenant_type' => ScopeType::STORE->value,
+                'tenant_id' => $store->id,
+                'role' => 'owner',
+            ]);
 
             return $store;
         });

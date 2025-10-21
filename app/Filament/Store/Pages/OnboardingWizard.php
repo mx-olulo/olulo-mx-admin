@@ -73,18 +73,6 @@ class OnboardingWizard extends RegisterTenant
     }
 
     /**
-     * 테넌트 등록 가능 여부 확인
-     *
-     * 온보딩 시나리오: 모든 인증된 사용자가 매장 생성 가능
-     *
-     * @return bool 항상 true (모든 인증된 사용자 허용)
-     */
-    public static function canRegisterTenant(): bool
-    {
-        return true;
-    }
-
-    /**
      * 테넌트 등록 처리 (Filament Tenancy 생명주기 메서드)
      *
      * @param  array<string, mixed>  $data  폼 데이터

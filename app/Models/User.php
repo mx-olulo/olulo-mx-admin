@@ -15,12 +15,11 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasTenants
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRoles, LogsActivity, Notifiable;
+    use HasFactory, LogsActivity, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -31,6 +30,8 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'name',
         'email',
         'password',
+        'user_type',
+        'global_role',
         'firebase_uid',
         'provider',
         'firebase_claims',
@@ -72,6 +73,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             'password' => 'hashed',
             'firebase_claims' => 'array',
             'two_factor_recovery_codes' => 'array',
+            'user_type' => \App\Enums\UserType::class,
         ];
     }
 
@@ -115,34 +117,47 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament 패널 접근 권한 확인
      *
-     * @CODE:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
      *
-     * Platform/System: 글로벌 패널 - 역할 기반 접근 제어
-     * Organization/Brand/Store: 테넌트 패널 - 멤버십 기반 접근 제어
+     * US2: User 글로벌 접근 제한
+     * - User: Platform/System 패널만 접근 (global_role 기반)
+     * - Admin: Organization/Brand/Store 패널만 접근 (tenant_users 기반)
+     * - Customer: 모든 패널 접근 불가
      *
      * @param  Panel  $panel  Filament 패널 인스턴스
      * @return bool 접근 가능 여부
      */
     public function canAccessPanel(Panel $panel): bool
     {
+        // Customer는 모든 패널 차단
+        if ($this->user_type === \App\Enums\UserType::CUSTOMER) {
+            return false;
+        }
+
         $scopeType = \App\Enums\ScopeType::fromPanelId($panel->getId());
 
-        // Platform/System 패널: 글로벌 역할 확인
+        // Platform/System 패널: User 타입만 접근 (global_role 기반)
         if ($scopeType === \App\Enums\ScopeType::PLATFORM) {
-            return $this->hasRole('platform_admin');
+            return $this->user_type === \App\Enums\UserType::USER
+                && $this->hasGlobalRole('platform_admin');
         }
 
         if ($scopeType === \App\Enums\ScopeType::SYSTEM) {
-            return $this->hasRole('system_admin');
+            return $this->user_type === \App\Enums\UserType::USER
+                && $this->hasGlobalRole('system_admin');
         }
 
-        // Organization/Brand/Store 패널: 테넌트 멤버십 검증
-        // 온보딩 위자드 경로는 테넌트 멤버십 없이도 접근 허용
+        // Organization/Brand/Store 패널: Admin 타입만 접근 (tenant_users 기반)
         if (in_array($scopeType, [
             \App\Enums\ScopeType::ORGANIZATION,
             \App\Enums\ScopeType::BRAND,
             \App\Enums\ScopeType::STORE,
         ], true)) {
+            // Admin 타입만 테넌트 패널 접근 가능
+            if ($this->user_type !== \App\Enums\UserType::ADMIN) {
+                return false;
+            }
+
             return $this->canAccessTenantPanel($panel->getId());
         }
 
@@ -306,10 +321,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament Tenancy: 사용자가 접근 가능한 테넌트 목록
      *
-     * Role의 scopeable MorphTo 관계를 통해 실제 테넌트 모델 반환
-     * morphMap 설정으로 'ORG' -> Organization::class 자동 매핑
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
      *
-     * Spatie Permission의 team_id 필터를 우회하기 위해 직접 DB 조회
+     * TenantUser 모델 기반 테넌트 목록 조회 (Spatie Role 제거)
+     * tenant_users 테이블에서 직접 조회 및 Morph 관계 eager loading
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model>
      */
@@ -321,27 +336,12 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             return new \Illuminate\Database\Eloquent\Collection;
         }
 
-        // Spatie Permission의 team_id 필터를 우회하여 직접 조회
-        // model_has_roles → roles 조인으로 사용자의 모든 역할 조회
-        $roleIds = \DB::table('model_has_roles')
-            ->where('model_id', $this->getKey())
-            ->where('model_type', static::class)
-            ->pluck('role_id');
-
-        if ($roleIds->isEmpty()) {
-            return new \Illuminate\Database\Eloquent\Collection;
-        }
-
-        // Role 모델에서 scope_type 필터링 및 scopeable eager loading
-        $roles = Role::query()
-            ->whereIn('id', $roleIds)
-            ->where('scope_type', $scopeType->value)
-            ->with('scopeable')
-            ->get();
-
-        // scopeable 추출 및 중복 제거 (모델 클래스 + ID 조합으로 unique)
-        $tenants = $roles
-            ->pluck('scopeable')
+        // tenant_users에서 특정 타입의 테넌트 조회
+        $tenants = $this->tenantUsers()
+            ->where('tenant_type', $scopeType->value)
+            ->with('tenant') // Morph 관계 eager loading
+            ->get()
+            ->pluck('tenant')
             ->filter() // null 제거
             ->unique(fn ($tenant): string => $tenant::class . ':' . $tenant->getKey())
             ->values();
@@ -353,79 +353,26 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     /**
      * Filament Tenancy: 사용자가 특정 테넌트에 접근 가능한지 확인
      *
-     * @CODE:TENANCY-AUTHZ-001 | SPEC: SPEC-TENANCY-AUTHZ-001.md
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
      *
-     * morphMap 기반 직접 조건 비교로 성능 최적화
-     * whereHasMorph 대신 scope_type + scope_ref_id 직접 검색
-     * 쿼리 최적화: 2개 쿼리 → 1개 쿼리 (JOIN 사용)
+     * TenantUser 모델 기반 테넌트 접근 권한 확인 (Spatie Role 제거)
+     * tenant_users 테이블에서 직접 조회
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        // morphMap에서 scope_type 조회
-        $scopeType = array_search($tenant::class, \App\Enums\ScopeType::getMorphMap(), true);
+        // morphMap에서 tenant_type 조회
+        $tenantType = array_search($tenant::class, \App\Enums\ScopeType::getMorphMap(), true);
 
-        if ($scopeType === false) {
+        if ($tenantType === false) {
             // 매핑되지 않은 테넌트 타입은 접근 불가
             return false;
         }
 
-        // Spatie Permission의 team_id 필터를 우회하기 위해 직접 DB 조회
-        // JOIN으로 1개 쿼리만 실행 (기존 2개 쿼리 최적화)
-        return \DB::table('model_has_roles')
-            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-            ->where('model_has_roles.model_id', $this->getKey())
-            ->where('model_has_roles.model_type', static::class)
-            ->where('roles.scope_type', $scopeType)
-            ->where('roles.scope_ref_id', $tenant->getKey())
+        // tenant_users 테이블에서 직접 조회
+        return $this->tenantUsers()
+            ->where('tenant_type', $tenantType)
+            ->where('tenant_id', $tenant->getKey())
             ->exists();
-    }
-
-    /**
-     * 사용자가 글로벌 스코프(PLATFORM/SYSTEM) 역할을 보유하는지 확인
-     *
-     * whereHasMorph로 Platform/System scopeable 확인
-     * Eloquent relation 캐싱 활용으로 중복 쿼리 방지
-     *
-     * @return bool PLATFORM 또는 SYSTEM 스코프 역할 보유 여부
-     */
-    public function hasGlobalScopeRole(): bool
-    {
-        // roles relation이 이미 로드되었으면 메모리에서 확인 (쿼리 없음)
-        if ($this->relationLoaded('roles')) {
-            /** @var \Illuminate\Database\Eloquent\Collection<int, Role> $roles */
-            $roles = $this->roles;
-
-            return $roles->contains(fn (Role $role): bool => in_array($role->scope_type, [
-                \App\Enums\ScopeType::PLATFORM->value,
-                \App\Enums\ScopeType::SYSTEM->value,
-            ], true));
-        }
-
-        // roles가 로드되지 않았으면 쿼리 실행 (모델 클래스 의존 없이 scope_type으로 판별)
-        return $this->roles()
-            ->whereIn('scope_type', [
-                \App\Enums\ScopeType::PLATFORM->value,
-                \App\Enums\ScopeType::SYSTEM->value,
-            ])
-            ->exists();
-    }
-
-    /**
-     * Spatie Permission: 권한 팀 ID 설정
-     *
-     * 테스트 환경에서 특정 테넌트 컨텍스트로 권한 체크를 수행하기 위해 사용
-     * Spatie Permission의 team-based 권한 시스템 지원
-     *
-     * @param  int|string|null  $teamId  팀 ID (테넌트 ID)
-     * @return $this
-     */
-    public function setPermissionsTeamId($teamId): self
-    {
-        // Spatie Permission 내부적으로 사용하는 속성 설정
-        // @phpstan-ignore-next-line
-        $this->permissionsTeamId = $teamId; // @phpstan-ignore-line
-
-        return $this;
     }
 
     /**
@@ -438,5 +385,116 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->logOnlyDirty()
             ->dontLogIfAttributesChangedOnly(['last_login_at', 'remember_token'])
             ->useLogName('user');
+    }
+
+    /**
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md | TEST: tests/Feature/Tenancy/UserTenantRelationTest.php
+     *
+     * TenantUser 관계 (HasMany)
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TenantUser>
+     */
+    public function tenantUsers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TenantUser::class);
+    }
+
+    /**
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
+     *
+     * 특정 타입의 테넌트 목록 조회
+     *
+     * @param  string  $tenantType  'ORG', 'BRD', 'STR'
+     * @return \Illuminate\Support\Collection<int, Model>
+     */
+    public function getTenantsByType(string $tenantType): \Illuminate\Support\Collection
+    {
+        return $this->tenantUsers()
+            ->where('tenant_type', $tenantType)
+            ->with('tenant')
+            ->get()
+            ->pluck('tenant')
+            ->filter() // null 제거
+            ->values(); // 키 리인덱싱
+    }
+
+    /**
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
+     *
+     * 특정 테넌트에서의 역할 조회
+     *
+     * @param  Model  $model  Organization, Brand, Store
+     * @return string|null 'owner', 'manager', 'viewer' 또는 null
+     */
+    public function getRoleForTenant(Model $model): ?string
+    {
+        $tenantType = array_search($model::class, \App\Enums\ScopeType::getMorphMap(), true);
+
+        if ($tenantType === false) {
+            return null;
+        }
+
+        $tenantUser = $this->tenantUsers()
+            ->where('tenant_type', $tenantType)
+            ->where('tenant_id', $model->getKey())
+            ->first();
+
+        return $tenantUser?->role;
+    }
+
+    /**
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
+     *
+     * 특정 테넌트에서 특정 역할 보유 여부 확인
+     *
+     * @param  Model  $model  Organization, Brand, Store
+     * @param  string  $role  'owner', 'manager', 'viewer'
+     */
+    public function hasRoleForTenant(Model $model, string $role): bool
+    {
+        return $this->getRoleForTenant($model) === $role;
+    }
+
+    /**
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
+     *
+     * 테넌트 관리 권한 확인 (owner 또는 manager)
+     *
+     * @param  Model  $model  Organization, Brand, Store
+     */
+    public function canManageTenant(Model $model): bool
+    {
+        $role = $this->getRoleForTenant($model);
+
+        return in_array($role, ['owner', 'manager'], true);
+    }
+
+    /**
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
+     *
+     * 테넌트 조회 권한 확인 (모든 역할)
+     *
+     * @param  Model  $model  Organization, Brand, Store
+     */
+    public function canViewTenant(Model $model): bool
+    {
+        return $this->getRoleForTenant($model) !== null;
+    }
+
+    /**
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
+     *
+     * 글로벌 역할 확인 (User 타입만)
+     *
+     * @param  string  $role  'platform_admin', 'system_admin'
+     */
+    public function hasGlobalRole(string $role): bool
+    {
+        // User 타입만 글로벌 역할을 가질 수 있음
+        if ($this->user_type !== \App\Enums\UserType::USER) {
+            return false;
+        }
+
+        return $this->global_role === $role;
     }
 }

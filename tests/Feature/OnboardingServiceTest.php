@@ -3,18 +3,19 @@
 declare(strict_types=1);
 
 /**
- * @TEST:ONBOARD-001 | SPEC: .moai/specs/SPEC-ONBOARD-001/spec.md
+ * @TEST:RBAC-001 | SPEC: SPEC-RBAC-001.md
  *
  * OnboardingService 테스트: 조직/매장 생성 및 Owner 역할 부여 검증
+ * Spatie Permissions 제거 후 TenantUser 기반으로 전환
  */
 
 use App\Enums\ScopeType;
 use App\Models\Organization;
 use App\Models\Store;
+use App\Models\TenantUser;
 use App\Models\User;
 use App\Services\OnboardingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
@@ -29,18 +30,17 @@ test('createOrganization creates organization and assigns owner role', function 
     expect($organization)->toBeInstanceOf(Organization::class);
     expect($organization->name)->toBe('Test Organization');
 
-    // Check role was created with correct scope
-    $ownerRole = Role::where('name', 'owner')
-        ->where('scope_type', ScopeType::ORGANIZATION->value)
-        ->where('scope_ref_id', $organization->id)
+    // Check TenantUser was created with owner role
+    $tenantUser = TenantUser::where('user_id', $user->id)
+        ->where('tenant_type', ScopeType::ORGANIZATION->value)
+        ->where('tenant_id', $organization->id)
+        ->where('role', 'owner')
         ->first();
 
-    expect($ownerRole)->not->toBeNull();
+    expect($tenantUser)->not->toBeNull();
 
-    // Check user was assigned the role
-    if ($ownerRole !== null) {
-        expect($user->hasRole($ownerRole))->toBeTrue();
-    }
+    // Check user can access tenant
+    expect($user->canAccessTenant($organization))->toBeTrue();
 });
 
 test('createStore creates store and assigns owner role', function (): void {
@@ -55,36 +55,26 @@ test('createStore creates store and assigns owner role', function (): void {
     expect($store->name)->toBe('Test Store');
     expect($store->organization_id)->toBeNull(); // Independent store
 
-    // Check role was created with correct scope
-    $ownerRole = Role::where('name', 'owner')
-        ->where('scope_type', ScopeType::STORE->value)
-        ->where('scope_ref_id', $store->id)
+    // Check TenantUser was created with owner role
+    $tenantUser = TenantUser::where('user_id', $user->id)
+        ->where('tenant_type', ScopeType::STORE->value)
+        ->where('tenant_id', $store->id)
+        ->where('role', 'owner')
         ->first();
 
-    expect($ownerRole)->not->toBeNull();
+    expect($tenantUser)->not->toBeNull();
 
-    // Check user was assigned the role
-    if ($ownerRole !== null) {
-        expect($user->hasRole($ownerRole))->toBeTrue();
-    }
+    // Check user can access tenant
+    expect($user->canAccessTenant($store))->toBeTrue();
 });
 
 test('createOrganization rolls back on error', function (): void {
     $user = User::factory()->create();
     $onboardingService = app(OnboardingService::class);
 
-    // Create a role for testing
-    Role::create([
-        'name' => 'owner',
-        'scope_type' => ScopeType::ORGANIZATION->value,
-        'scope_ref_id' => 999,
-        'guard_name' => 'web',
-        'team_id' => 999,
-    ]);
-
     // Mock Organization::create to throw an exception after creation
     $initialOrgCount = Organization::count();
-    $initialRoleCount = Role::count();
+    $initialTenantUserCount = TenantUser::count();
 
     try {
         // This should fail if we try to create an organization with a duplicate unique constraint
@@ -97,7 +87,7 @@ test('createOrganization rolls back on error', function (): void {
 
     // In case of proper transaction, counts should remain consistent
     expect(Organization::count())->toBeLessThanOrEqual($initialOrgCount + 1);
-    expect(Role::count())->toBeLessThanOrEqual($initialRoleCount + 1);
+    expect(TenantUser::count())->toBeLessThanOrEqual($initialTenantUserCount + 1);
 });
 
 test('createStore rolls back on error', function (): void {
@@ -105,7 +95,7 @@ test('createStore rolls back on error', function (): void {
     $onboardingService = app(OnboardingService::class);
 
     $initialStoreCount = Store::count();
-    $initialRoleCount = Role::count();
+    $initialTenantUserCount = TenantUser::count();
 
     try {
         // This should succeed normally
@@ -119,5 +109,5 @@ test('createStore rolls back on error', function (): void {
 
     // Verify transaction completed successfully
     expect(Store::count())->toBe($initialStoreCount + 1);
-    expect(Role::count())->toBe($initialRoleCount + 1);
+    expect(TenantUser::count())->toBe($initialTenantUserCount + 1);
 });
