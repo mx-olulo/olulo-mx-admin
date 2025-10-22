@@ -392,7 +392,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      *
      * TenantUser 관계 (HasMany)
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TenantUser>
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TenantUser, $this>
      */
     public function tenantUsers(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
