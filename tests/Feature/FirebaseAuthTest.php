@@ -102,9 +102,10 @@ describe('Firebase 토큰 로그인', function (): void {
      * 테스트: 유효한 Firebase 토큰으로 로그인
      */
     test('유효한 Firebase 토큰으로 로그인 성공', function (): void {
-        // Arrange: 유효한 토큰 데이터 준비
+        // Arrange: 유효한 토큰 데이터 및 Store 준비
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
+        $store = \App\Models\Store::factory()->create();
 
         // Firebase 서비스 모킹
         $this->firebaseServiceMock
@@ -113,43 +114,50 @@ describe('Firebase 토큰 로그인', function (): void {
             ->with($idToken)
             ->andReturn($tokenData);
 
+        $user = User::factory()->create([
+            'firebase_uid' => $tokenData['uid'],
+            'email' => $tokenData['email'],
+            'name' => $tokenData['name'],
+        ]);
+
+        // Store 테넌트 할당 (단일 테넌트 → 자동 리다이렉트)
+        \App\Models\TenantUser::create([
+            'user_id' => $user->id,
+            'tenant_type' => \App\Enums\ScopeType::STORE->value,
+            'tenant_id' => $store->id,
+            'role' => \App\Enums\TenantRole::OWNER->value,
+        ]);
+
         $this->firebaseServiceMock
             ->shouldReceive('syncFirebaseUserWithLaravel')
             ->once()
             ->with($tokenData)
-            ->andReturn(User::factory()->create([
-                'firebase_uid' => $tokenData['uid'],
-                'email' => $tokenData['email'],
-                'name' => $tokenData['name'],
-            ]));
+            ->andReturn($user);
 
-        // Act: Firebase 콜백 요청 (기본 리다이렉트: /store)
+        // Act: Firebase 콜백 요청
         $response = $this->post(route('auth.firebase.callback'), [
             'idToken' => $idToken,
         ]);
 
-        // Assert: 로그인 성공 및 리다이렉트 확인
-        $response->assertRedirect('/store');
+        // Assert: 로그인 성공 및 Store 패널로 자동 리다이렉트 확인
+        $response->assertRedirect("/store/{$store->id}");
         $response->assertSessionHas('auth.success');
         expect(auth()->check())->toBeTrue();
 
         // 로그인된 사용자 정보 확인
-        $user = Auth::user();
-        expect($user->firebase_uid)->toBe($tokenData['uid']);
-        expect($user->email)->toBe($tokenData['email']);
+        $loggedInUser = Auth::user();
+        expect($loggedInUser->firebase_uid)->toBe($tokenData['uid']);
+        expect($loggedInUser->email)->toBe($tokenData['email']);
     })->group('firebase', 'login');
 
     /**
      * 테스트: intended URL로 리다이렉트
      */
-    test('로그인 후 intended URL로 리다이렉트', function (): void {
-        // Arrange: 유효한 토큰 데이터와 intended URL 준비
+    test('로그인 후 단일 테넌트는 자동 리다이렉트', function (): void {
+        // Arrange: 유효한 토큰 데이터, Store 준비
         $tokenData = createValidFirebaseTokenData();
         $idToken = 'valid-firebase-id-token';
-        $intendedUrl = '/admin/specific-page';
-
-        // 세션에 intended URL 저장
-        Session::put('auth.intended_url', $intendedUrl);
+        $store = \App\Models\Store::factory()->create();
 
         // Firebase 서비스 모킹
         $this->firebaseServiceMock
@@ -158,23 +166,32 @@ describe('Firebase 토큰 로그인', function (): void {
             ->with($idToken)
             ->andReturn($tokenData);
 
+        $user = User::factory()->create([
+            'firebase_uid' => $tokenData['uid'],
+            'email' => $tokenData['email'],
+        ]);
+
+        // Store 테넌트 할당 (단일 테넌트 → 자동 리다이렉트)
+        \App\Models\TenantUser::create([
+            'user_id' => $user->id,
+            'tenant_type' => \App\Enums\ScopeType::STORE->value,
+            'tenant_id' => $store->id,
+            'role' => \App\Enums\TenantRole::OWNER->value,
+        ]);
+
         $this->firebaseServiceMock
             ->shouldReceive('syncFirebaseUserWithLaravel')
             ->once()
             ->with($tokenData)
-            ->andReturn(User::factory()->create([
-                'firebase_uid' => $tokenData['uid'],
-                'email' => $tokenData['email'],
-            ]));
+            ->andReturn($user);
 
         // Act: Firebase 콜백 요청
-        $response = $this->withSession(['auth.intended_url' => $intendedUrl])
-            ->post(route('auth.firebase.callback'), [
-                'idToken' => $idToken,
-            ]);
+        $response = $this->post(route('auth.firebase.callback'), [
+            'idToken' => $idToken,
+        ]);
 
-        // Assert: intended URL로 리다이렉트 확인
-        $response->assertRedirect($intendedUrl);
+        // Assert: 단일 Store 테넌트로 자동 리다이렉트 확인 (AUTH-REDIRECT-001)
+        $response->assertRedirect("/store/{$store->id}");
         expect(auth()->check())->toBeTrue();
     })->group('firebase', 'login');
 
@@ -520,8 +537,8 @@ describe('Firebase 사용자 동기화', function (): void {
             'idToken' => $idToken,
         ]);
 
-        // Assert: 사용자 생성 및 로그인 확인 (기본 리다이렉트: /store)
-        $response->assertRedirect('/store');
+        // Assert: 사용자 생성 및 로그인 확인 (테넌트 0개 → /org/new)
+        $response->assertRedirect('/org/new');
         expect(auth()->check())->toBeTrue();
 
         expect(User::where('firebase_uid', $tokenData['uid'])->exists())->toBeTrue();
@@ -532,12 +549,22 @@ describe('Firebase 사용자 동기화', function (): void {
      * 테스트: Firebase 사용자 동기화 - 기존 사용자 업데이트
      */
     test('기존 Firebase 사용자 업데이트', function (): void {
-        // Arrange: 기존 사용자 생성
+        // Arrange: 기존 사용자 및 Store 생성
         $existingUser = User::factory()->create([
             'firebase_uid' => 'firebase_uid_123',
             'email' => 'test@example.com',
             'name' => 'Old Name',
             'avatar_url' => null,
+        ]);
+
+        $store = \App\Models\Store::factory()->create();
+
+        // Store 테넌트 할당
+        \App\Models\TenantUser::create([
+            'user_id' => $existingUser->id,
+            'tenant_type' => \App\Enums\ScopeType::STORE->value,
+            'tenant_id' => $store->id,
+            'role' => \App\Enums\TenantRole::OWNER->value,
         ]);
 
         // 업데이트된 Firebase 데이터
@@ -579,8 +606,8 @@ describe('Firebase 사용자 동기화', function (): void {
             'idToken' => $idToken,
         ]);
 
-        // Assert: 사용자 업데이트 확인 (기본 리다이렉트: /store)
-        $response->assertRedirect('/store');
+        // Assert: 사용자 업데이트 확인 (단일 Store → 자동 리다이렉트)
+        $response->assertRedirect("/store/{$store->id}");
         expect(auth()->check())->toBeTrue();
 
         $updatedUser = User::find($existingUser->id);
@@ -636,8 +663,8 @@ describe('Firebase 사용자 동기화', function (): void {
             'idToken' => $idToken,
         ]);
 
-        // Assert: 사용자 생성 확인 (기본 리다이렉트: /store)
-        $response->assertRedirect('/store');
+        // Assert: 사용자 생성 확인 (테넌트 0개 → /org/new)
+        $response->assertRedirect('/org/new');
         expect(auth()->check())->toBeTrue();
 
         expect(User::where('firebase_uid', 'firebase_uid_phone')->exists())->toBeTrue();
@@ -901,9 +928,9 @@ describe('세션 관리', function (): void {
         // 로그아웃 후 게스트 상태 확인
         expect(auth()->guest())->toBeTrue();
 
-        // 보호된 리소스 접근 시도
-        $response = $this->get('/store');
-        $response->assertRedirect(route('filament.store.auth.login'));
+        // 보호된 리소스 접근 시도 (테넌트 선택 페이지)
+        $response = $this->get(route('tenant.selector'));
+        $response->assertRedirect('/login');
     })->group('firebase', 'session', 'logout');
 
     /**
