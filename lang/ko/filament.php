@@ -57,6 +57,8 @@ return [
             'contact_email' => '연락처 이메일',
             'contact_phone' => '연락처 전화번호',
             'is_active' => '활성 상태',
+            'created_at' => '생성일',
+            'updated_at' => '수정일',
         ],
         'columns' => [
             'name' => '이름',
@@ -69,6 +71,9 @@ return [
         'actions' => [
             'activities' => '활동 로그',
             'back' => '조직으로 돌아가기',
+        ],
+        'relations' => [
+            'brands' => '브랜드',
         ],
         'activities' => [
             'title' => '활동 로그: :name',
@@ -89,11 +94,68 @@ return [
         ],
     ],
 
+    'brands' => [
+        'resource' => [
+            'label' => '브랜드',
+            'plural_label' => '브랜드',
+            'navigation_label' => '브랜드',
+        ],
+        'fields' => [
+            'name' => '이름',
+            'description' => '설명',
+            'relationship_type' => '관계 유형',
+            'is_active' => '활성 상태',
+            'created_at' => '생성일',
+            'updated_at' => '수정일',
+        ],
+        'columns' => [
+            'name' => '이름',
+            'relationship_type' => '관계 유형',
+            'is_active' => '활성',
+            'created_at' => '생성일',
+            'updated_at' => '수정일',
+        ],
+        'relations' => [
+            'stores' => '매장',
+        ],
+    ],
+
+    'stores' => [
+        'resource' => [
+            'label' => '매장',
+            'plural_label' => '매장',
+            'navigation_label' => '매장',
+        ],
+        'fields' => [
+            'name' => '이름',
+            'description' => '설명',
+            'address' => '주소',
+            'phone' => '전화번호',
+            'relationship_type' => '관계 유형',
+            'is_active' => '활성 상태',
+            'created_at' => '생성일',
+            'updated_at' => '수정일',
+        ],
+        'columns' => [
+            'name' => '이름',
+            'address' => '주소',
+            'phone' => '전화번호',
+            'relationship_type' => '관계 유형',
+            'is_active' => '활성',
+            'created_at' => '생성일',
+            'updated_at' => '수정일',
+        ],
+    ],
+
     'common' => [
         'actions' => [
             'view' => '보기',
             'edit' => '수정',
             'delete' => '삭제',
+        ],
+        'status' => [
+            'active' => '활성',
+            'inactive' => '비활성',
         ],
     ],
 ];

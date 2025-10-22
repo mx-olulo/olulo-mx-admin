@@ -9,7 +9,6 @@ use Filament\Models\Contracts\HasCurrentTenantLabel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -53,16 +52,6 @@ class Organization extends Model implements HasCurrentTenantLabel
     public function stores(): HasMany
     {
         return $this->hasMany(Store::class);
-    }
-
-    /**
-     * 다형 관계: Organization 스코프를 가진 Role들
-     *
-     * @return MorphMany<Role, $this>
-     */
-    public function roles(): MorphMany
-    {
-        return $this->morphMany(Role::class, 'scopeable', 'scope_type', 'scope_ref_id');
     }
 
     /**

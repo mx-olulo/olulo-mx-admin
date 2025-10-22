@@ -23,43 +23,29 @@ use App\Enums\ScopeType;
 use App\Models\Brand;
 use App\Models\Organization;
 use App\Models\Store;
+use App\Models\TenantUser;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
 // 헬퍼 함수: redirectAfterLogin 메서드 직접 호출 (AuthRedirectService 사용)
 function callRedirectAfterLogin(User $user): \Illuminate\Http\RedirectResponse
 {
-    // Spatie Permission team_id 컨텍스트 설정 (전역 스코프)
-    setPermissionsTeamId(0);
-
     // AuthRedirectService를 직접 사용
     $authRedirectService = app(\App\Services\AuthRedirectService::class);
 
-    // team_id 컨텍스트 유지하면서 메서드 호출
     return $authRedirectService->redirectAfterLogin($user->fresh());
 }
 
-// 헬퍼 함수: User에게 role 부여 (UNIQUE constraint 회피)
+// 헬퍼 함수: User에게 TenantUser 관계 생성 (RBAC-001)
 function assignRoleToUser(User $user, ScopeType $scopeType, int $refId): void
 {
-    $roleName = 'owner_' . Str::uuid(); // Unique role name 생성
-
-    $role = Role::firstOrCreate([
-        'name' => $roleName,
-        'scope_type' => $scopeType->value,
-        'scope_ref_id' => $refId,
-        'guard_name' => 'web',
-    ], ['team_id' => 0]);
-
-    \DB::table('model_has_roles')->insert([
-        'role_id' => $role->id,
-        'model_type' => User::class,
-        'model_id' => $user->id,
-        'team_id' => 0,
+    TenantUser::create([
+        'user_id' => $user->id,
+        'tenant_type' => $scopeType->value,
+        'tenant_id' => $refId,
+        'role' => 'owner',
     ]);
 }
 

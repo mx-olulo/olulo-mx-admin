@@ -11,6 +11,7 @@ use App\Filament\Organization\Resources\Organizations\Pages\EditOrganization;
 use App\Filament\Organization\Resources\Organizations\Pages\ListOrganizationActivities;
 use App\Filament\Organization\Resources\Organizations\Pages\ListOrganizations;
 use App\Filament\Organization\Resources\Organizations\Pages\ViewOrganization;
+use App\Filament\Organization\Resources\Organizations\RelationManagers\BrandsRelationManager;
 use App\Filament\Organization\Resources\Organizations\Schemas\OrganizationForm;
 use App\Filament\Organization\Resources\Organizations\Schemas\OrganizationInfolist;
 use App\Filament\Organization\Resources\Organizations\Tables\OrganizationsTable;
@@ -61,7 +62,7 @@ class OrganizationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            BrandsRelationManager::class,
         ];
     }
 

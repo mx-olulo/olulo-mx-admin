@@ -9,8 +9,8 @@ enum ScopeType: string
     case PLATFORM = 'PLATFORM';
     case SYSTEM = 'SYSTEM';
     case ORGANIZATION = 'ORG';
-    case BRAND = 'BRAND';
-    case STORE = 'STORE';
+    case BRAND = 'BRD';
+    case STORE = 'STR';
 
     /**
      * Panel ID 반환 (Filament Panel 경로용)

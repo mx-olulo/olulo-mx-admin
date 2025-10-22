@@ -21,17 +21,29 @@ class StoreFactory extends Factory
     public function definition(): array
     {
         return [
-            'brand_id' => Brand::factory(),
-            'organization_id' => function (array $attributes) {
-                // Brand의 organization_id를 자동으로 가져옴
-                return Brand::find($attributes['brand_id'])->organization_id ?? Organization::factory();
-            },
+            'brand_id' => null, // 기본값은 null, 필요 시 Brand로 덮어쓰기
+            'organization_id' => Organization::factory(),
             'name' => fake()->words(2, true) . ' Store',
             'description' => fake()->optional()->text(200),
             'address' => fake()->address(),
             'phone' => fake()->phoneNumber(),
             'is_active' => true,
         ];
+    }
+
+    /**
+     * Indicate that the store belongs to a brand.
+     */
+    public function forBrand(?int $brandId = null): static
+    {
+        return $this->state(function (array $attributes) use ($brandId) {
+            $brand = $brandId ? Brand::find($brandId) : Brand::factory()->create();
+
+            return [
+                'brand_id' => $brand->id,
+                'organization_id' => $brand->organization_id,
+            ];
+        });
     }
 
     /**
