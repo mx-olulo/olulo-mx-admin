@@ -2,8 +2,33 @@
 
 **기능 브랜치**: `001-refactor-user-rbac-model`
 **생성일**: 2025-10-20
-**상태**: 초안
+**최종 수정일**: 2025-10-23
+**상태**: 진행 중
 **입력**: 사용자 설명: "현재의 사용자 및 권한 관리 모델을 리팩토링 한다. 1. Spatie Permissions 는 제거한다. 2. 3티어 모델로 어드민, 유저, 커스토머를 분리한다. 3. 어드민은 필라멘트 테넌시의 조직,브랜드,스토어를 멀티테넌시로 엑세스한다. 4. 어드민은 M:N 대응의 권한 모델을 가진다. 하나의 사용자가 여러 테넌시에 엑세스하고, 개별 역할을 가진다. 5. 유저는 시스템, 플랫폼 관리 조직만 엑세스 한다. 6. 개발 중에는 폴리시는 제거한다. 7. 기존 마이그레이션은 필요시 제거나 수정해도 된다. 기존 데이터의 존재는 무시한다. 8. 경량화와 제거를 우선으로 한다. 커스토머의 파이어베이스 엑세스는 유효하다."
+
+## HISTORY
+
+### 2025-10-23 - User 모델 리팩토링 (PR #69)
+- **REFACTOR**: User 모델 복잡도 감소를 위한 Trait 분리
+- **변경사항**:
+  - `HasTenantRelations` Trait 추가 (81 LOC)
+    - tenantUsers() 관계 정의
+    - getTenantsByType() 메서드
+    - getRoleForTenant() 메서드
+  - `HasTenantPermissions` Trait 추가 (80 LOC)
+    - hasRoleForTenant() 메서드
+    - canManageTenant() 메서드
+    - canViewTenant() 메서드
+    - hasGlobalRole() 메서드
+  - User 모델에서 114줄의 코드를 2개 Trait으로 분리
+- **품질 검증**:
+  - 테스트: 16개 통과, 41개 assertion
+  - PHPStan 레벨 5 통과
+  - Laravel Pint 코딩 스타일 통과
+  - Rector 코드 품질 검사 통과
+- **관련 PR**: https://github.com/mx-olulo/olulo-mx-admin/pull/69
+- **AUTHOR**: @Claude
+- **REVIEW**: 리뷰 대기중
 
 ## 사용자 시나리오 & 테스팅 *(필수)*
 

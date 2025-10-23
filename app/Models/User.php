@@ -6,7 +6,6 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Concerns\HasTenantPermissions;
-use App\Models\Concerns\HasTenantRelations;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
@@ -21,7 +20,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class User extends Authenticatable implements FilamentUser, HasTenants
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasTenantPermissions, HasTenantRelations, LogsActivity, Notifiable;
+    use HasFactory, HasTenantPermissions, LogsActivity, Notifiable;
 
     /**
      * The attributes that are mass assignable.

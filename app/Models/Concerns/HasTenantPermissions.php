@@ -13,15 +13,21 @@ use Illuminate\Database\Eloquent\Model;
  *
  * TDD History:
  * - REFACTOR (2025-10-22): User 모델 복잡도 감소를 위해 권한 확인 로직 분리
+ * - IMPROVED (2025-10-23): HasTenantRelations 의존성 명시적으로 포함
  *
  * 책임:
  * - 테넌트별 역할 확인
  * - 테넌트 관리 권한 확인
  * - 테넌트 조회 권한 확인
  * - 글로벌 역할 확인
+ *
+ * 의존성:
+ * - HasTenantRelations: getRoleForTenant() 메서드 제공
  */
 trait HasTenantPermissions
 {
+    use HasTenantRelations;
+
     /**
      * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
      *
