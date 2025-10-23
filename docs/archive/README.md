@@ -25,6 +25,26 @@
 - ✅ Enum 기반 타입 안전성
 - ✅ Fluent API 메서드 체이닝
 
+### rbac-multi-panel-architecture.md.deprecated
+
+**폐기일**: 2025-10-23
+**이유**: Role = Tenant 아키텍처 폐기, TenantUser 기반으로 전환
+
+**내용**: Role 모델을 Filament Tenant로 직접 사용하는 다중 Panel 아키텍처
+- Role 모델이 테넌트 역할 (team_id, scope_type, scope_ref_id)
+- 5개 Panel (Platform/System/Organization/Brand/Store)
+- 스코프 검증 미들웨어 (EnsurePlatformScope 등)
+
+**대체 방식**:
+- ✅ TenantUser 피벗 모델로 User ↔ Tenant (Organization/Brand/Store) M:N 관계
+- ✅ UserType Enum으로 Admin/User/Customer 구분
+- ✅ User::canAccessPanel() 메서드로 패널 접근 제어
+- ✅ 상세 구현: [docs/rbac-system.md](../rbac-system.md)
+
+**참고**:
+- 현재는 5개 독립 Panel (org/brand/store/platform/system) 구현됨
+- 각 Panel은 User::canAccessPanel() + User::getTenants()로 접근 제어
+
 ---
 
 ## 아카이브 정책
