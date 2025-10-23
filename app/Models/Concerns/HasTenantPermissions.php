@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
+use App\Enums\TenantRole;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -31,14 +32,32 @@ trait HasTenantPermissions
     /**
      * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
      *
-     * 특정 테넌트에서 특정 역할 보유 여부 확인
+     * 메서드 체이닝을 위한 테넌트 접근자 반환
      *
      * @param  Model  $model  Organization, Brand, Store
-     * @param  string  $role  'owner', 'manager', 'viewer'
+     *
+     * @example
+     * $user->tenant($organization)->canManage();
+     * $user->tenant($brand)->hasRole(TenantRole::OWNER);
      */
-    public function hasRoleForTenant(Model $model, string $role): bool
+    public function tenant(Model $model): TenantAccessor
     {
-        return $this->getRoleForTenant($model) === $role;
+        return new TenantAccessor($this, $model);
+    }
+
+    /**
+     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
+     *
+     * 특정 테넌트에서 특정 역할 보유 여부 확인 (Enum 지원)
+     *
+     * @param  Model  $model  Organization, Brand, Store
+     * @param  TenantRole|string  $role  TenantRole Enum 또는 'owner', 'manager', 'viewer'
+     */
+    public function hasRoleForTenant(Model $model, TenantRole|string $role): bool
+    {
+        $roleString = $role instanceof TenantRole ? $role->value : $role;
+
+        return $this->getRoleForTenant($model) === $roleString;
     }
 
     /**
