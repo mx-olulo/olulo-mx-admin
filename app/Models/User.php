@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\HasTenantPermissions;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
@@ -19,7 +20,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class User extends Authenticatable implements FilamentUser, HasTenants
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, LogsActivity, Notifiable;
+    use HasFactory, HasTenantPermissions, LogsActivity, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -387,114 +388,5 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->useLogName('user');
     }
 
-    /**
-     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md | TEST: tests/Feature/Tenancy/UserTenantRelationTest.php
-     *
-     * TenantUser 관계 (HasMany)
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TenantUser, $this>
-     */
-    public function tenantUsers(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(TenantUser::class);
-    }
-
-    /**
-     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
-     *
-     * 특정 타입의 테넌트 목록 조회
-     *
-     * @param  string  $tenantType  'ORG', 'BRD', 'STR'
-     * @return \Illuminate\Support\Collection<int, Model>
-     */
-    public function getTenantsByType(string $tenantType): \Illuminate\Support\Collection
-    {
-        return $this->tenantUsers()
-            ->where('tenant_type', $tenantType)
-            ->with('tenant')
-            ->get()
-            ->pluck('tenant')
-            ->filter() // null 제거
-            ->values(); // 키 리인덱싱
-    }
-
-    /**
-     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
-     *
-     * 특정 테넌트에서의 역할 조회
-     *
-     * @param  Model  $model  Organization, Brand, Store
-     * @return string|null 'owner', 'manager', 'viewer' 또는 null
-     */
-    public function getRoleForTenant(Model $model): ?string
-    {
-        $tenantType = array_search($model::class, \App\Enums\ScopeType::getMorphMap(), true);
-
-        if ($tenantType === false) {
-            return null;
-        }
-
-        $tenantUser = $this->tenantUsers()
-            ->where('tenant_type', $tenantType)
-            ->where('tenant_id', $model->getKey())
-            ->first();
-
-        return $tenantUser?->role;
-    }
-
-    /**
-     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
-     *
-     * 특정 테넌트에서 특정 역할 보유 여부 확인
-     *
-     * @param  Model  $model  Organization, Brand, Store
-     * @param  string  $role  'owner', 'manager', 'viewer'
-     */
-    public function hasRoleForTenant(Model $model, string $role): bool
-    {
-        return $this->getRoleForTenant($model) === $role;
-    }
-
-    /**
-     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
-     *
-     * 테넌트 관리 권한 확인 (owner 또는 manager)
-     *
-     * @param  Model  $model  Organization, Brand, Store
-     */
-    public function canManageTenant(Model $model): bool
-    {
-        $role = $this->getRoleForTenant($model);
-
-        return in_array($role, ['owner', 'manager'], true);
-    }
-
-    /**
-     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
-     *
-     * 테넌트 조회 권한 확인 (모든 역할)
-     *
-     * @param  Model  $model  Organization, Brand, Store
-     */
-    public function canViewTenant(Model $model): bool
-    {
-        return $this->getRoleForTenant($model) !== null;
-    }
-
-    /**
-     * @CODE:RBAC-001 | SPEC: SPEC-RBAC-001.md
-     *
-     * 글로벌 역할 확인 (User 타입만)
-     *
-     * @param  string  $role  'platform_admin', 'system_admin'
-     */
-    public function hasGlobalRole(string $role): bool
-    {
-        // User 타입만 글로벌 역할을 가질 수 있음
-        if ($this->user_type !== \App\Enums\UserType::USER) {
-            return false;
-        }
-
-        return $this->global_role === $role;
-    }
+    // Tenant 관계 및 권한 메서드는 HasTenantRelations, HasTenantPermissions Trait으로 이동
 }
