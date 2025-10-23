@@ -24,10 +24,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TenantAccessor
 {
-    /** @param  HasTenantRelations  $user */
     public function __construct(
         private readonly mixed $user,
-        private readonly Model $tenant
+        private readonly Model $model
     ) {}
 
     /**
@@ -35,8 +34,7 @@ class TenantAccessor
      */
     public function role(): ?TenantRole
     {
-        /** @phpstan-ignore-next-line */
-        $roleString = $this->user->getRoleForTenant($this->tenant);
+        $roleString = $this->user->getRoleForTenant($this->model);
 
         if ($roleString === null) {
             return null;
